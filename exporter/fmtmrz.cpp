@@ -865,13 +865,13 @@ void MRZSaver::gatherAnim(std::map<std::string, std::vector<mzanim> >& animkey, 
                 if (tm == 0)
                     continue;
                 
-                unsigned int count = 0;
+                /*unsigned int count = 0;
                 selectedItem.ChannelCount(&count);
                 for (unsigned int x = 0; x < count; ++x){
                     const char* name;
                     selectedItem.ChannelName(x,&name);
                     printf("chan name = %s\n",name);
-                }
+                }*/
                 //selectedItem.SubCount(&count);
                 int fps = 24;
                 for (int f = 0; f < maxframe; ++f)
