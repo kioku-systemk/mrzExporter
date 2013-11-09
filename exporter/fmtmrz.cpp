@@ -109,6 +109,7 @@ public:
     void makeMaterialsInfo();
     void makeMeshInfo();
     void writeNode_mesh(int depth, const mzmatrix& mtx);
+    void writeNode_meshinst(int depth, const mzmatrix& mtx);
     void writeNode_locator(int depth, const mzmatrix& mtx);
     
     bool writeNodeRec(CLxUser_Item& item, int depth);
@@ -421,6 +422,42 @@ void MRZSaver::writeNode_mesh(int depth, const mzmatrix& mtx)
     }
 }
 
+
+
+void MRZSaver::writeNode_meshinst(int depth, const mzmatrix& mtx)
+{
+    const std::string meshname = std::string(ItemName());
+    
+    // Transform
+    unsigned char level = depth;
+    lf_Output("TSF",-1);
+    lf_Output(level);
+    lf_Output(meshname.c_str());
+    for (int i = 0; i < 16; ++i){
+        const float f = mtx.f[i];
+        lf_Output(f);
+    }
+	++level;
+    
+    std::string instmeshname = "mesh";
+    /* get meshinst info */
+    CLxUser_SceneService	 service;
+    CLxUser_Item		 meshInstItem;
+    CLxUser_Item		 srcMeshItem;
+    ILxItem1ID		 iMesh;
+    if (GetItem (meshInstItem)) {
+        if (LXx_OK (service.GetMeshInstSourceItem ((ILxUnknownID)meshInstItem, (void**)&iMesh))) {
+            SetItem ((ILxUnknownID)iMesh);
+            instmeshname = std::string(ItemName());
+        }
+        SetItem (meshInstItem); // restore
+    }
+
+    lf_Output("INS",-1);
+    lf_Output(level);
+    lf_Output((instmeshname).c_str());
+}
+
 void MRZSaver::writeNode_locator(int depth, const mzmatrix& mtx)
 {
     // Transform
@@ -493,9 +530,9 @@ bool MRZSaver::writeNodeRec(CLxUser_Item& item, int depth)
         && !ItemIsA (LXsITYPE_CAMERA)
         && !ItemIsA (LXsITYPE_GROUPLOCATOR)
         && !ItemIsA (LXsITYPE_LOCATOR)
-        //||  ItemIsA (LXsITYPE_MESHINST)
-        //||  ItemIsA (LXsITYPE_LIGHT)
-        //||  ItemIsA (LXsITYPE_TEXTURELOC)
+        && !ItemIsA (LXsITYPE_MESHINST)
+        && !ItemIsA (LXsITYPE_LIGHT)
+        && !ItemIsA (LXsITYPE_TEXTURELOC)
         ){
         return false;
     }
@@ -624,7 +661,9 @@ bool MRZSaver::writeNodeRec(CLxUser_Item& item, int depth)
                  m[1][0],m[1][1],m[1][2],m[1][3],
                  m[2][0],m[2][1],m[2][2],m[2][3],
                  m[3][0],m[3][1],m[3][2],m[3][3]);
-    if (ItemIsA (LXsITYPE_MESH)) {
+    if (ItemIsA (LXsITYPE_MESHINST)) {
+        writeNode_meshinst(depth, mtx);
+    }else if (ItemIsA (LXsITYPE_MESH)) {
         writeNode_mesh(depth, mtx);
     } else if (ItemIsA (LXsITYPE_LOCATOR) || ItemIsA(LXsITYPE_GROUPLOCATOR)) {
         writeNode_locator(depth, mtx);
@@ -675,19 +714,21 @@ int MRZSaver::getWriteNodesCountRec(CLxUser_Item& item)
 	int num = 0;
 	SetItem(item);
 	
-    if (   !ItemIsA (LXsITYPE_MESH)
-        && !ItemIsA (LXsITYPE_CAMERA)
-        && !ItemIsA (LXsITYPE_GROUPLOCATOR)
-        && !ItemIsA (LXsITYPE_LOCATOR)
-        //||  ItemIsA (LXsITYPE_MESHINST)
-        //||  ItemIsA (LXsITYPE_LIGHT)
-        //||  ItemIsA (LXsITYPE_TEXTURELOC)
-        ){
-        return false;
+    if (!ItemIsA (LXsITYPE_MESH)
+    &&  !ItemIsA (LXsITYPE_CAMERA)
+    &&  !ItemIsA (LXsITYPE_GROUPLOCATOR)
+    &&  !ItemIsA (LXsITYPE_LOCATOR)
+    &&  !ItemIsA (LXsITYPE_MESHINST)
+    &&  !ItemIsA (LXsITYPE_LIGHT)
+    &&  !ItemIsA (LXsITYPE_TEXTURELOC)
+    ){
+        return 0;
     }
 	
 	++num;
-	
+	if (ItemIsA(LXsITYPE_MESHINST)) // will be 2 nodes
+        ++num;
+    
 	// -- Recursive Sub node. --
     unsigned int cnt = 0;
     if (item.SubCount(&cnt) != LXe_OK)
@@ -763,6 +804,7 @@ int MRZSaver::getMaxFrame(int fps)
     while (NextItem ()) {
         if (ItemIsA (LXsITYPE_CAMERA) ||
             ItemIsA (LXsITYPE_MESH) ||
+            ItemIsA (LXsITYPE_MESHINST) ||
             ItemIsA (LXsITYPE_GROUPLOCATOR) ||
             ItemIsA (LXsITYPE_LIGHT) ||
             ItemIsA (LXsITYPE_LOCATOR) ||
@@ -829,6 +871,7 @@ void MRZSaver::gatherAnim(std::map<std::string, std::vector<mzanim> >& animkey, 
     while (NextItem ()) {
         if (ItemIsA (LXsITYPE_CAMERA) ||
             ItemIsA (LXsITYPE_MESH) ||
+            ItemIsA (LXsITYPE_MESHINST) ||
             ItemIsA (LXsITYPE_GROUPLOCATOR) ||
             ItemIsA (LXsITYPE_LIGHT) ||
             ItemIsA (LXsITYPE_LOCATOR) ||
@@ -862,6 +905,43 @@ void MRZSaver::gatherAnim(std::map<std::string, std::vector<mzanim> >& animkey, 
                 tm = cio::math::Max(tm, getmaxChannelTime(LXsICHAN_UISTATE_VISIBLE));
                 SetItem (selectedItem);
                 
+                if (ItemIsA(LXsITYPE_MESHINST)){
+                    // Check origianl mesh animation
+                    /* get meshinst info */
+                    CLxUser_SceneService	 service;
+                    CLxUser_Item		 meshInstItem;
+                    CLxUser_Item		 srcMeshItem;
+                    ILxItem1ID		 iMesh;
+                    if (GetItem (meshInstItem)
+                    && LXx_OK (service.GetMeshInstSourceItem ((ILxUnknownID)meshInstItem, (void**)&iMesh))){
+                        SetItem ((ILxUnknownID)iMesh);
+                        std::string itemName = ItemName ();
+                        std::string	itemType = ItemType ();
+                        //printf("INSTANCE-> name = %s type = %s\n", itemName.c_str(), itemType.c_str());
+
+                        if (HasXformItem (LXiXFRM_POSITION) && XformItem (LXiXFRM_POSITION)) {
+                            tm = cio::math::Max(tm, getmaxChannelTime(translationChannelXname.c_str()));
+                            tm = cio::math::Max(tm, getmaxChannelTime(translationChannelYname.c_str()));
+                            tm = cio::math::Max(tm, getmaxChannelTime(translationChannelZname.c_str()));
+                        }
+                        SetItem ((ILxUnknownID)iMesh);
+                        if (HasXformItem (LXiXFRM_ROTATION) && XformItem (LXiXFRM_ROTATION)) {
+                            tm = cio::math::Max(tm, getmaxChannelTime(rotationChannelXname.c_str()));
+                            tm = cio::math::Max(tm, getmaxChannelTime(rotationChannelYname.c_str()));
+                            tm = cio::math::Max(tm, getmaxChannelTime(rotationChannelZname.c_str()));
+                        }
+                        SetItem ((ILxUnknownID)iMesh);
+                        if (HasXformItem (LXiXFRM_SCALE) && XformItem (LXiXFRM_SCALE)) {
+                            tm = cio::math::Max(tm, getmaxChannelTime(scaleChannelXname.c_str()));
+                            tm = cio::math::Max(tm, getmaxChannelTime(scaleChannelYname.c_str()));
+                            tm = cio::math::Max(tm, getmaxChannelTime(scaleChannelZname.c_str()));
+                        }
+                        SetItem ((ILxUnknownID)iMesh);
+                        tm = cio::math::Max(tm, getmaxChannelTime(LXsICHAN_UISTATE_VISIBLE));
+                        SetItem (selectedItem);
+                    }
+                }
+
                 if (tm == 0)
                     continue;
                 
@@ -877,8 +957,8 @@ void MRZSaver::gatherAnim(std::map<std::string, std::vector<mzanim> >& animkey, 
                 for (int f = 0; f < maxframe; ++f)
                 {
                     using namespace cio::math;
-                    Param* p = &m_defparam[itemName];
-                   
+                    Param p = m_defparam[itemName];
+                    
                     const double time = f / static_cast<double>(fps);
                     //printf("Time = %lf\n",time);
                     LxResult	result(LXe_OK);
@@ -887,7 +967,7 @@ void MRZSaver::gatherAnim(std::map<std::string, std::vector<mzanim> >& animkey, 
                     CLxUser_ItemGraph  itemGraph;
                     scene.GetGraph (LXsGRAPH_XFRMCORE, sceneGraph);
                     itemGraph.set (sceneGraph);
-                    
+
                     Matrix4	m;
                     Matrix4Identity (m);
                     unsigned transformCount = itemGraph.Reverse (selectedItem);
@@ -899,12 +979,24 @@ void MRZSaver::gatherAnim(std::map<std::string, std::vector<mzanim> >& animkey, 
                             //printf("  chanName = %s : ",transformName.c_str());
                             const char *xformType = ItemType ();
                             Vector3	vec = {0,0,0};
-                            vec[0] = p->chanvec[transformName].x;
-                            vec[1] = p->chanvec[transformName].y;
-                            vec[2] = p->chanvec[transformName].z;
+                            vec[0] = p.chanvec[transformName].x;
+                            vec[1] = p.chanvec[transformName].y;
+                            vec[2] = p.chanvec[transformName].z;
 
+                            ILxItem1ID srctransID;
                             CLxUser_Envelope	envelope;
                             if (std::string(xformType) == std::string(LXsITYPE_SCALE)) {
+                                if (LXx_OK(transform.Source((void**)&srctransID))){
+                                    CLxUser_Item srcobj((ILxUnknownID)srctransID);
+                                    SetItem(srcobj);
+                                    if (ChanEnvelope (scaleChannelXname.c_str (), envelope))
+                                        vec[0] = envelope.Value(time);
+                                    if (ChanEnvelope (scaleChannelYname.c_str (), envelope))
+                                        vec[1] = envelope.Value(time);
+                                    if (ChanEnvelope (scaleChannelZname.c_str (), envelope))
+                                        vec[2] = envelope.Value(time);
+                                    SetItem(transform);
+                                }
                                 if (ChanEnvelope (scaleChannelXname.c_str (), envelope))
                                     vec[0] = envelope.Value(time);
                                 if (ChanEnvelope (scaleChannelYname.c_str (), envelope))
@@ -917,6 +1009,17 @@ void MRZSaver::gatherAnim(std::map<std::string, std::vector<mzanim> >& animkey, 
                                 Matrix4Compose (m, sm);
                             }
                             else if (std::string(xformType) == std::string(LXsITYPE_ROTATION)) {
+                                if (LXx_OK(transform.Source((void**)&srctransID))){
+                                    CLxUser_Item srcobj((ILxUnknownID)srctransID);
+                                    SetItem(srcobj);
+                                    if (ChanEnvelope (rotationChannelXname.c_str (), envelope))
+                                        vec[0] = envelope.Value(time);
+                                    if (ChanEnvelope (rotationChannelYname.c_str (), envelope))
+                                        vec[1] = envelope.Value(time);
+                                    if (ChanEnvelope (rotationChannelZname.c_str (), envelope))
+                                        vec[2] = envelope.Value(time);
+                                    SetItem(transform);
+                                }
                                 if (ChanEnvelope (rotationChannelXname.c_str (), envelope))
                                     vec[0] = envelope.Value(time);
                                 if (ChanEnvelope (rotationChannelYname.c_str (), envelope))
@@ -936,6 +1039,17 @@ void MRZSaver::gatherAnim(std::map<std::string, std::vector<mzanim> >& animkey, 
                                 Matrix4Compose (m, rm);
                             }
                             else if (std::string(xformType) == std::string(LXsITYPE_TRANSLATION)) {
+                                if (LXx_OK(transform.Source((void**)&srctransID))){
+                                    CLxUser_Item srcobj((ILxUnknownID)srctransID);
+                                    SetItem(srcobj);
+                                    if (ChanEnvelope (translationChannelXname.c_str (), envelope))
+                                        vec[0] = envelope.Value(time);
+                                    if (ChanEnvelope (translationChannelYname.c_str (), envelope))
+                                        vec[1] = envelope.Value(time);
+                                    if (ChanEnvelope (translationChannelZname.c_str (), envelope))
+                                        vec[2] = envelope.Value(time);
+                                    SetItem(transform);
+                                }
                                 if (ChanEnvelope (translationChannelXname.c_str (), envelope))
                                     vec[0] = envelope.Value(time);
                                 if (ChanEnvelope (translationChannelYname.c_str (), envelope))
@@ -957,12 +1071,14 @@ void MRZSaver::gatherAnim(std::map<std::string, std::vector<mzanim> >& animkey, 
                     
                     SetItem(selectedItem);
                     CLxUser_Envelope	envelope;
-                    ChanEnvelope(LXsICHAN_UISTATE_VISIBLE, envelope);
-                    int vis = envelope.IntValue(time);
-                    if (vis < 2)
-                        vis = 1.0;
-                    else
-                        vis = 0.0;
+                    int vis = 1.0;
+                    if (ChanEnvelope(LXsICHAN_UISTATE_VISIBLE, envelope)) {
+                        vis = envelope.IntValue(time);
+                        if (vis < 2)
+                            vis = 1.0;
+                        else
+                            vis = 0.0;
+                    }
                     mzanim key;
                     key.mtx = mtx;
                     key.visible = vis;
