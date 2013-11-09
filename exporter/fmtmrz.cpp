@@ -100,6 +100,10 @@ public:
         mzmatrix(){}
         float f[16];
     };
+    struct mzanim{
+        mzmatrix mtx;
+        float visible;
+    };
     
     void initInfo();
     void makeMaterialsInfo();
@@ -119,7 +123,7 @@ public:
     double getmaxChannelTime(const char* channame) const;
     int getMaxFrame(int fps);
     
-    void gatherAnim(std::map<std::string, std::vector<mzmatrix> >& animkey, int maxframe);
+    void gatherAnim(std::map<std::string, std::vector<mzanim> >& animkey, int maxframe);
     
     //-------------
     static LXtTagInfoDesc descInfo[];
@@ -764,7 +768,6 @@ int MRZSaver::getMaxFrame(int fps)
             ItemIsA (LXsITYPE_LOCATOR) ||
             ItemIsA (LXsITYPE_TEXTURELOC)) {
             
-            std::vector<mzmatrix> keys;
             std::string itemName = ItemName ();
             std::string	itemType = ItemType ();
             CLxLoc_Item selectedItem;
@@ -810,13 +813,17 @@ int MRZSaver::getMaxFrame(int fps)
                         maxtm = tm;
                 }
                 SetItem (selectedItem);
+                double tm = getmaxChannelTime(LXsICHAN_UISTATE_VISIBLE);
+                if (maxtm < tm)
+                    maxtm = tm;
+                SetItem (selectedItem);
             }
         }
     }
     return maxtm * 24.0;
 }
 
-void MRZSaver::gatherAnim(std::map<std::string, std::vector<mzmatrix> >& animkey, int maxframe)
+void MRZSaver::gatherAnim(std::map<std::string, std::vector<mzanim> >& animkey, int maxframe)
 {
     StartScan ();
     while (NextItem ()) {
@@ -827,7 +834,7 @@ void MRZSaver::gatherAnim(std::map<std::string, std::vector<mzmatrix> >& animkey
             ItemIsA (LXsITYPE_LOCATOR) ||
             ItemIsA (LXsITYPE_TEXTURELOC)) {
             
-            std::vector<mzmatrix> keys;
+            std::vector<mzanim> keys;
             std::string itemName = ItemName ();
             std::string	itemType = ItemType ();
             printf("name = %s type = %s\n", itemName.c_str(), itemType.c_str());
@@ -852,17 +859,19 @@ void MRZSaver::gatherAnim(std::map<std::string, std::vector<mzmatrix> >& animkey
                     tm = cio::math::Max(tm, getmaxChannelTime(scaleChannelZname.c_str()));
                 }
                 SetItem (selectedItem);
+                tm = cio::math::Max(tm, getmaxChannelTime(LXsICHAN_UISTATE_VISIBLE));
+                SetItem (selectedItem);
                 
                 if (tm == 0)
                     continue;
                 
                 unsigned int count = 0;
-                /*selectedItem.ChannelCount(&count);
+                selectedItem.ChannelCount(&count);
                 for (unsigned int x = 0; x < count; ++x){
                     const char* name;
                     selectedItem.ChannelName(x,&name);
                     printf("chan name = %s\n",name);
-                }*/
+                }
                 //selectedItem.SubCount(&count);
                 int fps = 24;
                 for (int f = 0; f < maxframe; ++f)
@@ -945,8 +954,19 @@ void MRZSaver::gatherAnim(std::map<std::string, std::vector<mzmatrix> >& animkey
                                  m[1][0],m[1][1],m[1][2],m[1][3],
                                  m[2][0],m[2][1],m[2][2],m[2][3],
                                  m[3][0],m[3][1],m[3][2],m[3][3]);
-
-                    keys.push_back(mtx);
+                    
+                    SetItem(selectedItem);
+                    CLxUser_Envelope	envelope;
+                    ChanEnvelope(LXsICHAN_UISTATE_VISIBLE, envelope);
+                    int vis = envelope.IntValue(time);
+                    if (vis < 2)
+                        vis = 1.0;
+                    else
+                        vis = 0.0;
+                    mzanim key;
+                    key.mtx = mtx;
+                    key.visible = vis;
+                    keys.push_back(key);
                 }
             }
             animkey[itemName] = keys;
@@ -956,7 +976,7 @@ void MRZSaver::gatherAnim(std::map<std::string, std::vector<mzmatrix> >& animkey
 
 void MRZSaver::writeAnimations()
 {
-    std::map<std::string, std::vector<mzmatrix> > animkey;
+    std::map<std::string, std::vector<mzanim> > animkey;
 
     unsigned int fps = 24;
     int maxframe = getMaxFrame(fps);
@@ -970,12 +990,14 @@ void MRZSaver::writeAnimations()
     }
     animfilename += "_mrz.anim";
     m_animfile.ff_Open(animfilename.c_str());
-    m_animfile.lf_Output("ANM");
+    m_animfile.lf_Output("ANM",-1);
+    unsigned char ver = 1;
+    m_animfile.lf_Output(ver);
 
     m_animfile.lf_Output(fps);
     unsigned int nodenum = animkey.size();
     m_animfile.lf_Output(nodenum);
-    std::map<std::string, std::vector<mzmatrix> >::iterator it,eit = animkey.end();
+    std::map<std::string, std::vector<mzanim> >::iterator it,eit = animkey.end();
     for (it = animkey.begin(); it != eit; ++it)
     {
         const char* name = it->first.c_str();
@@ -985,7 +1007,8 @@ void MRZSaver::writeAnimations()
         for (unsigned k = 0; k < keynum; ++k)
         {
             for (int m = 0; m < 16; ++m)
-                m_animfile.lf_Output(it->second[k].f[m]);
+                m_animfile.lf_Output(it->second[k].mtx.f[m]);
+            m_animfile.lf_Output(it->second[k].visible);
         }
     }
     m_animfile.ff_Cleanup();
