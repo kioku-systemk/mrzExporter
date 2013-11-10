@@ -111,6 +111,7 @@ public:
     void writeNode_mesh(int depth, const mzmatrix& mtx);
     void writeNode_meshinst(int depth, const mzmatrix& mtx);
     void writeNode_locator(int depth, const mzmatrix& mtx);
+    void writeNode_camera(int depth, const mzmatrix& mtx);
     
     bool writeNodeRec(CLxUser_Item& item, int depth);
     void writeNodes();
@@ -472,6 +473,19 @@ void MRZSaver::writeNode_locator(int depth, const mzmatrix& mtx)
     }
 }
 
+void MRZSaver::writeNode_camera(int depth, const mzmatrix& mtx)
+{
+    const std::string meshname = std::string(ItemName());
+    unsigned char level = depth;
+    lf_Output("CAM",-1);
+    lf_Output(level);
+    lf_Output((meshname).c_str());
+    const double ax = ChanFloat(LXsICHAN_CAMERA_APERTUREX);
+    const double fl = ChanFloat(LXsICHAN_CAMERA_FOCALLEN);
+    float holfov = static_cast<float>(atan2(ax*.5,fl)*180.0/M_PI*2.0);
+    lf_Output(holfov);
+}
+
 enum {
     ROTATION_ORDER_XYZ,
     ROTATION_ORDER_XZY,
@@ -665,6 +679,9 @@ bool MRZSaver::writeNodeRec(CLxUser_Item& item, int depth)
         writeNode_meshinst(depth, mtx);
     }else if (ItemIsA (LXsITYPE_MESH)) {
         writeNode_mesh(depth, mtx);
+    }else if (ItemIsA (LXsITYPE_CAMERA)){
+        writeNode_locator(depth, mtx);
+        writeNode_camera(depth+1,mtx);
     } else if (ItemIsA (LXsITYPE_LOCATOR) || ItemIsA(LXsITYPE_GROUPLOCATOR)) {
         writeNode_locator(depth, mtx);
     }
@@ -726,7 +743,8 @@ int MRZSaver::getWriteNodesCountRec(CLxUser_Item& item)
     }
 	
 	++num;
-	if (ItemIsA(LXsITYPE_MESHINST)) // will be 2 nodes
+	if (ItemIsA(LXsITYPE_MESHINST)
+    ||  ItemIsA(LXsITYPE_CAMERA)) // will be 2 nodes
         ++num;
     
 	// -- Recursive Sub node. --
@@ -1071,13 +1089,26 @@ void MRZSaver::gatherAnim(std::map<std::string, std::vector<mzanim> >& animkey, 
                     
                     SetItem(selectedItem);
                     CLxUser_Envelope	envelope;
-                    int vis = 1.0;
-                    if (ChanEnvelope(LXsICHAN_UISTATE_VISIBLE, envelope)) {
-                        vis = envelope.IntValue(time);
-                        if (vis < 2)
-                            vis = 1.0;
-                        else
-                            vis = 0.0;
+                    float vis = 1.0;
+                    if (ItemIsA(LXsITYPE_CAMERA))
+                    {
+                        // FOV
+                        double ax = ChanFloat(LXsICHAN_CAMERA_APERTUREX);
+                        if (ChanEnvelope(LXsICHAN_CAMERA_FOCALLEN, envelope)) {
+                            double fl = envelope.Value(time);
+                            double fovx = atan2(ax*.5,fl)*180.0/M_PI*2.0;
+                            vis = static_cast<float>(fovx);
+                        } else {
+                            vis = 60.0f;
+                        }
+                    } else {
+                        if (ChanEnvelope(LXsICHAN_UISTATE_VISIBLE, envelope)) {
+                            vis = envelope.IntValue(time);
+                            if (vis < 2)
+                                vis = 1.0;
+                            else
+                                vis = 0.0;
+                        }
                     }
                     mzanim key;
                     key.mtx = mtx;
