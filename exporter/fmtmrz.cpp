@@ -28,6 +28,9 @@
 
 #include "cio_math.h"
 
+#ifndef M_PI
+#define M_PI = 3.14159265358979323846264338327950288;
+#endif
 /*
  * ----------------------------------------------------------------
  * MRZ Saver
@@ -1310,17 +1313,13 @@ MRZSaver::ss_Point ()
 {
     float vec[3];
     PntPosition(vec);
-    float uv1[8] = {0.0f,0.0f};
     //float uv2[2];
     std::string meshname = std::string(ItemName());
     
     bool r = SetMap(LXi_VMAP_TEXTUREUV);
-    if (r)
-        PntMapValue(uv1);
-    //SetMap(LXi_VMAP_TEXTUREUV, "Texture2");
-    //PntMapValue(uv2);
+    float uv1[8] = {0.0f,0.0f};
     
-    if (m_duplicateVertex) 
+    if (m_duplicateVertex)
     {
         std::set<VertexFormat> vertextable;
         typedef std::multiset<VertexPolygon>::const_iterator msetiterator;
@@ -1333,6 +1332,10 @@ MRZSaver::ss_Point ()
             //printf("V PointID:%ld PolyID:%ld\n", it->pntid, it->polyid);
             LXtVector normal;
             PntNormal(normal, it->polyid);
+            PolySet(it->polyid);
+            if (r)
+                PolyMapValue(uv1, it->pntid);
+
             float nor[3] = {static_cast<float>(normal[0]), static_cast<float>(normal[1]), static_cast<float>(normal[2])};
             //int cc = vertextable.count(VertexFormat(vec, nor, uv1));
             vertextable.insert(VertexFormat(vec, nor, uv1));
@@ -1355,6 +1358,10 @@ MRZSaver::ss_Point ()
         {
             LXtVector normal;
             PntNormal(normal, it->polyid);
+            PolySet(it->polyid);
+            if (r)
+                PolyMapValue(uv1, it->pntid);
+
             float nor[3] = {static_cast<float>(normal[0]), static_cast<float>(normal[1]), static_cast<float>(normal[2])};
 
             for (unsigned int vid = lastcount; vid < lastcount + addcount; vid++)
