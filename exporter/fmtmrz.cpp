@@ -125,14 +125,34 @@ public:
 	int getWriteNodesCount();
 
 
+    double GetFrameRate ()
+    {
+        LxResult		 result(LXe_OK);
+        double			 frameRate = 30;
+        CLxLoc_Item		 curItem;
+        bool getitem = false;
+        if (GetItem (curItem))
+            getitem = true;
+        
+        StartScan (LXsITYPE_SCENE);
+        if (NextItem ()) {
+            frameRate = ChanFloat (LXsICHAN_SCENE_FPS);
+        }
+        
+        if (getitem)
+            SetItem (curItem);
+        
+        return frameRate;
+    }
     double getmaxChannelTime(const char* channame) const;
-    int getMaxFrame(int fps);
+    int getMaxFrame(double fps);
     
     void gatherAnim(std::map<std::string, std::vector<mzanim> >& animkey, int maxframe);
     
     //-------------
     static LXtTagInfoDesc descInfo[];
 
+    double m_fps;
     bool m_getpoly;
     bool m_duplicateVertex;
     std::string m_targetMat;
@@ -818,7 +838,7 @@ namespace {
     static const std::string scaleChannelZname = std::string(LXsICHAN_SCALE_SCL) + ".Z";
 }
 
-int MRZSaver::getMaxFrame(int fps)
+int MRZSaver::getMaxFrame(double fps)
 {
     double maxtm = 0;
     StartScan ();
@@ -883,7 +903,7 @@ int MRZSaver::getMaxFrame(int fps)
             }
         }
     }
-    return maxtm * 24.0;
+    return maxtm * fps;
 }
 
 void MRZSaver::gatherAnim(std::map<std::string, std::vector<mzanim> >& animkey, int maxframe)
@@ -980,7 +1000,7 @@ void MRZSaver::gatherAnim(std::map<std::string, std::vector<mzanim> >& animkey, 
                     using namespace cio::math;
                     Param p = m_defparam[itemName];
                     
-                    const double time = f / static_cast<double>(fps);
+                    const double time = f / m_fps;//static_cast<double>(fps);
                     //printf("Time = %lf\n",time);
                     LxResult	result(LXe_OK);
                     CLxUser_Scene      scene(SceneObject ());
@@ -1128,8 +1148,7 @@ void MRZSaver::writeAnimations()
 {
     std::map<std::string, std::vector<mzanim> > animkey;
 
-    unsigned int fps = 24;
-    int maxframe = getMaxFrame(fps);
+    int maxframe = getMaxFrame(m_fps);
     
     gatherAnim(animkey, maxframe);
     
@@ -1144,6 +1163,7 @@ void MRZSaver::writeAnimations()
     unsigned char ver = 1;
     m_animfile.lf_Output(ver);
 
+    unsigned int fps = static_cast<unsigned int>(m_fps);
     m_animfile.lf_Output(fps);
     unsigned int nodenum = animkey.size();
     m_animfile.lf_Output(nodenum);
@@ -1206,6 +1226,8 @@ LxResult
 MRZSaver::ss_Save ()
 {
     initInfo();
+    m_fps = GetFrameRate();
+    
     StartScan();
     while(NextMesh())
         makeMeshInfo();
