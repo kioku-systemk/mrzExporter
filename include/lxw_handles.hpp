@@ -1,7 +1,7 @@
 /*
  * C++ wrapper for lxhandles.h
  *
- *	Copyright (c) 2008-2012 Luxology LLC
+ *	Copyright (c) 2008-2013 Luxology LLC
  *	
  *	Permission is hereby granted, free of charge, to any person obtaining a
  *	copy of this software and associated documentation files (the "Software"),
@@ -30,6 +30,7 @@
 
 #include <lxhandles.h>
 #include <lx_wrap.hpp>
+#include <string>
 
 namespace lx {
     static const LXtGUID guid_GeoConstraintPacket = {0x0589BA62,0x5A11,0x453d,0xB8,0x4A,0x1C,0x7C,0xF3,0x0A,0x0D,0x35};

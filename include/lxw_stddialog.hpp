@@ -1,7 +1,7 @@
 /*
  * C++ wrapper for lxstddialog.h
  *
- *	Copyright (c) 2008-2012 Luxology LLC
+ *	Copyright (c) 2008-2013 Luxology LLC
  *	
  *	Permission is hereby granted, free of charge, to any person obtaining a
  *	copy of this software and associated documentation files (the "Software"),
@@ -30,6 +30,7 @@
 
 #include <lxstddialog.h>
 #include <lx_wrap.hpp>
+#include <string>
 
 namespace lx {
     static const LXtGUID guid_ColorDialog = {0x2AB01AAE,0x110B,0x11DF,0xBF,0xD0,0x0A,0xC7,0x56,0xD8,0x95,0x93};
@@ -43,6 +44,8 @@ class CLxImpl_ColorDialog {
       colordlg_DoDialog (const char *title, double stops, double gamma, double *rgb)
         { return LXe_NOTIMPL; }
 };
+#define LXxD_ColorDialog_DoDialog LxResult colordlg_DoDialog (const char *title, double stops, double gamma, double *rgb)
+#define LXxO_ColorDialog_DoDialog LXxD_ColorDialog_DoDialog LXx_OVERRIDE
 template <class T>
 class CLxIfc_ColorDialog : public CLxInterface
 {
@@ -85,7 +88,7 @@ public:
   void _init() {m_loc=0;}
   CLxLoc_StdDialogService() {_init();set();}
  ~CLxLoc_StdDialogService() {}
-  void set() {m_loc=reinterpret_cast<ILxStdDialogServiceID>(lx::GetGlobal(&lx::guid_StdDialogService));}
+  void set() {if(!m_loc)m_loc=reinterpret_cast<ILxStdDialogServiceID>(lx::GetGlobal(&lx::guid_StdDialogService));}
     LxResult
   ScriptQuery (void **ppvObj)
   {
@@ -96,6 +99,13 @@ public:
   {
     return m_loc[0]->MonitorAllocate (m_loc,title,ppvObj);
   }
+    bool
+  MonitorAllocate (const char *title, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->MonitorAllocate (m_loc,title,&obj)) && dest.take(obj);
+  }
     LxResult
   MonitorRelease (void)
   {
@@ -105,6 +115,13 @@ public:
   MessageAllocate (void **ppvObj)
   {
     return m_loc[0]->MessageAllocate (m_loc,ppvObj);
+  }
+    bool
+  MessageAllocate (CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->MessageAllocate (m_loc,&obj)) && dest.take(obj);
   }
     LxResult
   MessageOpen (ILxUnknownID message, const char *title, const char *helpURL, const char *cookie)

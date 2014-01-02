@@ -1,7 +1,7 @@
 /*
  * LX color module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -32,6 +32,7 @@
 
 
 typedef struct vt_ILxColorModel ** ILxColorModelID;
+typedef struct vt_ILxColor ** ILxColorID;
 #include <lxcom.h>
 #include <lxvmath.h>
 #include <lxserver.h>
@@ -120,16 +121,47 @@ typedef struct vt_ILxColorModel {
         StripBaseVector) (
                 LXtObjectID               self,
                 unsigned                  axis,
-                int                      dynamic,
+                int                       dynamic,
                 float                    *vec );
 } ILxColorModel;
+typedef struct vt_ILxColor {
+        ILxUnknown       iunk;
+                LXxMETHOD( LxResult,
+        Color) (
+                LXtObjectID               self,
+                float                    *color);
+                LXxMETHOD( LxResult,
+        Alpha) (
+                LXtObjectID               self,
+                float                    *alpha);
+                LXxMETHOD( LxResult,
+        ColorModel) (
+                LXtObjectID               self,
+                const char              **model);
+                LXxMETHOD( LxResult,
+        ColorInModelSpace) (
+                LXtObjectID               self,
+                float                    *vec);
+} ILxColor;
 
 #define ID_COLR         MK_ID('C','O','L','R')  /* Color Picker Packet */
 #define LXu_COLORMODEL          "67d3d952-4ab0-49e5-8f9e-6c889b00f253"
 #define LXa_COLORMODEL          "colormodel"
 //[export] ILxColorModel colm
 //[local]  ILxColorModel
+//[python] ILxColorModel:ToRGB:rgb              vector (3)
+//[python] ILxColorModel:FromRGB:rgb            vector (3)
+//[python] ILxColorModel:FromRGB:vector         vector
+//[python] ILxColorModel:FromSlicePos:downVec   vector
+//[python] ILxColorModel:FromSlicePos:vec       vector
+//[python] ILxColorModel:StripBaseVector:vec    vector
+//[python] ILxColorModel:CanSliceBeReused       bool
 #define LXs_NOTIFIER_COLOR_CHANGED      "notifier.colorChanged"
+#define LXu_COLOR               "7c084df3-adb6-48ee-92d3-032d90efea05"
+#define LXa_COLOR               "color"
+//[export] ILxColor color
+//[local]  ILxColor
+#define LXsCOLORMODEL_VALUEPRESET       "colorModelValuePresetCookieTag"
 
  #ifdef __cplusplus
   }

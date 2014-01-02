@@ -1,7 +1,7 @@
 /*
  * LX group module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -69,9 +69,12 @@ typedef struct vt_ILxGroupEnumerator {
 } ILxGroupEnumerator;
 
 #define LXu_GROUPITEM           "47FDFD87-3FBA-41A4-8044-74EC9D9AA986"
-//[local]  ILxGroupItem
+// [local]  ILxGroupItem
+// [python] ILxGroupItem:Enumerator     obj GroupEnumerator
 #define LXu_GROUPENUMERATOR     "CA4E1FE0-B655-429F-9674-3E1D7DEA5D04"
-//[local]  ILxGroupEnumerator
+// [local]  ILxGroupEnumerator
+// [python] ILxGroupEnumerator:Item     obj Item (item)
+// [python] ILxGroupEnumerator:Channel  obj Item
 
 #define LXfGRPTYPE_ITEM          0x01
 #define LXfGRPTYPE_CHANNEL       0x02

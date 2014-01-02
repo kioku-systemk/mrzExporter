@@ -1,7 +1,7 @@
 /*
  * LX draw module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -143,14 +143,14 @@ typedef struct vt_ILxStrokeDraw {
         Begin) (
                 LXtObjectID              self,
                 int                      type,
-                LXtVector                color,
+                const LXtVector          color,
                 double                   alpha);
 
                 LXxMETHOD( void,
         BeginW) (
                 LXtObjectID              self,
                 int                      type,
-                LXtVector                color,
+                const LXtVector          color,
                 double                   alpha,
                 double                   width);
 
@@ -158,7 +158,7 @@ typedef struct vt_ILxStrokeDraw {
         BeginWD) (
                 LXtObjectID              self,
                 int                      type,
-                LXtVector                color,
+                const LXtVector          color,
                 double                   alpha,
                 double                   width,
                 int                      dashPattern);
@@ -166,7 +166,7 @@ typedef struct vt_ILxStrokeDraw {
                 LXxMETHOD( void,
         Vertex) (
                 LXtObjectID              self,
-                LXtVector                pos,
+                const LXtVector          pos,
                 int                      flags);
 
                 LXxMETHOD( void,
@@ -208,7 +208,7 @@ typedef struct vt_ILxStrokeDraw {
         BeginPoints) (
                 LXtObjectID              self,
                 double                   size,
-                LXtVector                color,
+                const LXtVector          color,
                 double                   alpha);
 } ILxStrokeDraw;
 

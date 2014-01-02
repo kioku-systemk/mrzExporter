@@ -1,7 +1,7 @@
 /*
  * Plug-in SDK Header: C++ User Classes
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -237,6 +237,38 @@ class CLxUser_LayeredImageWrite : public CLxLoc_LayeredImageWrite
 
 
 };
+class CLxUser_TileImage : public CLxLoc_TileImage
+{
+    public:
+        CLxUser_TileImage () {}
+        CLxUser_TileImage (ILxUnknownID obj) : CLxLoc_TileImage (obj) {}
+
+
+};
+class CLxUser_ImageLoaderTarget : public CLxLoc_ImageLoaderTarget
+{
+    public:
+        CLxUser_ImageLoaderTarget () {}
+        CLxUser_ImageLoaderTarget (ILxUnknownID obj) : CLxLoc_ImageLoaderTarget (obj) {}
+
+
+};
+class CLxUser_ImageFilter : public CLxLoc_ImageFilter
+{
+    public:
+        CLxUser_ImageFilter () {}
+        CLxUser_ImageFilter (ILxUnknownID obj) : CLxLoc_ImageFilter (obj) {}
+
+
+};
+class CLxUser_ImageFilterMetrics : public CLxLoc_ImageFilterMetrics
+{
+    public:
+        CLxUser_ImageFilterMetrics () {}
+        CLxUser_ImageFilterMetrics (ILxUnknownID obj) : CLxLoc_ImageFilterMetrics (obj) {}
+
+
+};
 class CLxUser_ImageService : public CLxLoc_ImageService
 {
     public:
@@ -302,9 +334,10 @@ class CLxUser_ImageService : public CLxLoc_ImageService
         Save (
                 CLxUser_Image           &image,
                 const std::string       &filePath,
-                const std::string       &format)
+                const std::string       &format,
+                ILxUnknownID             monitor = 0)
         {
-                return CLxLoc_ImageService::Save (image, filePath.c_str (), format.c_str ());
+                return CLxLoc_ImageService::Save (image, filePath.c_str (), format.c_str (), monitor);
         }
 
                 LxResult

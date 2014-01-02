@@ -1,7 +1,7 @@
 /*
  * LX env module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -36,24 +36,24 @@ typedef struct vt_ILxKeyframe ** ILxKeyframeID;
 typedef struct vt_ILxGradientFilter ** ILxGradientFilterID;
 #include <lxcom.h>
 
-typedef enum en_LXtEndBehavior {
-        LXiENV_RESET,
-        LXiENV_CONSTANT,
-        LXiENV_REPEAT,
-        LXiENV_OSCILLATE,
-        LXiENV_OFFSETREPEAT,
-        LXiENV_LINEAR,
-        LXiENV_NONE
-} LXtEndBehavior;
-typedef enum en_LXtSlopeType {
-        LXiSLOPE_DIRECT,
-        LXiSLOPE_AUTO,
-        LXiSLOPE_LINEAR_IN,
-        LXiSLOPE_LINEAR_OUT,
-        LXiSLOPE_FLAT,
-        LXiSLOPE_AUTOFLAT,
-        LXiSLOPE_STEPPED
-} LXtSlopeType;
+typedef unsigned        LXtEndBehavior;
+
+#define LXiENV_RESET             0
+#define LXiENV_CONSTANT          1
+#define LXiENV_REPEAT            2
+#define LXiENV_OSCILLATE         3
+#define LXiENV_OFFSETREPEAT      4
+#define LXiENV_LINEAR            5
+#define LXiENV_NONE              6
+typedef unsigned        LXtSlopeType;
+
+#define LXiSLOPE_DIRECT         0
+#define LXiSLOPE_AUTO           1
+#define LXiSLOPE_LINEAR_IN      2
+#define LXiSLOPE_LINEAR_OUT     3
+#define LXiSLOPE_FLAT           4
+#define LXiSLOPE_AUTOFLAT       5
+#define LXiSLOPE_STEPPED        6
 
 typedef struct vt_ILxEnvelope {
         ILxUnknown       iunk;
@@ -217,6 +217,7 @@ typedef struct vt_ILxGradientFilter {
 #define LXu_KEYFRAME            "D1D0261F-22CF-4E5D-822E-76B5DEC98AE4"
 // [local]  ILxEnvelope
 // [local]  ILxKeyframe
+// [python] ILxEnvelope:Enumerator      obj Keyframe
 #define LXiENVSIDE_IN                   1
 #define LXiENVSIDE_OUT                  2
 #define LXiENVSIDE_BOTH                 3

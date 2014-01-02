@@ -1,7 +1,7 @@
 /*
  * Plug-in SDK Header: Common Utility
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -69,10 +69,10 @@ CLxVertexSelection::GetDirectList (
         LXtPointID		 vrt;
         const char		*id;
         void			*pkt;
-        int			 k;
+        size_t			 k;
 
-        std::map<const char *, int>		entries;
-        std::map<const char *, int>::iterator	eit;
+        std::map<const char *, size_t>			entries;
+        std::map<const char *, size_t>::iterator	eit;
 
         list.clear ();
 
@@ -141,7 +141,6 @@ CLxVertexMapSelection::GetList (
         MapList			&list)
 {
         LXtScanInfoID		 scan;
-        LXtID4			 type;
         MapInfo			 info;
         const char		*str;
         void			*pkt;
@@ -279,14 +278,6 @@ CLxItemSelection::Deselect (
  * ----------------------------------------------------------------
  * CLxItemSelectionType : Implementation
  */
-CLxItemSelectionType::CLxItemSelectionType (
-        const char		*typeName)
-{
-        CLxUser_SceneService	 svc;
-
-        type = svc.ItemType (typeName);
-}
-
         bool
 CLxItemSelectionType::Include (
         CLxUser_Item		&item)

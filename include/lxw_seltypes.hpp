@@ -1,7 +1,7 @@
 /*
  * C++ wrapper for lxseltypes.h
  *
- *	Copyright (c) 2008-2012 Luxology LLC
+ *	Copyright (c) 2008-2013 Luxology LLC
  *	
  *	Permission is hereby granted, free of charge, to any person obtaining a
  *	copy of this software and associated documentation files (the "Software"),
@@ -30,11 +30,13 @@
 
 #include <lxseltypes.h>
 #include <lx_wrap.hpp>
+#include <string>
 
 namespace lx {
     static const LXtGUID guid_VMapPacketTranslation = {0xBBCB6B90,0x9586,0x11D9,0xA3,0xB8,0x00,0x0A,0x95,0x6C,0x2E,0x10};
     static const LXtGUID guid_VertexPacketTranslation = {0xD77B8382,0x9572,0x11D9,0xAF,0xDE,0x00,0x0A,0x95,0x6C,0x2E,0x10};
     static const LXtGUID guid_PolygonPacketTranslation = {0x2E0929DC,0x9583,0x11D9,0xB0,0x58,0x00,0x0A,0x95,0x6C,0x2E,0x10};
+    static const LXtGUID guid_PresetPathPacketTranslation = {0x6b95c2ac,0x9a9e,0x471f,0x97,0x71,0xcf,0x10,0xfd,0x5c,0x6b,0xcb};
     static const LXtGUID guid_ScenePacketTranslation = {0xA63F8E08,0x94D8,0x11D9,0x96,0xD3,0x00,0x0A,0x95,0x6C,0x2E,0x10};
     static const LXtGUID guid_EdgePacketTranslation = {0xCA4DFE14,0x957E,0x11D9,0xAC,0x64,0x00,0x0A,0x95,0x6C,0x2E,0x10};
     static const LXtGUID guid_ItemPacketTranslation = {0x029663CC,0x9571,0x11D9,0xB9,0xAD,0x00,0x0A,0x95,0x6C,0x2E,0x10};
@@ -92,6 +94,13 @@ public:
   {
     return m_loc[0]->Mesh (m_loc,packet,ppvObj);
   }
+    bool
+  Mesh (void *packet, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Mesh (m_loc,packet,&obj)) && dest.take(obj);
+  }
     void *
   Packet (LXtPointID vertex, LXtPolygonID polygon, ILxUnknownID mesh)
   {
@@ -101,6 +110,13 @@ public:
   Item (void *packet, void **ppvObj)
   {
     return m_loc[0]->Item (m_loc,packet,ppvObj);
+  }
+    bool
+  Item (void *packet, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Item (m_loc,packet,&obj)) && dest.take(obj);
   }
 };
 
@@ -122,6 +138,13 @@ public:
   {
     return m_loc[0]->Mesh (m_loc,packet,ppvObj);
   }
+    bool
+  Mesh (void *packet, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Mesh (m_loc,packet,&obj)) && dest.take(obj);
+  }
     void *
   Packet (LXtPolygonID polygon, ILxUnknownID mesh)
   {
@@ -131,6 +154,38 @@ public:
   Item (void *packet, void **ppvObj)
   {
     return m_loc[0]->Item (m_loc,packet,ppvObj);
+  }
+    bool
+  Item (void *packet, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Item (m_loc,packet,&obj)) && dest.take(obj);
+  }
+};
+
+class CLxLoc_PresetPathPacketTranslation : public CLxLocalize<ILxPresetPathPacketTranslationID>
+{
+public:
+  void _init() {m_loc=0;}
+  CLxLoc_PresetPathPacketTranslation() {_init();}
+  CLxLoc_PresetPathPacketTranslation(ILxUnknownID obj) {_init();set(obj);}
+  CLxLoc_PresetPathPacketTranslation(const CLxLoc_PresetPathPacketTranslation &other) {_init();set(other.m_loc);}
+  const LXtGUID * guid() const {return &lx::guid_PresetPathPacketTranslation;}
+    LxResult
+  Path (void *packet, const char **path)
+  {
+    return m_loc[0]->Path (m_loc,packet,path);
+  }
+    LxResult
+  Identifier (void *packet, const char **identifier)
+  {
+    return m_loc[0]->Identifier (m_loc,packet,identifier);
+  }
+    void *
+  Packet (const char *path, const char *identifier)
+  {
+    return m_loc[0]->Packet (m_loc,path,identifier);
   }
 };
 
@@ -146,6 +201,13 @@ public:
   Scene (void *packet, void **ppvObj)
   {
     return m_loc[0]->Scene (m_loc,packet,ppvObj);
+  }
+    bool
+  Scene (void *packet, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Scene (m_loc,packet,&obj)) && dest.take(obj);
   }
     void *
   Packet (ILxUnknownID scene)
@@ -177,6 +239,13 @@ public:
   {
     return m_loc[0]->Mesh (m_loc,packet,ppvObj);
   }
+    bool
+  Mesh (void *packet, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Mesh (m_loc,packet,&obj)) && dest.take(obj);
+  }
     void *
   Packet (LXtPointID vertexA, LXtPointID vertexB, LXtPolygonID polygon, ILxUnknownID mesh)
   {
@@ -186,6 +255,13 @@ public:
   Item (void *packet, void **ppvObj)
   {
     return m_loc[0]->Item (m_loc,packet,ppvObj);
+  }
+    bool
+  Item (void *packet, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Item (m_loc,packet,&obj)) && dest.take(obj);
   }
 };
 
@@ -201,6 +277,13 @@ public:
   Item (void *packet, void **ppvObj)
   {
     return m_loc[0]->Item (m_loc,packet,ppvObj);
+  }
+    bool
+  Item (void *packet, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Item (m_loc,packet,&obj)) && dest.take(obj);
   }
     void *
   Packet (ILxUnknownID item)
@@ -222,6 +305,13 @@ public:
   {
     return m_loc[0]->Item (m_loc,packet,ppvObj);
   }
+    bool
+  Item (void *packet, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Item (m_loc,packet,&obj)) && dest.take(obj);
+  }
     void *
   Packet (ILxUnknownID item)
   {
@@ -241,6 +331,13 @@ public:
   Item (void *packet, void **ppvObj)
   {
     return m_loc[0]->Item (m_loc,packet,ppvObj);
+  }
+    bool
+  Item (void *packet, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Item (m_loc,packet,&obj)) && dest.take(obj);
   }
     unsigned int
   Type (void *packet)
@@ -267,6 +364,13 @@ public:
   {
     return m_loc[0]->Item (m_loc,packet,ppvObj);
   }
+    bool
+  Item (void *packet, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Item (m_loc,packet,&obj)) && dest.take(obj);
+  }
     unsigned int
   Index (void *packet)
   {
@@ -292,10 +396,24 @@ public:
   {
     return m_loc[0]->From (m_loc,packet,channel,ppvObj);
   }
+    bool
+  From (void *packet, int *channel, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->From (m_loc,packet,channel,&obj)) && dest.take(obj);
+  }
     LxResult
   To (void *packet, int *channel, void **ppvObj)
   {
     return m_loc[0]->To (m_loc,packet,channel,ppvObj);
+  }
+    bool
+  To (void *packet, int *channel, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->To (m_loc,packet,channel,&obj)) && dest.take(obj);
   }
     void *
   Packet (ILxUnknownID fromItem, int fromChannel, ILxUnknownID toItem, int toChannel)

@@ -1,7 +1,7 @@
 /*
  * Plug-in SDK Header: C++ Services
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -52,7 +52,7 @@ class CLxCommandQuery
         double			 GetFloat  ();
         const char *		 GetString (char *, unsigned);
         void			 GetString (std::string &string);
-        LXtTextValueHint *	 GetHints  ();
+    void			 ResetArgs();
 
         LxResult		 IntHint (const LXtTextValueHint **hints);
 

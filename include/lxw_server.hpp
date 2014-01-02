@@ -1,7 +1,7 @@
 /*
  * C++ wrapper for lxserver.h
  *
- *	Copyright (c) 2008-2012 Luxology LLC
+ *	Copyright (c) 2008-2013 Luxology LLC
  *	
  *	Permission is hereby granted, free of charge, to any person obtaining a
  *	copy of this software and associated documentation files (the "Software"),
@@ -30,15 +30,18 @@
 
 #include <lxserver.h>
 #include <lx_wrap.hpp>
+#include <string>
 
 namespace lx {
+    static const LXtGUID guid_Module1 = {0xBD6F0E53,0xC903,0x46D3,0x92,0x11,0x75,0x85,0x58,0xD9,0x5C,0xAA};
     static const LXtGUID guid_NeedContext = {0x7D30408C,0x74AB,0x4d87,0xB7,0x1C,0xC6,0x28,0x08,0x83,0x86,0x3C};
     static const LXtGUID guid_Factory = {0x2431A79E,0x3412,0x4B0D,0x98,0x7D,0x87,0x54,0x89,0x46,0x6C,0x58};
     static const LXtGUID guid_ServiceExtension = {0xE7C6F1A2,0x2F31,0x4FA5,0xB2,0xEF,0x42,0x1B,0xE1,0x59,0xD0,0xD8};
-    static const LXtGUID guid_Module = {0xBD6F0E53,0xC903,0x46D3,0x92,0x11,0x75,0x85,0x58,0xD9,0x5C,0xAA};
+    static const LXtGUID guid_Module = {0x4DB9C543,0xB192,0x4EDD,0xA6,0x5D,0xDD,0x01,0x2F,0xC2,0x74,0x16};
     static const LXtGUID guid_TagDescription = {0x5582E0EE,0xD682,0x47BC,0xBF,0x3D,0xFB,0x14,0xD5,0x99,0x48,0xC1};
     static const LXtGUID guid_HostService = {0x525802A6,0xBF5F,0x46E9,0x98,0x63,0xC0,0x3B,0x54,0xA3,0xD9,0x08};
 };
+
 
 class CLxImpl_NeedContext {
   public:
@@ -47,6 +50,8 @@ class CLxImpl_NeedContext {
       need_SetContext (ILxUnknownID app)
         { return LXe_NOTIMPL; }
 };
+#define LXxD_NeedContext_SetContext LxResult need_SetContext (ILxUnknownID app)
+#define LXxO_NeedContext_SetContext LXxD_NeedContext_SetContext LXx_OVERRIDE
 template <class T>
 class CLxIfc_NeedContext : public CLxInterface
 {
@@ -65,6 +70,20 @@ public:
     vt.SetContext = SetContext;
     vTable = &vt.iunk;
     iid = &lx::guid_NeedContext;
+  }
+};
+class CLxLoc_NeedContext : public CLxLocalize<ILxNeedContextID>
+{
+public:
+  void _init() {m_loc=0;}
+  CLxLoc_NeedContext() {_init();}
+  CLxLoc_NeedContext(ILxUnknownID obj) {_init();set(obj);}
+  CLxLoc_NeedContext(const CLxLoc_NeedContext &other) {_init();set(other.m_loc);}
+  const LXtGUID * guid() const {return &lx::guid_NeedContext;}
+    LxResult
+  SetContext (ILxUnknownID app)
+  {
+    return m_loc[0]->SetContext (m_loc,(ILxUnknownID)app);
   }
 };
 
@@ -96,6 +115,22 @@ class CLxImpl_Factory {
       fac_Spawn (void **ppvObj)
         { return LXe_NOTIMPL; }
 };
+#define LXxD_Factory_Name LxResult fac_Name (const char **name)
+#define LXxO_Factory_Name LXxD_Factory_Name LXx_OVERRIDE
+#define LXxD_Factory_UserName LxResult fac_UserName (const char **userName)
+#define LXxO_Factory_UserName LXxD_Factory_UserName LXx_OVERRIDE
+#define LXxD_Factory_ClassGUID LxResult fac_ClassGUID (LXtGUID *guid)
+#define LXxO_Factory_ClassGUID LXxD_Factory_ClassGUID LXx_OVERRIDE
+#define LXxD_Factory_Module LxResult fac_Module (const char **module)
+#define LXxO_Factory_Module LXxD_Factory_Module LXx_OVERRIDE
+#define LXxD_Factory_InfoTag LxResult fac_InfoTag (const char *type, const char **value)
+#define LXxO_Factory_InfoTag LXxD_Factory_InfoTag LXx_OVERRIDE
+#define LXxD_Factory_TagCount LxResult fac_TagCount (unsigned int *count)
+#define LXxO_Factory_TagCount LXxD_Factory_TagCount LXx_OVERRIDE
+#define LXxD_Factory_TagByIndex LxResult fac_TagByIndex (unsigned int index, const char **type, const char **value)
+#define LXxO_Factory_TagByIndex LXxD_Factory_TagByIndex LXx_OVERRIDE
+#define LXxD_Factory_Spawn LxResult fac_Spawn (void **ppvObj)
+#define LXxO_Factory_Spawn LXxD_Factory_Spawn LXx_OVERRIDE
 template <class T>
 class CLxIfc_Factory : public CLxInterface
 {
@@ -227,6 +262,13 @@ public:
   {
     return m_loc[0]->Spawn (m_loc,ppvObj);
   }
+    bool
+  Spawn (CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Spawn (m_loc,&obj)) && dest.take(obj);
+  }
 };
 
 class CLxImpl_ServiceExtension {
@@ -236,6 +278,8 @@ class CLxImpl_ServiceExtension {
       ser_Dummy (void)
         { }
 };
+#define LXxD_ServiceExtension_Dummy void ser_Dummy (void)
+#define LXxO_ServiceExtension_Dummy LXxD_ServiceExtension_Dummy LXx_OVERRIDE
 template <class T>
 class CLxIfc_ServiceExtension : public CLxInterface
 {
@@ -261,10 +305,14 @@ class CLxImpl_Module {
     virtual LxResult
       mod_Generate (const char *name, const LXtGUID *iid, void **ppvObj)
         { return LXe_NOTIMPL; }
-    virtual unsigned
-      mod_IsLocked (void)
-        { return 1; }
+    virtual LxResult
+      mod_GetTags (const char *name, const LXtGUID *iid, void **ppvObj)
+        { return LXe_NOTIMPL; }
 };
+#define LXxD_Module_Generate LxResult mod_Generate (const char *name, const LXtGUID *iid, void **ppvObj)
+#define LXxO_Module_Generate LXxD_Module_Generate LXx_OVERRIDE
+#define LXxD_Module_GetTags LxResult mod_GetTags (const char *name, const LXtGUID *iid, void **ppvObj)
+#define LXxO_Module_GetTags LXxD_Module_GetTags LXx_OVERRIDE
 template <class T>
 class CLxIfc_Module : public CLxInterface
 {
@@ -276,20 +324,55 @@ class CLxIfc_Module : public CLxInterface
       return loc->mod_Generate (name,iid,ppvObj);
     } catch (LxResult rc) { return rc; }
   }
-    static unsigned
-  IsLocked (LXtObjectID wcom)
+    static LxResult
+  GetTags (LXtObjectID wcom, const char *name, const LXtGUID *iid, void **ppvObj)
   {
     LXCWxINST (CLxImpl_Module, loc);
-    return loc->mod_IsLocked ();
+    try {
+      return loc->mod_GetTags (name,iid,ppvObj);
+    } catch (LxResult rc) { return rc; }
   }
   ILxModule vt;
 public:
   CLxIfc_Module ()
   {
     vt.Generate = Generate;
-    vt.IsLocked = IsLocked;
+    vt.GetTags = GetTags;
     vTable = &vt.iunk;
     iid = &lx::guid_Module;
+  }
+};
+class CLxLoc_Module : public CLxLocalize<ILxModuleID>
+{
+public:
+  void _init() {m_loc=0;}
+  CLxLoc_Module() {_init();}
+  CLxLoc_Module(ILxUnknownID obj) {_init();set(obj);}
+  CLxLoc_Module(const CLxLoc_Module &other) {_init();set(other.m_loc);}
+  const LXtGUID * guid() const {return &lx::guid_Module;}
+    LxResult
+  Generate (const char *name, const LXtGUID *iid, void **ppvObj)
+  {
+    return m_loc[0]->Generate (m_loc,name,iid,ppvObj);
+  }
+    bool
+  Generate (const char *name, const LXtGUID *iid, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Generate (m_loc,name,iid,&obj)) && dest.take(obj);
+  }
+    LxResult
+  GetTags (const char *name, const LXtGUID *iid, void **ppvObj)
+  {
+    return m_loc[0]->GetTags (m_loc,name,iid,ppvObj);
+  }
+    bool
+  GetTags (const char *name, const LXtGUID *iid, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->GetTags (m_loc,name,iid,&obj)) && dest.take(obj);
   }
 };
 
@@ -303,6 +386,10 @@ class CLxImpl_TagDescription {
       tag_Describe (unsigned index, LXtTagInfoDesc *desc)
         { return LXe_NOTIMPL; }
 };
+#define LXxD_TagDescription_Count unsigned tag_Count (void)
+#define LXxO_TagDescription_Count LXxD_TagDescription_Count LXx_OVERRIDE
+#define LXxD_TagDescription_Describe LxResult tag_Describe (unsigned index, LXtTagInfoDesc *desc)
+#define LXxO_TagDescription_Describe LXxD_TagDescription_Describe LXx_OVERRIDE
 template <class T>
 class CLxIfc_TagDescription : public CLxInterface
 {
@@ -357,7 +444,7 @@ public:
   void _init() {m_loc=0;}
   CLxLoc_HostService() {_init();set();}
  ~CLxLoc_HostService() {}
-  void set() {m_loc=reinterpret_cast<ILxHostServiceID>(lx::GetGlobal(&lx::guid_HostService));}
+  void set() {if(!m_loc)m_loc=reinterpret_cast<ILxHostServiceID>(lx::GetGlobal(&lx::guid_HostService));}
     LxResult
   ScriptQuery (void **ppvObj)
   {
@@ -367,6 +454,13 @@ public:
   LookupServer (const char *className, const char *name, unsigned allowLoad, void **ppvObj)
   {
     return m_loc[0]->LookupServer (m_loc,className,name,allowLoad,ppvObj);
+  }
+    bool
+  LookupServer (const char *className, const char *name, unsigned allowLoad, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->LookupServer (m_loc,className,name,allowLoad,&obj)) && dest.take(obj);
   }
     LxResult
   TestServer (const char *className, const char *name)
@@ -382,6 +476,13 @@ public:
   ServerByIndex (const char *className, unsigned index, void **ppvObj)
   {
     return m_loc[0]->ServerByIndex (m_loc,className,index,ppvObj);
+  }
+    bool
+  ServerByIndex (const char *className, unsigned index, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->ServerByIndex (m_loc,className,index,&obj)) && dest.take(obj);
   }
     LxResult
   ServerGetIndex (const char *className, const char *name, unsigned *index)
@@ -402,6 +503,11 @@ public:
   SpawnForTagsOnly (void)
   {
     return m_loc[0]->SpawnForTagsOnly (m_loc);
+  }
+    LxResult
+  UpdateModule (const char *name)
+  {
+    return m_loc[0]->UpdateModule (m_loc,name);
   }
 };
 

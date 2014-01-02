@@ -1,7 +1,7 @@
 /*
  * Plug-in SDK Header: C++ User Classes
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -158,7 +158,7 @@ class CLxUser_Buffer : public CLxLoc_Buffer
         Name (std::string &name) const
         {
                 char    *charName = NULL;
-                LxResult result = CLxLoc_Buffer::Name (&charName);
+                LxResult result = CLxLoc_Buffer::Name ((const char **)&charName);
 
                 if (charName) {
                         name = std::string(charName);

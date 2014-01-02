@@ -1,7 +1,7 @@
 /*
  * LX undo module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -68,6 +68,7 @@ typedef struct vt_ILxUndoService {
 } ILxUndoService;
 
 #define LXu_UNDO                "17FF7DDF-6F9B-47F1-8335-57A41DB3D3AD"
+// [local]  ILxUndo
 // [export] ILxUndo undo
 #define LXiUNDO_INVALID  0
 #define LXiUNDO_ACTIVE   1

@@ -1,7 +1,7 @@
 /*
  * LX comp module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -82,6 +82,8 @@ typedef struct vt_ILxStdDialogService {
 // [export] ILxColorDialog colordlg
 #define LXa_STDDIALOGSERVICE    "stddialogservice"
 #define LXu_STDDIALOGSERVICE    "A78FA063-6C8D-471f-8981-6BAEFF62BEE3"
+// [python]  ILxStdDialogService:MonitorAllocate        obj Monitor (io)
+// [python]  ILxStdDialogService:MessageAllocate        obj Message (value)
 #define LXeMSGDIALOG_AS_OKCANCEL        LXxGOODCODE( LXeSYS_COMP, 50 )
 #define LXeMSGDIALOG_AS_YESNO           LXxGOODCODE( LXeSYS_COMP, 51 )
 #define LXeMSGDIALOG_AS_YESNOCANCEL     LXxGOODCODE( LXeSYS_COMP, 52 )

@@ -1,7 +1,7 @@
 /*
  * C++ wrapper for lxselect.h
  *
- *	Copyright (c) 2008-2012 Luxology LLC
+ *	Copyright (c) 2008-2013 Luxology LLC
  *	
  *	Permission is hereby granted, free of charge, to any person obtaining a
  *	copy of this software and associated documentation files (the "Software"),
@@ -30,6 +30,7 @@
 
 #include <lxselect.h>
 #include <lx_wrap.hpp>
+#include <string>
 
 namespace lx {
     static const LXtGUID guid_SelectionService = {0x6AEF6F27,0x046F,0x4C04,0x90,0xE0,0x99,0x4D,0x74,0x28,0x51,0xE7};
@@ -45,7 +46,7 @@ public:
   void _init() {m_loc=0;}
   CLxLoc_SelectionService() {_init();set();}
  ~CLxLoc_SelectionService() {}
-  void set() {m_loc=reinterpret_cast<ILxSelectionServiceID>(lx::GetGlobal(&lx::guid_SelectionService));}
+  void set() {if(!m_loc)m_loc=reinterpret_cast<ILxSelectionServiceID>(lx::GetGlobal(&lx::guid_SelectionService));}
     LxResult
   ScriptQuery (void **ppvObj)
   {
@@ -136,6 +137,13 @@ public:
   {
     return m_loc[0]->Allocate (m_loc,name,ppvObj);
   }
+    bool
+  Allocate (const char *name, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Allocate (m_loc,name,&obj)) && dest.take(obj);
+  }
     double
   GetTime (void)
   {
@@ -146,7 +154,7 @@ public:
   {
     return m_loc[0]->SetTime (m_loc,time);
   }
-    double
+    LxResult
   Clear (LXtID4 type)
   {
     return m_loc[0]->Clear (m_loc,type);
@@ -157,7 +165,7 @@ public:
     return m_loc[0]->State (m_loc,type,packet);
   }
     LXtID4
-  CurrentType (LXtID4 *types)
+  CurrentType (const LXtID4 *types)
   {
     return m_loc[0]->CurrentType (m_loc,types);
   }
@@ -182,6 +190,16 @@ class CLxImpl_SelectionListener {
       selevent_TimeRange (LXtID4 type)
         { }
 };
+#define LXxD_SelectionListener_Current void selevent_Current (LXtID4 type)
+#define LXxO_SelectionListener_Current LXxD_SelectionListener_Current LXx_OVERRIDE
+#define LXxD_SelectionListener_Add void selevent_Add (LXtID4 type, unsigned int subtType)
+#define LXxO_SelectionListener_Add LXxD_SelectionListener_Add LXx_OVERRIDE
+#define LXxD_SelectionListener_Remove void selevent_Remove (LXtID4 type, unsigned int subtType)
+#define LXxO_SelectionListener_Remove LXxD_SelectionListener_Remove LXx_OVERRIDE
+#define LXxD_SelectionListener_Time void selevent_Time (double time)
+#define LXxO_SelectionListener_Time LXxD_SelectionListener_Time LXx_OVERRIDE
+#define LXxD_SelectionListener_TimeRange void selevent_TimeRange (LXtID4 type)
+#define LXxO_SelectionListener_TimeRange LXxD_SelectionListener_TimeRange LXx_OVERRIDE
 template <class T>
 class CLxIfc_SelectionListener : public CLxInterface
 {
@@ -228,6 +246,40 @@ public:
     iid = &lx::guid_SelectionListener;
   }
 };
+class CLxLoc_SelectionListener : public CLxLocalize<ILxSelectionListenerID>
+{
+public:
+  void _init() {m_loc=0;}
+  CLxLoc_SelectionListener() {_init();}
+  CLxLoc_SelectionListener(ILxUnknownID obj) {_init();set(obj);}
+  CLxLoc_SelectionListener(const CLxLoc_SelectionListener &other) {_init();set(other.m_loc);}
+  const LXtGUID * guid() const {return &lx::guid_SelectionListener;}
+    void
+  Current (LXtID4 type)
+  {
+    m_loc[0]->Current (m_loc,type);
+  }
+    void
+  Add (LXtID4 type, unsigned int subtType)
+  {
+    m_loc[0]->Add (m_loc,type,subtType);
+  }
+    void
+  Remove (LXtID4 type, unsigned int subtType)
+  {
+    m_loc[0]->Remove (m_loc,type,subtType);
+  }
+    void
+  Time (double time)
+  {
+    m_loc[0]->Time (m_loc,time);
+  }
+    void
+  TimeRange (LXtID4 type)
+  {
+    m_loc[0]->TimeRange (m_loc,type);
+  }
+};
 
 
 class CLxImpl_SelectionType {
@@ -249,6 +301,16 @@ class CLxImpl_SelectionType {
       seltyp_SubType (void *pkt)
         { return 0; }
 };
+#define LXxD_SelectionType_Size unsigned int seltyp_Size (void)
+#define LXxO_SelectionType_Size LXxD_SelectionType_Size LXx_OVERRIDE
+#define LXxD_SelectionType_Flags unsigned int seltyp_Flags (void)
+#define LXxO_SelectionType_Flags LXxD_SelectionType_Flags LXx_OVERRIDE
+#define LXxD_SelectionType_MessageTable const char * seltyp_MessageTable (void)
+#define LXxO_SelectionType_MessageTable LXxD_SelectionType_MessageTable LXx_OVERRIDE
+#define LXxD_SelectionType_Compare int seltyp_Compare (void *pkey, void *pelt)
+#define LXxO_SelectionType_Compare LXxD_SelectionType_Compare LXx_OVERRIDE
+#define LXxD_SelectionType_SubType unsigned int seltyp_SubType (void *pkt)
+#define LXxO_SelectionType_SubType LXxD_SelectionType_SubType LXx_OVERRIDE
 template <class T>
 class CLxIfc_SelectionType : public CLxInterface
 {

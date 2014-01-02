@@ -1,7 +1,7 @@
 /*
  * Plug-in SDK Header: C++ User Classes
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -44,7 +44,55 @@ class CLxUser_ListenerService : public CLxLoc_ListenerService
 
 };
 
+template <class T>
+class CLxSingletonListener
+{
+    public:
+        T                       *ref;
+        unsigned                 count;
 
+        CLxSingletonListener ()
+        {
+                ref   = 0;
+                count = 0;
+        }
+
+        ~CLxSingletonListener ()
+        {
+                if (lx::Lifecycle () == LXiLIFECYCLE_AFTER)
+                        return;
+
+                while (count)
+                        release ();
+        }
+
+                void
+        acquire ()
+        {
+                if (!count)
+                {
+                        CLxUser_ListenerService lS;
+
+                        ref = new T;
+                        lS.AddListener (*ref);
+                }
+
+                count++;
+        }
+
+                void
+        release ()
+        {
+                if (!--count)
+                {
+                        CLxUser_ListenerService lS;
+
+                        lS.RemoveListener (*ref);
+                        delete ref;
+                        ref = 0;
+                }
+        }
+};
 
 #endif
 

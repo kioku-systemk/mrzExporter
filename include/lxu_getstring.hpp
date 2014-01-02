@@ -1,7 +1,7 @@
 /*
  * Plug-in SDK Header: Common Utilities
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -30,7 +30,7 @@
 #ifndef LXU_GETSTRING_HPP
 #define LXU_GETSTRING_HPP
 
-#include <string>
+#include <string.h>
 
 
 /*

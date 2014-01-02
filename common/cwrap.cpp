@@ -1,7 +1,7 @@
 /*
  * Plug-in SDK Source: C++ COM Wrapper Implementation
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -82,6 +82,12 @@ lx::FindSpawner (
         return thisModule.FindSpawner (name);
 }
 
+        unsigned
+lx::Lifecycle ()
+{
+        return thisModule.lifecycle;
+}
+
 
 /*
  * ----------------------------------------------------------
@@ -103,6 +109,7 @@ CLxThisModule::FreeObj (
         void			*obj)
 {
         cleanup ();
+        lifecycle = LXiLIFECYCLE_AFTER;
         FreeGlobal ();
 }
 
@@ -217,6 +224,7 @@ CLxThisModule::need_SetContext (
 CLxThisModule::CLxThisModule ()
 {
         numSrv = bufferSize = 0;
+        lifecycle = LXiLIFECYCLE_BEFORE;
 
         iPoly = NULL;
         iName = NULL;
@@ -265,6 +273,7 @@ extern "C"
                 if (init) {
                         try {
                                 initialize ();
+                                thisModule.lifecycle = LXiLIFECYCLE_DURING;
                         } catch (...) {
                                 return NULL;
                         }

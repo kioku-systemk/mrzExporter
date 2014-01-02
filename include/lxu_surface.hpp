@@ -1,7 +1,7 @@
 /*
  * Plug-in SDK Header: C++ Services
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -31,6 +31,7 @@
 
 #include <lx_surface.hpp>
 #include <lx_tableau.hpp>
+#include <lx_vertex.hpp>
 
 
 /*

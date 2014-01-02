@@ -1,7 +1,7 @@
 /*
  * LX imagemon module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -135,7 +135,7 @@ typedef struct vt_ILxImageMonitor {
                 int                       cy,
                 int                       w,
                 int                       h,
-                char                     *buffer,
+                char                     *buf,
                 unsigned                  len);
 } ILxImageMonitor;
 typedef struct vt_ILxImageMonitorService {
@@ -185,7 +185,7 @@ typedef struct vt_ILxImageMonitorService {
                 LXxMETHOD(  LxResult,
         SourceUserNameByIndex) (
                 LXtObjectID               self,
-                const char               *name,
+                int                       index,
                 const char              **username);
                 LXxMETHOD(  LxResult,
         SetImage) (
@@ -231,6 +231,8 @@ typedef struct vt_ILxImageMonitorService {
 //[local]  ILxImageMonitor
 #define LXu_IMAGEMONITORSERVICE "f59258f8-3e86-408f-9e92-f81a21d01bde"
 #define LXa_IMAGEMONITORSERVICE "imagemonitorservice"
+// [python] ILxImageMonitorService:ServerByIndex        obj ImageMonitor
+// [python] ILxImageMonitorService:ServerLookup         obj ImageMonitor
 #define LXsIMAGEMONITOR_SOURCE_NOTIFIER "notifier.imagemonitor.source"
         #define LXsIMAGEPROC_NOTIFIER   "notifier.imageproc"
 
@@ -241,6 +243,9 @@ static LXtTextValueHint  notifierImageProcEventHints[] = {                      
         LXiIMAGEPROC_EVENT_CHANGED_BLOOM_ENABLED,                       "bloomEnabled",
         LXiIMAGEPROC_EVENT_CHANGED_BLOOM_THRESHOLD,                     "bloomThreshold",
         LXiIMAGEPROC_EVENT_CHANGED_BLOOM_RADIUS,                        "bloomRadius",
+
+        LXiIMAGEPROC_EVENT_CHANGED_VIGNETTE_AMOUNT,                     "vignAmt",
+
         LXiIMAGEPROC_EVENT_CHANGED_RESPECT_RENDER_VIEW_GAMMA_PREF,      "respectRenderViewGammaPref",
 
         LXiIMAGEPROC_EVENT_CHANGED_LEVEL_OFFSET,                        "levelOffset",

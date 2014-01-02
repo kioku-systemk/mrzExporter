@@ -1,7 +1,7 @@
 /*
  * Plug-in SDK Header: C++ User Classes
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -30,7 +30,22 @@
 #include <lxw_scripts.hpp>
 #include <string>
 
+class CLxUser_LineInterpreter : public CLxLoc_LineInterpreter
+{
+    public:
+        CLxUser_LineInterpreter () {}
+        CLxUser_LineInterpreter (ILxUnknownID obj) : CLxLoc_LineInterpreter (obj) {}
 
+
+};
+class CLxUser_LineExecution : public CLxLoc_LineExecution
+{
+    public:
+        CLxUser_LineExecution () {}
+        CLxUser_LineExecution (ILxUnknownID obj) : CLxLoc_LineExecution (obj) {}
+
+
+};
 class CLxUser_PlatformService : public CLxLoc_PlatformService
 {
     public:
@@ -74,29 +89,32 @@ class CLxUser_PlatformService : public CLxLoc_PlatformService
                 CLxLoc_PlatformService::OSVersion (&osVersion);
                 return std::string(osVersion);
         }
-                std::string
-        PathByIndex (
-                int                       index)
+                const char *
+        GetPath (
+                int                      index)
         {
-                const char *path;
-                CLxLoc_PlatformService::PathByIndex (index, &path);
-                return std::string(path);
+                const char              *path = 0;
+
+                PathByIndex (index, &path);
+                return path;
         }
-                std::string
-        PathNameByIndex (
-                int                       index)
+                const char *
+        GetPathName (
+                int                      index)
         {
-                const char *path;
-                CLxLoc_PlatformService::PathNameByIndex (index, &path);
-                return std::string(path);
+                const char              *path = 0;
+
+                PathNameByIndex (index, &path);
+                return path;
         }
-                std::string
-        ImportPathByIndex (
-                int                       index)
+                const char *
+        GetImportPath (
+                int                      index)
         {
-                const char *path;
-                CLxLoc_PlatformService::ImportPathByIndex (index, &path);
-                return std::string(path);
+                const char              *path = NULL;
+
+                ImportPathByIndex (index, &path);
+                return path;
         }
                 bool
         IsApp64Bit ()

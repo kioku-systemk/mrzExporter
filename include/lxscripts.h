@@ -1,7 +1,7 @@
 /*
  * LX scripts module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -36,6 +36,9 @@ typedef struct vt_ILxScriptManager ** ILxScriptManagerID;
 typedef struct vt_ILxTextScriptInterpreter ** ILxTextScriptInterpreterID;
 typedef struct vt_ILxScript ** ILxScriptID;
 typedef struct vt_ILxPlatformService ** ILxPlatformServiceID;
+typedef struct vt_ILxAppActiveListener ** ILxAppActiveListenerID;
+typedef struct vt_ILxLineInterpreter ** ILxLineInterpreterID;
+typedef struct vt_ILxLineExecution ** ILxLineExecutionID;
 typedef struct vt_ILxScriptLineEvent ** ILxScriptLineEventID;
 #include <lxserver.h>
 
@@ -280,7 +283,74 @@ typedef struct vt_ILxPlatformService {
                 LXxMETHOD(  LxResult,
         IsApp64Bit) (
                 LXtObjectID               self);
+                LXxMETHOD(  LxResult,
+        DoWhenUserIsIdle) (
+                LXtObjectID               self,
+                LXtObjectID               visitor,
+                int                       flags);
+                LXxMETHOD(  LxResult,
+        CancelDoWhenUserIsIdle) (
+                LXtObjectID               self,
+                LXtObjectID               visitor,
+                int                       flags);
+                LXxMETHOD(  LxResult,
+        IsUserIdle) (
+                LXtObjectID               self);
+                LXxMETHOD(  LxResult,
+        IsAppActive) (
+                LXtObjectID               self);
 } ILxPlatformService;
+typedef struct vt_ILxAppActiveListener {
+        ILxUnknown       iunk;
+                LXxMETHOD(  LxResult,
+        IsNowActive) (
+                LXtObjectID               self,
+                int                       isActive);
+} ILxAppActiveListener;
+typedef struct vt_ILxLineInterpreter {
+        ILxUnknown       iunk;
+                LXxMETHOD(  unsigned,
+        Flags) (
+                LXtObjectID              self);
+                LXxMETHOD(  LxResult,
+        Prompt) (
+                LXtObjectID              self,
+                const char             **prompt,
+                unsigned                 type);
+                LXxMETHOD(  LxResult,
+        Execute) (
+                LXtObjectID              self,
+                const char              *line,
+                int                      execFlags,
+                LXtObjectID              execution);
+} ILxLineInterpreter;
+typedef struct vt_ILxLineExecution {
+        ILxUnknown       iunk;
+                LXxMETHOD(  LxResult,
+        CookedLine) (
+                LXtObjectID              self,
+                const char              *text);
+
+                LXxMETHOD(  LxResult,
+        Message) (
+                LXtObjectID              self,
+                LXtObjectID              message);
+
+                LXxMETHOD(  LxResult,
+        Results) (
+                LXtObjectID              self,
+                LXtObjectID              valArray);
+
+                LXxMETHOD(  LxResult,
+        ResultHints) (
+                LXtObjectID              self,
+                const LXtTextValueHint  *hints);
+
+                LXxMETHOD(  LxResult,
+        Info) (
+                LXtObjectID              self,
+                const char              *text);
+} ILxLineExecution;
 typedef struct vt_ILxScriptLineEvent {
         ILxUnknown       iunk;
                 LXxMETHOD(  LxResult,
@@ -303,10 +373,13 @@ typedef struct vt_ILxScriptLineEvent {
 #define LXe_SCRIPT_TOO_MANY_ARGS        LXxFAILCODE( LXeSYS_SCRIPT,   7)
 #define LXe_SCRIPT_RECOGNIZED_INVALID   LXxFAILCODE( LXeSYS_SCRIPT,   8)
 
-#define LXe_SCRIPT_WARNING              LXxGOODCODE( LXeSYS_SCRIPT,   8)        // OK, not FAIL
+#define LXe_SCRIPT_LINEISCOMMENT        LXxGOODCODE( LXeSYS_SCRIPT,   1)
+#define LXe_SCRIPT_WARNING              LXxGOODCODE( LXeSYS_SCRIPT,   8)
 #define LXsLOG_SCRIPTSYS         "scripts"
 #define LXu_SCRIPTSYSSERVICE    "5046C663-7990-44d5-84CB-A859101B1C59"
 #define LXa_SCRIPTSYSSERVICE    "scriptsysservice"
+// [python] ILxScriptSysService:ByIndex obj ScriptManager
+// [python] ILxScriptSysService:Lookup  obj ScriptManager
 #define LXu_SCRIPTMANAGER       "3699E7C5-44B8-4e07-B8CA-E26899CD7B3B"
 #define LXa_SCRIPTMANAGER       "scriptservice"
 #define LXfSCRIPTSRV_CREATE             0x0001
@@ -316,20 +389,60 @@ typedef struct vt_ILxScriptLineEvent {
 #define LXa_TEXTSCRIPTINTERPRETER       "textscriptinterpreter"
 // [export]  ILxTextScriptInterpreter tsi
 // [local]   ILxTextScriptInterpreter
+// [python]  ILxTextScriptInterpreter:Validate  bool
 // [default] ILxTextScriptInterpreter:Validate = LXe_OK
+// [python]  ILxTextScriptInterpreter:ValidateFileType  bool
 #define LXu_SCRIPT              "33C03F3F-A692-4bf4-8AB4-C5A95CA7930C"
 #define LXa_SCRIPT              "script"
 // [export] ILxScript
 // [local]  ILxScript
+// [python] ILxScript:Manager   obj Unknown
 #define LXu_PLATFORMSERVICE     "B9596D64-8CB3-4943-8415-7EDF527AE513"
 #define LXa_PLATFORMSERVICE     "platformservice"
-#define LXiOSTYPE_WIN32         1
-#define LXiOSTYPE_MACOSX        2
-#define LXiOSTYPE_LINUX         3
+// [python]  ILxPlatformService:IsApp64Bit      bool
+// [python]  ILxPlatformService:IsAppActive     bool
+// [python]  ILxPlatformService:IsHeadless      bool
+// [python]  ILxPlatformService:IsUserIdle      bool
+#define LXiOSTYPE_UNKNOWN   0
+    #define LXiOSTYPE_WIN32         1
+    #define LXiOSTYPE_MACOSX        2
+#define     LXiOSTYPE_LINUX         3
+#define                  LXiUSERIDLE_ALWAYS                     0x0000
+
+#define                  LXfUSERIDLE_APP_MUST_BE_ACTIVE         0x1000
+
+#define                  LXfUSERIDLE_MOUSE_BUTTONS_UP           0x0001  // All mouse buttons must be up
+#define                  LXfUSERIDLE_KEYS_UP                    0x0002  // All non-modifier keys must be up
+#define                  LXfUSERIDLE_MODIFIER_KEYS_UP           0x0004  // All modifier keys must be up
+#define                  LXfUSERIDLE_NO_DIALOGS_OPEN            0x0008  // No modal windows may be open, including system dialogs
+#define                  LXfUSERIDLE_NO_POPS_OPEN               0x0010  // No popups/popovers may be open (except for tooltips)
+#define                  LXfUSERIDLE_CMD_STACK_EMPTY            0x0020  // The command stack must be empty
+#define                  LXfUSERIDLE_NO_SUB_INPUT_LOOP          0x0040  // Cannot be in a secondary input loop; meaning, we must be in the root-level input loop or no input loop at all
+#define                  LXfUSERIDLE_EDIT_FIELDS_UNFOCUSED      0x0080  // Edit field cannot have focus
+
+#define                  USERIDLEf_ALL_IDLE                     0x0FFF  // Everything except APP_MUST_BE_ACTIVE
+#define LXu_APPACTIVELISTENER   "7c35c2c0-8116-43f7-8277-dd521d1bd6a8"
+#define LXa_APPACTIVELISTENER   "appactivelistener"
+// [local]  ILxAppActiveListener
+// [export] ILxAppActiveListener activeEvent
+#define LXu_LINEINTERPRETER     "8F7DF2BE-69A2-4E1C-A4E9-CB3BC3D534D5"
+#define LXa_LINEINTERPRETER     "lineinterpreter"
+// [export] ILxLineInterpreter
+// [local]  ILxLineInterpreter
+#define LXfLINT_NOPROMPT                0x01
+#define LXfLINT_NORESULT                0x02
+#define LXfLINT_NOCOOKING               0x04
+#define LXfLINT_NOUNDOS                 0x08
+#define LXiLINT_CURRENT          0
+#define LXiLINT_ALTERNATE        1
+#define LXu_LINEEXECUTION       "16947735-3797-444C-A907-DADD8165F4FB"
+// [export] ILxLineExecution
+// [local]  ILxLineExecution
 #define LXu_SCRIPTLINEEVENT     "DABF6619-A4B5-4919-8389-8C54B39422E4"
 #define LXa_SCRIPTLINEEVENT     "scriptlineevent"
 // [export] ILxScriptLineEvent slev
 // [local]  ILxScriptLineEvent
+// [python] ILxScriptLineEvent:Script   obj Script
 
  #ifdef __cplusplus
   }

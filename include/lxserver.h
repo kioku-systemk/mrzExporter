@@ -1,7 +1,7 @@
 /*
  * LX server module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -37,6 +37,7 @@ typedef struct vt_ILxModule ** ILxModuleID;
 typedef struct vt_ILxTagDescription ** ILxTagDescriptionID;
 typedef struct vt_ILxNeedContext ** ILxNeedContextID;
 typedef struct vt_ILxServiceExtension ** ILxServiceExtensionID;
+typedef struct vt_ILxModule1 ** ILxModule1ID;
 #include <lxio.h>
 #include <lxvalue.h>
 
@@ -131,6 +132,10 @@ typedef struct vt_ILxHostService {
                 LXxMETHOD(  LxResult,
         SpawnForTagsOnly) (
                 LXtObjectID              self);
+                LXxMETHOD(  LxResult,
+        UpdateModule) (
+                LXtObjectID              self,
+                const char              *name);
 } ILxHostService;
 typedef struct vt_ILxModule {
         ILxUnknown       iunk;
@@ -141,9 +146,12 @@ typedef struct vt_ILxModule {
                 const LXtGUID           *iid,
                 void                   **ppvObj);
 
-                LXxMETHOD( unsigned,
-        IsLocked) (
-                LXtObjectID              self);
+                LXxMETHOD( LxResult,
+        GetTags) (
+                LXtObjectID              self,
+                const char              *name,
+                const LXtGUID           *iid,
+                void                   **ppvObj);
 } ILxModule;
 typedef struct vt_ILxTagDescription {
         ILxUnknown       iunk;
@@ -170,32 +178,54 @@ typedef struct vt_ILxServiceExtension {
         Dummy) (
                 LXtObjectID              self);
 } ILxServiceExtension;
+typedef struct vt_ILxModule1 {
+        ILxUnknown       iunk;
+                LXxMETHOD( LxResult,
+        Generate) (
+                LXtObjectID              self,
+                const char              *name,
+                const LXtGUID           *iid,
+                void                   **ppvObj);
+
+                LXxMETHOD( unsigned,
+        IsLocked) (
+                LXtObjectID              self);
+} ILxModule1;
 
 #define LXsSRV_USERNAME         "server.username"
 #define LXsSRV_LICENSE          "server.license"
 #define LXsSRV_OWNER            "server.owner"
 #define LXsSRV_SERIAL           "server.serial"
 #define LXu_FACTORY             "2431A79E-3412-4B0D-987D-875489466C58"
-#define LXa_FACTORY             "factory"
 // [export] ILxFactory
 // [local]  ILxFactory
+// [python] ILxFactory:Spawn    obj Unknown
 #define LXu_HOSTSERVICE         "525802A6-BF5F-46E9-9863-C03B54A3D908"
 #define LXa_HOSTSERVICE         "hostservice"
-#define LXu_MODULE      "BD6F0E53-C903-46D3-9211-758558D95CAA"
-#define LXa_MODULE      "module"
-// [export]  ILxModule
-// [default] ILxModule:IsLocked = 1
+
+// [python] ILxHostService:LookupServer         obj Factory
+// [python] ILxHostService:ServerByIndex        obj Factory
+// [python] ILxHostService:TestServer           bool
+#define LXu_MODULE      "4DB9C543-B192-4EDD-A65D-DD012FC27416"
+#define LXa_MODULE      "module2"
+// [local]  ILxModule
+// [export] ILxModule
+// [python] ILxModule:Generate  obj Unknown
+// [python] ILxModule:GetTags   obj StringTags
 #define LXu_TAGDESCRIPTION      "5582E0EE-D682-47BC-BF3D-FB14D59948C1"
 #define LXsMOD_SERVER           "server"
 // [export] ILxTagDescription
 // [local]  ILxTagDescription
 #define LXu_NEEDCONTEXT         "7D30408C-74AB-4d87-B71C-C6280883863C"
+// [local]  ILxNeedContext
 // [export] ILxNeedContext
 #define LXu_SERVICEEXTENSION    "E7C6F1A2-2F31-4FA5-B2EF-421BE159D0D8"
 #define LXa_SERVICEEXTENSION    "serviceExtension"
 // [export]  ILxServiceExtension
 
 #define LXsSRVEXT_GUID          "extension.guid"
+#define LXu_MODULE1     "BD6F0E53-C903-46D3-9211-758558D95CAA"
+#define LXa_MODULE1     "module"
 
  #ifdef __cplusplus
   }

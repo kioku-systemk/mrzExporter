@@ -1,7 +1,7 @@
 /*
  * C++ wrapper for lxthread.h
  *
- *	Copyright (c) 2008-2012 Luxology LLC
+ *	Copyright (c) 2008-2013 Luxology LLC
  *	
  *	Permission is hereby granted, free of charge, to any person obtaining a
  *	copy of this software and associated documentation files (the "Software"),
@@ -30,6 +30,7 @@
 
 #include <lxthread.h>
 #include <lx_wrap.hpp>
+#include <string>
 
 namespace lx {
     static const LXtGUID guid_ThreadSlotClient = {0xD24835B6,0x518B,0x4E33,0x8A,0x70,0xE5,0x30,0x38,0xC2,0x9B,0xB7};
@@ -40,6 +41,7 @@ namespace lx {
     static const LXtGUID guid_SharedWork = {0x4D414F97,0x35A4,0x4B26,0x84,0xFE,0x0E,0x74,0x0C,0x79,0x72,0x2C};
     static const LXtGUID guid_ThreadRangeWorker = {0x612153FE,0x572F,0x4CD6,0x80,0x33,0xB9,0x05,0x76,0x2C,0x31,0x06};
     static const LXtGUID guid_ThreadMutex = {0x7624F6B7,0x83FD,0x424F,0xA6,0x8E,0x0E,0xDD,0x08,0x91,0x67,0xCB};
+    static const LXtGUID guid_Waterfall = {0x2B845B2A,0x06BE,0x4C90,0x8E,0x50,0x58,0xF7,0xFB,0xEE,0xC2,0x5E};
     static const LXtGUID guid_ThreadService = {0x0A9D5B42,0x1DA6,0x42A4,0x8F,0xC4,0x01,0xFC,0xCE,0x93,0x9A,0xC4};
 };
 
@@ -53,6 +55,10 @@ class CLxImpl_ThreadSlotClient {
       tsc_Free (void *value)
         { return LXe_NOTIMPL; }
 };
+#define LXxD_ThreadSlotClient_Alloc LxResult tsc_Alloc (void **value)
+#define LXxO_ThreadSlotClient_Alloc LXxD_ThreadSlotClient_Alloc LXx_OVERRIDE
+#define LXxD_ThreadSlotClient_Free LxResult tsc_Free (void *value)
+#define LXxO_ThreadSlotClient_Free LXxD_ThreadSlotClient_Free LXx_OVERRIDE
 template <class T>
 class CLxIfc_ThreadSlotClient : public CLxInterface
 {
@@ -143,6 +149,14 @@ class CLxImpl_WorkList {
       work_Clear (void)
         { }
 };
+#define LXxD_WorkList_IsEmpty LxResult work_IsEmpty (void)
+#define LXxO_WorkList_IsEmpty LXxD_WorkList_IsEmpty LXx_OVERRIDE
+#define LXxD_WorkList_Next void * work_Next (void)
+#define LXxO_WorkList_Next LXxD_WorkList_Next LXx_OVERRIDE
+#define LXxD_WorkList_Split LxResult work_Split (unsigned mode, void **ppvObj)
+#define LXxO_WorkList_Split LXxD_WorkList_Split LXx_OVERRIDE
+#define LXxD_WorkList_Clear void work_Clear (void)
+#define LXxO_WorkList_Clear LXxD_WorkList_Clear LXx_OVERRIDE
 template <class T>
 class CLxIfc_WorkList : public CLxInterface
 {
@@ -209,6 +223,13 @@ public:
   {
     return m_loc[0]->Split (m_loc,mode,ppvObj);
   }
+    bool
+  Split (unsigned mode, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Split (m_loc,mode,&obj)) && dest.take(obj);
+  }
     void
   Clear (void)
   {
@@ -268,6 +289,8 @@ class CLxImpl_ThreadJob {
       job_Execute (void)
         { }
 };
+#define LXxD_ThreadJob_Execute void job_Execute (void)
+#define LXxO_ThreadJob_Execute LXxD_ThreadJob_Execute LXx_OVERRIDE
 template <class T>
 class CLxIfc_ThreadJob : public CLxInterface
 {
@@ -286,6 +309,20 @@ public:
     iid = &lx::guid_ThreadJob;
   }
 };
+class CLxLoc_ThreadJob : public CLxLocalize<ILxThreadJobID>
+{
+public:
+  void _init() {m_loc=0;}
+  CLxLoc_ThreadJob() {_init();}
+  CLxLoc_ThreadJob(ILxUnknownID obj) {_init();set(obj);}
+  CLxLoc_ThreadJob(const CLxLoc_ThreadJob &other) {_init();set(other.m_loc);}
+  const LXtGUID * guid() const {return &lx::guid_ThreadJob;}
+    void
+  Execute (void)
+  {
+    m_loc[0]->Execute (m_loc);
+  }
+};
 
 class CLxImpl_SharedWork {
   public:
@@ -300,6 +337,12 @@ class CLxImpl_SharedWork {
       share_Share (ILxUnknownID other, unsigned int split)
         { return LXe_NOTIMPL; }
 };
+#define LXxD_SharedWork_Evaluate LxResult share_Evaluate (void)
+#define LXxO_SharedWork_Evaluate LXxD_SharedWork_Evaluate LXx_OVERRIDE
+#define LXxD_SharedWork_Spawn LxResult share_Spawn (void **ppvObj)
+#define LXxO_SharedWork_Spawn LXxD_SharedWork_Spawn LXx_OVERRIDE
+#define LXxD_SharedWork_Share LxResult share_Share (ILxUnknownID other, unsigned int split)
+#define LXxO_SharedWork_Share LXxD_SharedWork_Share LXx_OVERRIDE
 template <class T>
 class CLxIfc_SharedWork : public CLxInterface
 {
@@ -356,6 +399,13 @@ public:
   {
     return m_loc[0]->Spawn (m_loc,ppvObj);
   }
+    bool
+  Spawn (CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Spawn (m_loc,&obj)) && dest.take(obj);
+  }
     LxResult
   Share (ILxUnknownID other, unsigned int split)
   {
@@ -370,6 +420,8 @@ class CLxImpl_ThreadRangeWorker {
       rngw_Execute (int index, void *sharedData)
         { return LXe_NOTIMPL; }
 };
+#define LXxD_ThreadRangeWorker_Execute LxResult rngw_Execute (int index, void *sharedData)
+#define LXxO_ThreadRangeWorker_Execute LXxD_ThreadRangeWorker_Execute LXx_OVERRIDE
 template <class T>
 class CLxIfc_ThreadRangeWorker : public CLxInterface
 {
@@ -425,6 +477,131 @@ public:
   }
 };
 
+class CLxImpl_Waterfall {
+  public:
+    virtual ~CLxImpl_Waterfall() {}
+    virtual LxResult
+      wfall_Spawn (void **ppvObj)
+        { return LXe_NOTIMPL; }
+    virtual unsigned
+      wfall_State (void)
+        = 0;
+    virtual LxResult
+      wfall_ProcessWork (void)
+        { return LXe_NOTIMPL; }
+    virtual LxResult
+      wfall_GetWork (void)
+        { return LXe_NOTIMPL; }
+    virtual LxResult
+      wfall_Advance (void)
+        { return LXe_NOTIMPL; }
+};
+#define LXxD_Waterfall_Spawn LxResult wfall_Spawn (void **ppvObj)
+#define LXxO_Waterfall_Spawn LXxD_Waterfall_Spawn LXx_OVERRIDE
+#define LXxD_Waterfall_State unsigned wfall_State (void)
+#define LXxO_Waterfall_State LXxD_Waterfall_State LXx_OVERRIDE
+#define LXxD_Waterfall_ProcessWork LxResult wfall_ProcessWork (void)
+#define LXxO_Waterfall_ProcessWork LXxD_Waterfall_ProcessWork LXx_OVERRIDE
+#define LXxD_Waterfall_GetWork LxResult wfall_GetWork (void)
+#define LXxO_Waterfall_GetWork LXxD_Waterfall_GetWork LXx_OVERRIDE
+#define LXxD_Waterfall_Advance LxResult wfall_Advance (void)
+#define LXxO_Waterfall_Advance LXxD_Waterfall_Advance LXx_OVERRIDE
+template <class T>
+class CLxIfc_Waterfall : public CLxInterface
+{
+    static LxResult
+  Spawn (LXtObjectID wcom, void **ppvObj)
+  {
+    LXCWxINST (CLxImpl_Waterfall, loc);
+    try {
+      return loc->wfall_Spawn (ppvObj);
+    } catch (LxResult rc) { return rc; }
+  }
+    static unsigned
+  State (LXtObjectID wcom)
+  {
+    LXCWxINST (CLxImpl_Waterfall, loc);
+    return loc->wfall_State ();
+  }
+    static LxResult
+  ProcessWork (LXtObjectID wcom)
+  {
+    LXCWxINST (CLxImpl_Waterfall, loc);
+    try {
+      return loc->wfall_ProcessWork ();
+    } catch (LxResult rc) { return rc; }
+  }
+    static LxResult
+  GetWork (LXtObjectID wcom)
+  {
+    LXCWxINST (CLxImpl_Waterfall, loc);
+    try {
+      return loc->wfall_GetWork ();
+    } catch (LxResult rc) { return rc; }
+  }
+    static LxResult
+  Advance (LXtObjectID wcom)
+  {
+    LXCWxINST (CLxImpl_Waterfall, loc);
+    try {
+      return loc->wfall_Advance ();
+    } catch (LxResult rc) { return rc; }
+  }
+  ILxWaterfall vt;
+public:
+  CLxIfc_Waterfall ()
+  {
+    vt.Spawn = Spawn;
+    vt.State = State;
+    vt.ProcessWork = ProcessWork;
+    vt.GetWork = GetWork;
+    vt.Advance = Advance;
+    vTable = &vt.iunk;
+    iid = &lx::guid_Waterfall;
+  }
+};
+class CLxLoc_Waterfall : public CLxLocalize<ILxWaterfallID>
+{
+public:
+  void _init() {m_loc=0;}
+  CLxLoc_Waterfall() {_init();}
+  CLxLoc_Waterfall(ILxUnknownID obj) {_init();set(obj);}
+  CLxLoc_Waterfall(const CLxLoc_Waterfall &other) {_init();set(other.m_loc);}
+  const LXtGUID * guid() const {return &lx::guid_Waterfall;}
+    LxResult
+  Spawn (void **ppvObj)
+  {
+    return m_loc[0]->Spawn (m_loc,ppvObj);
+  }
+    bool
+  Spawn (CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Spawn (m_loc,&obj)) && dest.take(obj);
+  }
+    unsigned
+  State (void)
+  {
+    return m_loc[0]->State (m_loc);
+  }
+    LxResult
+  ProcessWork (void)
+  {
+    return m_loc[0]->ProcessWork (m_loc);
+  }
+    LxResult
+  GetWork (void)
+  {
+    return m_loc[0]->GetWork (m_loc);
+  }
+    LxResult
+  Advance (void)
+  {
+    return m_loc[0]->Advance (m_loc);
+  }
+};
+
 class CLxLoc_ThreadService : public CLxLocalizedService
 {
   ILxThreadServiceID m_loc;
@@ -432,21 +609,42 @@ public:
   void _init() {m_loc=0;}
   CLxLoc_ThreadService() {_init();set();}
  ~CLxLoc_ThreadService() {}
-  void set() {m_loc=reinterpret_cast<ILxThreadServiceID>(lx::GetGlobal(&lx::guid_ThreadService));}
+  void set() {if(!m_loc)m_loc=reinterpret_cast<ILxThreadServiceID>(lx::GetGlobal(&lx::guid_ThreadService));}
     LxResult
   CreateMutex (void **ppvObj)
   {
     return m_loc[0]->CreateMutex (m_loc,ppvObj);
+  }
+    bool
+  CreateMutex (CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->CreateMutex (m_loc,&obj)) && dest.take(obj);
   }
     LxResult
   CreateCS (void **ppvObj)
   {
     return m_loc[0]->CreateCS (m_loc,ppvObj);
   }
+    bool
+  CreateCS (CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->CreateCS (m_loc,&obj)) && dest.take(obj);
+  }
     LxResult
   CreateGroup (void **ppvObj)
   {
     return m_loc[0]->CreateGroup (m_loc,ppvObj);
+  }
+    bool
+  CreateGroup (CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->CreateGroup (m_loc,&obj)) && dest.take(obj);
   }
     unsigned int
   NumProcs (void)
@@ -463,6 +661,13 @@ public:
   {
     return m_loc[0]->CreateSlot (m_loc,size,(ILxUnknownID)client,ppvObj);
   }
+    bool
+  CreateSlot (size_t size, ILxUnknownID client, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->CreateSlot (m_loc,size,(ILxUnknownID)client,&obj)) && dest.take(obj);
+  }
     LxResult
   ProcessShared (ILxUnknownID shared)
   {
@@ -472,6 +677,21 @@ public:
   ProcessRange (void *data, int startIndex, int endIndex, ILxUnknownID rangeWorker)
   {
     return m_loc[0]->ProcessRange (m_loc,data,startIndex,endIndex,(ILxUnknownID)rangeWorker);
+  }
+    LxResult
+  InitThread (void) const
+  {
+    return m_loc[0]->InitThread (m_loc);
+  }
+    LxResult
+  CleanupThread (void) const
+  {
+    return m_loc[0]->CleanupThread (m_loc);
+  }
+    LxResult
+  ProcessWaterfall (ILxUnknownID waterfall, unsigned threads)
+  {
+    return m_loc[0]->ProcessWaterfall (m_loc,(ILxUnknownID)waterfall,threads);
   }
 };
 

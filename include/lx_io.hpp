@@ -1,7 +1,7 @@
 /*
  * Plug-in SDK Header: C++ User Classes
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -223,6 +223,14 @@ class CLxUser_BlockWrite : public CLxLoc_BlockWrite
                 if (LXx_FAIL (rc))
                         throw (rc);
         }
+};
+class CLxUser_LoaderInfo : public CLxLoc_LoaderInfo
+{
+    public:
+        CLxUser_LoaderInfo () {}
+        CLxUser_LoaderInfo (ILxUnknownID obj) : CLxLoc_LoaderInfo (obj) {}
+
+
 };
 class CLxUser_Loader : public CLxLoc_Loader
 {

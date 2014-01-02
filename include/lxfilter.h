@@ -1,7 +1,7 @@
 /*
  * LX cache module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -79,6 +79,7 @@ typedef struct vt_ILxStackFilter {
 #define LXsSTACK_PARTICLE        "particleStack"
 #define LXu_EVALUATIONSTACK     "47F3BF05-B64A-49D9-A2C1-08B0D36AB787"
 // [local]  ILxEvaluationStack
+// [python] ILxEvaluationStack:Branch   obj EvaluationStack
 #define LXiSTACK_DIFFERENT       0
 #define LXiSTACK_COMPATIBLE      1
 #define LXiSTACK_IDENTICAL       2

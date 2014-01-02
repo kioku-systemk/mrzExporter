@@ -1,7 +1,7 @@
 /*
  * LX seltools module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -41,6 +41,7 @@ typedef struct vt_ILxVertexPacketTranslation ** ILxVertexPacketTranslationID;
 typedef struct vt_ILxEdgePacketTranslation ** ILxEdgePacketTranslationID;
 typedef struct vt_ILxPolygonPacketTranslation ** ILxPolygonPacketTranslationID;
 typedef struct vt_ILxVMapPacketTranslation ** ILxVMapPacketTranslationID;
+typedef struct vt_ILxPresetPathPacketTranslation ** ILxPresetPathPacketTranslationID;
 #include <lxmesh.h>
 
 
@@ -260,6 +261,25 @@ typedef struct vt_ILxVMapPacketTranslation {
                 LXtID4                   type,
                 const char              *name);
 } ILxVMapPacketTranslation;
+typedef struct vt_ILxPresetPathPacketTranslation {
+        ILxUnknown       iunk;
+                LXxMETHOD(  LxResult,
+        Path) (
+                LXtObjectID               self,
+                void                     *packet,
+                const char              **path);
+
+                LXxMETHOD(  LxResult,
+        Identifier) (
+                LXtObjectID               self,
+                void                     *packet,
+                const char              **identifier);
+                LXxMETHOD(  void *,
+        Packet) (
+                LXtObjectID              self,
+                const char              *path,
+                const char              *identifier);
+} ILxPresetPathPacketTranslation;
 
 #define LXiSEL_ACTION           LXxID4('A','C','T','I') // Action
 #define LXiSEL_ITEM             LXxID4('I','T','E','M') // Item
@@ -280,34 +300,53 @@ typedef struct vt_ILxVMapPacketTranslation {
 #define LXiSEL_LINK             LXxID4('L','I','N','K') // Link
 #define LXsSELTYP_SCENE                 "cinema"
 #define LXu_SCENEPACKETTRANSLATION      "A63F8E08-94D8-11D9-96D3-000A956C2E10"
-// [local] ILxScenePacketTranslation
+// [local]  ILxScenePacketTranslation
+// [python] ILxScenePacketTranslation:Scene     obj Scene
 #define LXsSELTYP_ITEM                  "item"
 #define LXu_ITEMPACKETTRANSLATION       "029663CC-9571-11D9-B9AD-000A956C2E10"
-// [local] ILxItemPacketTranslation
+// [local]  ILxItemPacketTranslation
+// [python] ILxItemPacketTranslation:Item       obj Item
 #define LXsSELTYP_CHANNEL               "channel"
 #define LXu_CHANNELPACKETTRANSLATION    "00DE9D39-6A83-46DC-9C28-360662922CE5"
-// [local] ILxChannelPacketTranslation
+// [local]  ILxChannelPacketTranslation
+// [python] ILxChannelPacketTranslation:Item    obj Item
 #define LXsSELTYP_CENTER                "center"
 #define LXu_CENTERPACKETTRANSLATION     "52B10EAB-9EA6-4F28-81D1-2FEC51E02933"
-// [local] ILxCenterPacketTranslation
+// [local]  ILxCenterPacketTranslation
+// [python] ILxCenterPacketTranslation:Item     obj Item
 #define LXsSELTYP_PIVOT                 "pivot"
 #define LXu_PIVOTPACKETTRANSLATION      "9744D68E-D6CD-4652-AD33-073A24E16901"
-// [local] ILxPivotPacketTranslation
+// [local]  ILxPivotPacketTranslation
+// [python] ILxPivotPacketTranslation:Item      obj Item
 #define LXsSELTYP_LINK                  "link"
 #define LXu_LINKPACKETTRANSLATION       "EEA9F625-EB3C-43FD-A156-C8552D6D18C9"
-// [local] ILxLinkPacketTranslation
+// [local]  ILxLinkPacketTranslation
+// [python] ILxLinkPacketTranslation:From       obj Item
+// [python] ILxLinkPacketTranslation:To         obj Item
 #define LXsSELTYP_VERTEX                "vertex"
 #define LXu_VERTEXPACKETTRANSLATION     "D77B8382-9572-11D9-AFDE-000A956C2E10"
-// [local] ILxVertexPacketTranslation
+// [local]  ILxVertexPacketTranslation
+// [python] ILxVertexPacketTranslation:Item     obj Item
+// [python] ILxVertexPacketTranslation:Mesh     obj Mesh
+
+// [python] type LXtPointID     id
+// [python] type LXtPolygonID   id
 #define LXsSELTYP_EDGE                  "edge"
 #define LXu_EDGEPACKETTRANSLATION       "CA4DFE14-957E-11D9-AC64-000A956C2E10"
-// [local] ILxEdgePacketTranslation
+// [local]  ILxEdgePacketTranslation
+// [python] ILxEdgePacketTranslation:Item       obj Item
+// [python] ILxEdgePacketTranslation:Mesh       obj Mesh
 #define LXsSELTYP_POLYGON               "polygon"
 #define LXu_POLYGONPACKETTRANSLATION    "2E0929DC-9583-11D9-B058-000A956C2E10"
-// [local] ILxPolygonPacketTranslation
+// [local]  ILxPolygonPacketTranslation
+// [python] ILxPolygonPacketTranslation:Item    obj Item
+// [python] ILxPolygonPacketTranslation:Mesh    obj Mesh
 #define LXsSELTYP_VERTEXMAP             "vmap"
 #define LXu_VMAPPACKETTRANSLATION       "BBCB6B90-9586-11D9-A3B8-000A956C2E10"
 // [local] ILxVMapPacketTranslation
+#define LXsSELTYP_PRESETPATH                    "preset"
+#define LXu_PRESETPATHPACKETTRANSLATION         "6b95c2ac-9a9e-471f-9771-cf10fd5c6bcb"
+// [local]  ILxPresetPathPacketTranslation
 
  #ifdef __cplusplus
   }

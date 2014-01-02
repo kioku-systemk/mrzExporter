@@ -1,7 +1,7 @@
 /*
  * LX image module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -38,6 +38,8 @@ typedef struct vt_ILxIndexImage ** ILxIndexImageID;
 typedef struct vt_ILxIndexImageWrite ** ILxIndexImageWriteID;
 typedef struct vt_ILxLayeredImage ** ILxLayeredImageID;
 typedef struct vt_ILxLayeredImageWrite ** ILxLayeredImageWriteID;
+typedef struct vt_ILxTileImage ** ILxTileImageID;
+typedef struct vt_ILxImageLoaderTarget ** ILxImageLoaderTargetID;
 typedef struct vt_ILxImageLevelSample ** ILxImageLevelSampleID;
 typedef struct vt_ILxImageService ** ILxImageServiceID;
 typedef struct vt_ILxImageBlockCodec ** ILxImageBlockCodecID;
@@ -56,10 +58,10 @@ typedef unsigned char    LXtImageByte;
 typedef float            LXtImageFloat;
 typedef unsigned int     LXtImageIndex;
 typedef LXtImageFloat    LXtColorRGBA[4];
-typedef struct st_LXtImageTarget {
+typedef struct st_LXtImageTarget1 {
         LXtPixelFormat           type;
         unsigned int             w, h, ncolor;
-} LXtImageTarget;
+} LXtImageTarget1;
 typedef struct st_LXtImageSample {
         unsigned                 x;
         unsigned                 y;
@@ -306,6 +308,65 @@ typedef struct vt_ILxLayeredImageWrite {
                 int                     *index);
 
 } ILxLayeredImageWrite;
+typedef struct vt_ILxTileImage {
+        ILxUnknown       iunk;
+                LXxMETHOD( unsigned,
+        LevelCount) (
+                LXtObjectID              self);
+                LXxMETHOD( LxResult,
+        GetTile) (
+                LXtObjectID               self,
+                unsigned int              level,
+                unsigned int              tileX,
+                unsigned int              tileY,
+                void                    **ppvObj);
+                LXxMETHOD( LxResult,
+        GetTileSize) (
+                LXtObjectID              self,
+                unsigned int             level,
+                unsigned int             tileX,
+                unsigned int             tileY,
+                unsigned int            *width,
+                unsigned int            *height);
+                LXxMETHOD( LxResult,
+        GetLevelSize) (
+                LXtObjectID              self,
+                unsigned int             level,
+                unsigned int            *width,
+                unsigned int            *height,
+                unsigned int            *tilesWidth,
+                unsigned int            *tilesHeight);
+                LXxMETHOD( LxResult,
+        DetermineTile) (
+                LXtObjectID              self,
+                unsigned int             level,
+                unsigned int             x,
+                unsigned int             y,
+                unsigned int            *tileX,
+                unsigned int            *tileY);
+                LXxMETHOD( LxResult,
+        DeterminePixel) (
+                LXtObjectID              self,
+                unsigned int             level,
+                unsigned int             x,
+                unsigned int             y,
+                unsigned int            *adjX,
+                unsigned int            *adjY);
+} ILxTileImage;
+typedef struct vt_ILxImageLoaderTarget {
+        ILxUnknown       iunk;
+                LXxMETHOD( LxResult,
+        SetSize) (
+                LXtObjectID              self,
+                LXtPixelFormat           type,
+                unsigned                 width,
+                unsigned                 height);
+
+                LXxMETHOD( LxResult,
+        SetMap) (
+                LXtObjectID              self,
+                unsigned                 ncolor);
+} ILxImageLoaderTarget;
 typedef struct vt_ILxImageLevelSample {
         ILxUnknown       iunk;
                 LXxMETHOD( unsigned,
@@ -372,7 +433,8 @@ typedef struct vt_ILxImageService {
                 LXtObjectID              self,
                 LXtObjectID              image,
                 const char              *filePath,
-                const char              *format);
+                const char              *format,
+                LXtObjectID              monitor);
 
                 LXxMETHOD(  LxResult,
         Resample) (
@@ -405,7 +467,7 @@ typedef struct vt_ILxImageService {
                 LXxMETHOD(  LxResult,
         RGB2Kelvin) (
                 LXtObjectID              self,
-                LXtFVector               rgbColor,
+                const LXtFVector         rgbColor,
                 float                   *kelvin);
 
                 LXxMETHOD(  LxResult,
@@ -417,6 +479,12 @@ typedef struct vt_ILxImageService {
                 double                   w,
                 double                   h,
                 void                   **ppvObj);
+                LXxMETHOD(  LxResult,
+        ImageGetBuffer) (
+                LXtObjectID              self,
+                LXtObjectID              sourceImage,
+                LXtPixelFormat           type,
+                void                    *buf);
 } ILxImageService;
 typedef struct vt_ILxImageBlockCodec {
         ILxUnknown       iunk;
@@ -506,6 +574,10 @@ typedef struct vt_ILxMovie {
                 LXxMETHOD(  LxResult,
         EndMovie) (
                 LXtObjectID              self);
+                LXxMETHOD(  LxResult,
+        AddAudio) (
+                LXtObjectID              self,
+                LXtObjectID              audio);
 } ILxMovie;
 
 #define LXiIMD_BYTE     0x00
@@ -571,23 +643,31 @@ typedef struct vt_ILxMovie {
 #define LXsIATTRTYPE_APERTURE    LXsTYPE_FLOAT
 #define LXu_IMAGE       "469AFBB8-E6A2-4d88-9C39-5430CA72E404"
 #define LXa_IMAGE       "image"
+#define LXa_IMAGE_FLOAT "image_float"
+#define LXsSAV_IMAGE_FLOAT "saver.imageFloat"
 //[local]  ILxImage
 //[export] ILxImage img
 //[const]  ILxImage:Size
 //[const]  ILxImage:Format
 //[const]  ILxImage:GetPixel
 //[const]  ILxImage:GetLine
+//[python] ILxImage:GetPixel:pixel      vector
+//[python] ILxImage:GetLine:buf         vector
 #define LXu_IMAGESEGMENT        "370ABB2F-119E-4EEC-98F8-03388ABE7D2C"
 #define LXa_IMAGESEGMENT        "imagesegment"
 //[local]  ILxImageSegment
 //[export] ILxImageSegment imgs
 //[const]  ILxImageSegment:GetSegment
+//[python] ILxImageSegment:GetSegment:rgba      vector
+//[python] ILxImageSegment:SetSegment:line      vector
 #define LXu_IMAGEWRITE  "8F9CF293-B6F9-498e-A124-6704E2C24662"
 #define LXa_IMAGEWRITE  "imagewrite"
 //[local]  ILxImageWrite
 //[export] ILxImageWrite imgw
 //[const]  ILxImageWrite:Size
 //[const]  ILxImageWrite:Format
+//[python] ILxImageWrite:SetPixel:pixel vector
+//[python] ILxImageWrite:SetLine:line   vector
 #define LXu_INDEXIMAGE          "08CAE3BC-ED69-4EC4-9D7D-BBDBE4E35343"
 //[local]  ILxIndexImage
 //[const]  ILxIndexImage:Size
@@ -595,10 +675,12 @@ typedef struct vt_ILxMovie {
 //[const]  ILxIndexImage:MapSize
 //[const]  ILxIndexImage:GetIndex
 //[const]  ILxIndexImage:GetMap
+//[python] ILxIndexImage:GetMap:pixel   vector
 #define LXu_INDEXIMAGEWRITE     "D59C5E09-779E-445b-B317-282630CB6BD5"
 //[local]  ILxIndexImageWrite
 //[const]  ILxIndexImageWrite:Size
 //[const]  ILxIndexImageWrite:Format
+//[python] ILxIndexImageWrite:SetMap:pixel      vector
 #define LXu_LAYEREDIMAGE        "8523ECC4-B8B3-4C6E-8F14-A1D2D01E8038"
 #define LXa_LAYEREDIMAGE        "layeredimage"
 // [local]  ILxLayeredImage
@@ -609,8 +691,22 @@ typedef struct vt_ILxMovie {
 // [const]  ILxLayeredImage:Offset
 // [const]  ILxLayeredImage:Blend
 // [const]  ILxLayeredImage:ChannelName
+// [python] ILxLayeredImage:Image       obj Image
 #define LXu_LAYEREDIMAGEWRITE   "79D28886-9652-4A76-9AA7-1B1E4D553DCD"
 //[local]  ILxLayeredImageWrite
+#define LXu_TILEIMAGE   "BD12D6C3-C08F-4AD1-A080-399F958D28C0"
+#define LXa_TILEIMAGE   "tileImage"
+//[local]  ILxTileImage
+//[export] ILxTileImage tileimg
+//[const]  ILxTileImage:LevelCount
+//[const]  ILxTileImage:GetTile
+//[const]  ILxTileImage:GetTileSize
+//[const]  ILxTileImage:GetLevelSize
+//[const]  ILxTileImage:DetermineTile
+//[const]  ILxTileImage:DeterminePixel
+//[python] ILxTileImage:GetTile         obj Image
+#define LXu_IMAGELOADERTARGET   "9F124A7B-DFC7-42E6-977B-71AE2E33B017"
+// [local]  ILxImageLoaderTarget
 #define LXu_IMAGELEVELSAMPLE    "79A6EA0E-9589-4D03-880C-C06A6EC6CF7D"
 #define LXa_IMAGELEVELSAMPLE    "imageLevelSample"
 // [export] ILxImageLevelSample level
@@ -620,7 +716,15 @@ typedef struct vt_ILxMovie {
 // [const]  ILxImageLevelSample:SampleLevel
 // [const]  ILxImageLevelSample:GetPixel
 // [const]  ILxImageLevelSample:GetLine
+// [python] ILxImageLevelSample:GetPixel:pixel  vector
+// [python] ILxImageLevelSample:GetLine:buf     vector
 #define LXu_IMAGESERVICE        "03A7D258-397C-4D92-B3AF-695AD676FCF9"
+
+// [python] ILxImageService:Create              obj Image
+// [python] ILxImageService:CreateCrop          obj Image
+// [python] ILxImageService:Duplicate           obj Image
+// [python] ILxImageService:Load                obj Image
+// [python] ILxImageService:ImageGetBuffer:buf  vector
 #define LXu_IMAGEBLOCKCODEC     "7960B5BA-70D3-4FAD-8CA1-BD30A7938554"
 #define LXa_IMAGEBLOCKCODEC     "imageBlockCodec"
 // [export] ILxImageBlockCodec ibc
@@ -629,14 +733,19 @@ typedef struct vt_ILxMovie {
 #define LXi_IMAGE_MULTI_SAMPLE          2
 #define LXu_IMAGEFILTER         "FB00C87C-5A34-4B45-B0E8-998926C79DC4"
 // [export]  ILxImageFilter imf
+// [local]   ILxImageFilter
+// [python]  ILxImageFilter:Generate    obj Image
+// [python]  ILxImageFilter:MultiSample obj Image
 #define LXu_IMAGEFILTERSAMPLE   "9EC74AED-F86F-4105-ACE9-7BDAA6298736"
 #define LXu_IMAGEFILTERMETRICS  "0D2CA8D8-66A9-45A0-AAE6-8364D903AFDA"
 // [export]  ILxImageFilterMetrics imfmet
+// [local]   ILxImageFilterMetrics
 #define LXu_MOVIE               "B7BD9F49-9400-45F1-ADEE-BFE82A1C4A65"
 #define LXa_MOVIE               "movie"
 // [export]  ILxMovie
 
 #define LXsMOVIE_SAVESTEREO     "movie.stereoscopic"
+#define LXsMOVIE_OPTIONSCOMMAND "optionsCommand"
 
  #ifdef __cplusplus
   }

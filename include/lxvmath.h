@@ -1,7 +1,7 @@
 /*
  * LX vmath module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -31,9 +31,11 @@
  #endif
 
 #define LXdND            3
-
+typedef struct vt_ILxCloudElement ** ILxCloudElementID;
+typedef struct vt_ILxSampleCloud ** ILxSampleCloudID;
 #undef long
 #include <math.h>
+#include <lxcom.h>
 
 typedef double           LXtVector[LXdND];
 typedef float           LXtFVector[LXdND];
@@ -44,12 +46,110 @@ typedef unsigned int    LXtUVector2[2];
 typedef double           LXtMatrix[LXdND][LXdND];
 typedef float            LXtFMatrix[LXdND][LXdND];
 typedef double           LXtMatrix4[4][4];
+typedef struct st_LXtCloudElementEval {
+        const float             *wp;
+        const float             *op;
+        const float             *wn;
+        const float             *wv;    
+} LXtCloudElementEval;
 typedef struct st_LXtBBox {
         LXtVector                min;
         LXtVector                max;
         LXtVector                extent;
         LXtVector                center;
 } LXtBBox;
+typedef struct vt_ILxCloudElement {
+        ILxUnknown       iunk;
+                LXxMETHOD(  LxResult,
+        Density) (
+                LXtObjectID              self,
+                LXtObjectID              sampleVector,
+                const LXtFVector         pos,
+                float                   *dens);
+
+                LXxMETHOD(  LxResult,
+        AllocSample) (
+                LXtObjectID              self,
+                void                    *userData,
+                void                    **data);
+
+                LXxMETHOD(  LxResult,
+        FreeSample) (
+                LXtObjectID              self,
+                void                    *data);
+
+                LXxMETHOD(  LxResult,
+        EvalSample) (
+                LXtObjectID              self,
+                LXtObjectID              sampleVector,
+                void                    *userData,
+                LXtCloudElementEval     *eval,
+                void                    *data,
+                float                   *rad);
+
+                LXxMETHOD(  LxResult,
+        VisitSample) (
+                LXtObjectID              self,
+                void                    *userData,
+                const LXtFVector         pos,
+                void                    *data);
+
+                LXxMETHOD(  LxResult,
+        InterpolateSample) (
+                LXtObjectID              self,
+                void                    *userData,
+                const void              *data[3],
+                const float              wgt[3],
+                int                      vrtsPerPoly,
+                void                    *res);  
+} ILxCloudElement;
+typedef struct vt_ILxSampleCloud {
+        ILxUnknown       iunk;
+                LXxMETHOD(  LxResult,
+        SurfSample) (
+                LXtObjectID              self,
+                LXtObjectID              sampleVector,
+                void                    *userData,
+                float                    minDist,
+                float                    maxDist,
+                int                      seed);
+
+                LXxMETHOD(  LxResult,
+        BoxSample) (
+                LXtObjectID              self,
+                LXtObjectID              sampleVector,
+                void                    *userData,
+                LXtBBox                 *bbox,
+                float                    minDist,
+                float                    maxDist,
+                int                      seed);
+
+                LXxMETHOD(  LxResult,
+        SpotSample) (
+                LXtObjectID              self,
+                LXtObjectID              sampleVector,
+                void                    *userData);
+
+                LXxMETHOD(  LxResult,
+        VertexSample) (
+                LXtObjectID              self,
+                LXtObjectID              sampleVector,
+                void                    *userData,
+                int                      addElement,
+                int                      all,
+                void                    *res);
+
+                LXxMETHOD(  LxResult,
+        Enumerate) (
+                LXtObjectID              self,
+                void                    *userData);
+
+                LXxMETHOD(  LxResult,
+        BoxEnumerate) (
+                LXtObjectID              self,
+                LXtBBox                 *bbox,
+                void                    *userData);
+} ILxSampleCloud;
 
 #define SCHLICK_BIAS(x, b)      (x) / ((1.0f / (b) - 2.0f) * (1.0f - (x)) + 1.0f)
 
@@ -153,6 +253,12 @@ typedef struct st_LXtBBox {
 #define LXxABS(a)               ((a) < 0 ? -(a) : (a))
 #define LXxSIGN(a)              ((a) < 0 ? -1 : 1)
 #define LXi_SIMD_MAXRUN  512
+#define LXu_CLOUDELEMENT                "d738ab9f-1d5f-4ef5-aeb0-689279604b24"
+#define LXa_CLOUDELEMENT                "cloudelement"
+// [export]  ILxCloudElement celt
+#define LXu_SAMPLECLOUD         "813c9868-88af-4169-8149-38beaeae5923"
+#define LXa_SAMPLECLOUD         "samplecloud"
+// [local]  ILxSampleCloud      
 
  #ifdef __cplusplus
   }

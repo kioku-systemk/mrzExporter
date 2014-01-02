@@ -1,7 +1,7 @@
 /*
  * C++ wrapper for lxclip.h
  *
- *	Copyright (c) 2008-2012 Luxology LLC
+ *	Copyright (c) 2008-2013 Luxology LLC
  *	
  *	Permission is hereby granted, free of charge, to any person obtaining a
  *	copy of this software and associated documentation files (the "Software"),
@@ -30,6 +30,7 @@
 
 #include <lxclip.h>
 #include <lx_wrap.hpp>
+#include <string>
 
 namespace lx {
     static const LXtGUID guid_VideoClipItem = {0x340FD1AD,0xB576,0x4BC3,0x8B,0x6F,0x7D,0xF1,0xF5,0xC3,0x12,0xFB};
@@ -48,6 +49,12 @@ class CLxImpl_VideoClipItem {
       vclip_Cleanup (void *cache)
         { }
 };
+#define LXxD_VideoClipItem_PrepFilter LxResult vclip_PrepFilter (ILxUnknownID eval, void **cache)
+#define LXxO_VideoClipItem_PrepFilter LXxD_VideoClipItem_PrepFilter LXx_OVERRIDE
+#define LXxD_VideoClipItem_AllocFilter LxResult vclip_AllocFilter (ILxUnknownID attr, void *cache, void **ppvObj)
+#define LXxO_VideoClipItem_AllocFilter LXxD_VideoClipItem_AllocFilter LXx_OVERRIDE
+#define LXxD_VideoClipItem_Cleanup void vclip_Cleanup (void *cache)
+#define LXxO_VideoClipItem_Cleanup LXxD_VideoClipItem_Cleanup LXx_OVERRIDE
 template <class T>
 class CLxIfc_VideoClipItem : public CLxInterface
 {
@@ -101,6 +108,13 @@ public:
   AllocFilter (ILxUnknownID attr, void *cache, void **ppvObj)
   {
     return m_loc[0]->AllocFilter (m_loc,(ILxUnknownID)attr,cache,ppvObj);
+  }
+    bool
+  AllocFilter (ILxUnknownID attr, void *cache, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->AllocFilter (m_loc,(ILxUnknownID)attr,cache,&obj)) && dest.take(obj);
   }
     void
   Cleanup (void *cache)

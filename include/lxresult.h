@@ -1,7 +1,7 @@
 /*
  * LX result module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -58,6 +58,7 @@ typedef unsigned int            LxResult;
 #define LXe_NOTAVAILABLE        LXxFAILCODE(0,28)
 #define LXe_CRASH               LXxFAILCODE(0,29)
 #define LXe_SHORTBUFFER         LXxFAILCODE(0,30)
+#define LXe_RECOVERING          LXxFAILCODE(0,31)
 #define LXeSYS_IO               0x400
 #define LXeSYS_PLUG             0x410
 #define LXeSYS_IMAGE            0x420
@@ -85,6 +86,11 @@ typedef unsigned int            LxResult;
 #define LXeSYS_RENDER           0x640
 #define LXeSYS_EVAL             0x650
 #define LXeSYS_DEFORM           0x660
+#define LXeSYS_MT               0x670
+#define LXeSYS_PREVIEW          0x680
+#define LXeSYS_PSYS             0x690
+#define LXeSYS_UNDO             0x700
+#define LXeSYS_PRESET           0x710
 
  #ifdef __cplusplus
   }

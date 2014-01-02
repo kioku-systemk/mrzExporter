@@ -1,7 +1,7 @@
 /*
  * C++ wrapper for lxenvelope.h
  *
- *	Copyright (c) 2008-2012 Luxology LLC
+ *	Copyright (c) 2008-2013 Luxology LLC
  *	
  *	Permission is hereby granted, free of charge, to any person obtaining a
  *	copy of this software and associated documentation files (the "Software"),
@@ -30,6 +30,7 @@
 
 #include <lxenvelope.h>
 #include <lx_wrap.hpp>
+#include <string>
 
 namespace lx {
     static const LXtGUID guid_Keyframe = {0xD1D0261F,0x22CF,0x4E5D,0x82,0x2E,0x76,0xB5,0xDE,0xC9,0x8A,0xE4};
@@ -169,6 +170,13 @@ public:
   Enumerator (void **ppvObj)
   {
     return m_loc[0]->Enumerator (m_loc,ppvObj);
+  }
+    bool
+  Enumerator (CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Enumerator (m_loc,&obj)) && dest.take(obj);
   }
     LxResult
   EvaluateF (double time, double *value)

@@ -1,7 +1,7 @@
 /*
  * LX persist module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -112,11 +112,13 @@ typedef struct vt_ILxPersistentEntry {
 
 #define LXu_PERSISTENCESERVICE  "4CB5705E-C705-499D-9561-6FD369CEFE99"
 #define LXa_PERSISTENCESERVICE  "persistenceservice"
+// [python] ILxPersistenceService:End   obj PersistentEntry
 #define LXi_PERSIST_ATOM         0
 #define LXi_PERSIST_HASH         1
 #define LXi_PERSIST_LIST         2
 #define LXu_PERSISTENCECLIENT   "435E3BEE-8317-4DEB-92A8-74E115384F3F"
 #define LXa_PERSISTENCECLIENT   "persistenceclient"
+// [local]  ILxPersistenceClient
 // [export] ILxPersistenceClient cc
 #define LXu_PERSISTENTENTRY     "BD3F1DF5-967B-441F-86A7-A091F2E6CDA5"
 // [local] ILxPersistentEntry

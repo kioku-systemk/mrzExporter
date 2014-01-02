@@ -1,7 +1,7 @@
 /*
  * Plug-in SDK Header: SIMD Utilities
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -113,6 +113,11 @@ extern void	FarrayABset (Farray a, float b, unsigned num);
 extern void	FarrayABset (Farray a, FarrayC b, unsigned num);
 
 /*
+ *	a = a + b
+ */
+extern void	FarrayABp (Farray a, const float b, unsigned num);
+
+/*
  *	a = a * b
  */
 extern void	FarrayABx (Farray a, const float b, unsigned num);
@@ -161,9 +166,19 @@ extern void	FarrayVABclamp (Farray v, float a, float b, unsigned num);
 extern void	VarrayABxR (Varray r, VarrayC a, FarrayC b, unsigned num);
 
 /*
- * Because C++ can't teel the difference between float[3] and float*, we have to
+ *	a = a + b * c
+ */
+extern void	VarrayABCxp (Varray a, VarrayC b, float c, unsigned num);
+
+/*
+ * Because C++ can't tell the difference between float[3] and float*, we have to
  * pass the components of a non-varying vector individually.
  *
+ *	a = a + [x, y, z]
+ */
+extern void	VarrayAXYZvecp (Varray r, float x, float y, float z, unsigned num);
+
+/*
  *	a = a * [x, y, z]
  */
 extern void	VarrayAXYZvecx (Varray r, float x, float y, float z, unsigned num);

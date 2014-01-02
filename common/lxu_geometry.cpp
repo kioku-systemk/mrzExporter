@@ -1,7 +1,7 @@
 /*
  * Plug-in SDK Source: Geometry Utilities
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -37,16 +37,16 @@ using namespace std;
  * with normal smoothing for shared vertices.
  */
         void
-GenerateNormals (
-        vector<Point>		&points,
+lx::GenerateNormals (
+        vector<GeoPoint>	&points,
         vector<unsigned>	&triangles,
-        vector<Point>		&normals)
+        vector<GeoPoint>	&normals)
 {
         /*
          * Zero out the normals array.
          */
         normals.clear ();
-        Point	zeroVec;
+        GeoPoint	zeroVec;
         LXx_VCLR (zeroVec.vec);
         for (unsigned pointIndex = 0; pointIndex < points.size (); ++pointIndex) {
                 normals.push_back (zeroVec);
@@ -62,9 +62,9 @@ GenerateNormals (
                 unsigned pi1 = triangles[triIndex + 1];
                 unsigned pi2 = triangles[triIndex + 2];
 
-                Point    *p0 = &points[pi0];
-                Point    *p1 = &points[pi1];
-                Point    *p2 = &points[pi2];
+                GeoPoint    *p0 = &points[pi0];
+                GeoPoint    *p1 = &points[pi1];
+                GeoPoint    *p2 = &points[pi2];
 
                 /*
                  * Compute the face normal.
@@ -94,9 +94,9 @@ GenerateNormals (
                  * Accumulate the normals at vertices shared by
                  * more than one face.
                  */
-                Point    *n0 = &normals[pi0];
-                Point    *n1 = &normals[pi1];
-                Point    *n2 = &normals[pi2];
+                GeoPoint    *n0 = &normals[pi0];
+                GeoPoint    *n1 = &normals[pi1];
+                GeoPoint    *n2 = &normals[pi2];
 
                 LXx_VADD (n0->vec, normal);
                 LXx_VADD (n1->vec, normal);
@@ -167,19 +167,19 @@ UVGradient (
  * Generate vertex dPdu/dPdv values, with smoothing for shared vertices.
  */
         void
-GenerateDPDUs (
-        vector<Point>		&points,
-        vector<UV>		&uvs,
+lx::GenerateDPDUs (
+        vector<GeoPoint>	&points,
+        vector<GeoUV>		&uvs,
         vector<unsigned>	&triangles,
-        vector<Point>		&dPdus,
-        vector<Point>		&dPdvs)
+        vector<GeoPoint>	&dPdus,
+        vector<GeoPoint>	&dPdvs)
 {
         /*
          * Zero out the dPdu arrays.
          */
         dPdus.clear ();
         dPdvs.clear ();
-        Point	zeroVec;
+        GeoPoint	zeroVec;
         LXx_VCLR (zeroVec.vec);
         unsigned pointIndex;
         for (pointIndex = 0; pointIndex < points.size (); ++pointIndex) {
@@ -206,13 +206,13 @@ GenerateDPDUs (
                 /*
                  * Fetch the points indexed by the triangle.
                  */
-                Point    *p0 = &points[pi0];
-                Point    *p1 = &points[pi1];
-                Point    *p2 = &points[pi2];
+                GeoPoint    *p0 = &points[pi0];
+                GeoPoint    *p1 = &points[pi1];
+                GeoPoint    *p2 = &points[pi2];
 
-                UV    *uv0 = &uvs[pi0];
-                UV    *uv1 = &uvs[pi1];
-                UV    *uv2 = &uvs[triangles[triIndex + 2]];
+                GeoUV    *uv0 = &uvs[pi0];
+                GeoUV    *uv1 = &uvs[pi1];
+                GeoUV    *uv2 = &uvs[triangles[triIndex + 2]];
 
                 LXtVector	dPdu, dPdv;
                 if (!UVGradient (p0->vec, p1->vec, p2->vec,
@@ -229,17 +229,17 @@ GenerateDPDUs (
                  * Accumulate the dPdus. Vertices shared by more than one
                  * face will be finalized in a second pass later on.
                  */
-                Point    *dPdu0 = &dPdus[pi0];
-                Point    *dPdu1 = &dPdus[pi1];
-                Point    *dPdu2 = &dPdus[pi2];
+                GeoPoint    *dPdu0 = &dPdus[pi0];
+                GeoPoint    *dPdu1 = &dPdus[pi1];
+                GeoPoint    *dPdu2 = &dPdus[pi2];
 
                 LXx_VADD (dPdu0->vec, dPdu);
                 LXx_VADD (dPdu1->vec, dPdu);
                 LXx_VADD (dPdu2->vec, dPdu);
 
-                Point    *dPdv0 = &dPdvs[pi0];
-                Point    *dPdv1 = &dPdvs[pi1];
-                Point    *dPdv2 = &dPdvs[pi2];
+                GeoPoint    *dPdv0 = &dPdvs[pi0];
+                GeoPoint    *dPdv1 = &dPdvs[pi1];
+                GeoPoint    *dPdv2 = &dPdvs[pi2];
 
                 LXx_VADD (dPdv0->vec, dPdv);
                 LXx_VADD (dPdv1->vec, dPdv);
@@ -252,8 +252,8 @@ GenerateDPDUs (
         for (pointIndex = 0; pointIndex < points.size (); ++pointIndex) {
                 unsigned refCount = refCounts[pointIndex];
                 if (refCount > 1) {
-                        Point    *dPdu = &dPdus[pointIndex];
-                        Point    *dPdv = &dPdvs[pointIndex];
+                        GeoPoint    *dPdu = &dPdus[pointIndex];
+                        GeoPoint    *dPdv = &dPdvs[pointIndex];
 
                         double invN = 1.0 / refCount;
 

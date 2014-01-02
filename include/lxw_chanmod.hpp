@@ -1,7 +1,7 @@
 /*
  * C++ wrapper for lxchanmod.h
  *
- *	Copyright (c) 2008-2012 Luxology LLC
+ *	Copyright (c) 2008-2013 Luxology LLC
  *	
  *	Permission is hereby granted, free of charge, to any person obtaining a
  *	copy of this software and associated documentation files (the "Software"),
@@ -30,6 +30,7 @@
 
 #include <lxchanmod.h>
 #include <lx_wrap.hpp>
+#include <string>
 
 namespace lx {
     static const LXtGUID guid_ChannelModItem = {0x1955CFD9,0x9E56,0x42AB,0x94,0xC8,0xBF,0x6B,0xE1,0xB0,0x69,0xD6};
@@ -52,6 +53,14 @@ class CLxImpl_ChannelModItem {
       cmod_Cleanup (void *data)
         { }
 };
+#define LXxD_ChannelModItem_Allocate LxResult cmod_Allocate (ILxUnknownID cmod, ILxUnknownID eval, ILxUnknownID item, void **ppvData)
+#define LXxO_ChannelModItem_Allocate LXxD_ChannelModItem_Allocate LXx_OVERRIDE
+#define LXxD_ChannelModItem_Flags unsigned int cmod_Flags (ILxUnknownID item, unsigned int index)
+#define LXxO_ChannelModItem_Flags LXxD_ChannelModItem_Flags LXx_OVERRIDE
+#define LXxD_ChannelModItem_Evaluate LxResult cmod_Evaluate (ILxUnknownID cmod, ILxUnknownID attr, void *data)
+#define LXxO_ChannelModItem_Evaluate LXxD_ChannelModItem_Evaluate LXx_OVERRIDE
+#define LXxD_ChannelModItem_Cleanup void cmod_Cleanup (void *data)
+#define LXxO_ChannelModItem_Cleanup LXxD_ChannelModItem_Cleanup LXx_OVERRIDE
 template <class T>
 class CLxIfc_ChannelModItem : public CLxInterface
 {

@@ -1,7 +1,7 @@
 /*
  * Plug-in SDK Source: C++ COM Wrapper Implementation
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -28,8 +28,10 @@
  * These are the functions and methods common to the plug-in and API wrappers.
  */
 #include <lx_wrap.hpp>
+#include <lx_log.hpp>
+#include <lx_thread.hpp>
 #include <lxu_getstring.hpp>
-#include <lxthread.h>
+#include <vector>
 #include <map>
 
 using namespace lx;
@@ -142,6 +144,27 @@ lx::GetGlobal (
 
 
 /*
+ * Throw a LxResult exception for failure codes. The optional variant allows
+ * for NOTIMPL as a valid code.
+ */
+        void
+lx::ThrowErr (
+        LxResult		 rc)
+{
+        if (LXx_FAIL (rc))
+                throw (rc);
+}
+
+        void
+lx::ThrowOpt (
+        LxResult		 rc)
+{
+        if (rc != LXe_NOTIMPL)
+                lx::ThrowErr (rc);
+}
+
+
+/*
  * Send string back to modo, perhaps raising the "short buffer" error.
  */
         LxResult
@@ -168,6 +191,44 @@ static const LXtGUID		 iUnknown = {
         0, { 0, 0 }, { 0, 0, 0, 0, 0, 0, 0, 0xC4 }
 };
 
+
+
+/*
+ * ----------------------------------------------------------
+ * Utility Class Methods:
+ */
+
+CLxRefCounted::CLxRefCounted ()
+{
+        ref_count = 1;
+
+ #ifdef LX_TRACEALLOC
+        trace_mode = false;
+ #endif
+}
+
+        void
+CLxRefCounted::acquire ()
+{
+        ref_count++;
+
+ #ifdef LX_TRACEALLOC
+        if (trace_mode)
+                trace_Change (1);
+ #endif
+}
+
+        void
+CLxRefCounted::release ()
+{
+ #ifdef LX_TRACEALLOC
+        if (trace_mode)
+                trace_Change (-1);
+ #endif
+
+        if (--ref_count == 0)
+                delete this;
+}
 
 
 /*
@@ -238,6 +299,9 @@ CLxGenericPolymorph::QueryInterface (
         LXtCOMInstance		*inst = wcom->instance;
         CLxInterface		*wrap;
 
+        if (!inst->polymorph)
+                return LXe_NOINTERFACE;
+
         wrap = inst->polymorph->FindIID (iid);
         if (!wrap)
                 return LXe_NOINTERFACE;
@@ -279,8 +343,11 @@ CLxGenericPolymorph::Release (
         if (inst->refCount)
                 return 0;
 
-        inst->polymorph->obj_list.Remove (inst);
-        inst->polymorph->FreeObj (inst->object);
+        if (inst->polymorph)
+        {
+                inst->polymorph->obj_list.Remove (inst);
+                inst->polymorph->FreeObj (inst->object);
+        }
         delete inst;
         return 0;
 }
@@ -347,6 +414,25 @@ CLxGenericPolymorph::Spawn (
         obj_list.AddHead (inst);
 
         return (ILxUnknownID) NewProxy (inst, wrap);
+}
+
+
+/*
+ * When destroying the polymorph we cut loose any instances and make them
+ * zombies.
+ */
+CLxGenericPolymorph::~CLxGenericPolymorph ()
+{
+        LXtCOMInstance		*inst;
+        LXtCOMProxy		*wcom;
+
+        for (inst = obj_list.first; inst; inst = inst->next)
+        {
+                inst->polymorph = 0;
+                inst->object    = 0;
+                for (wcom = inst->proxyList.first; wcom; wcom = wcom->next)
+                        wcom->object = 0;
+        }
 }
 
 
@@ -627,5 +713,242 @@ CLxGlobalCache::FindSpawner (
 
         return tit->second;
 }
+
+
+/*
+ * ----------------------------------------------------------
+ * Error-checking that throws exceptions.
+ */
+        void
+lx_err::check (
+        LxResult		 rc)
+{
+        if (LXx_FAIL (rc))
+                throw (rc);
+}
+
+        void
+lx_err::check (
+        bool			 ok,
+        LxResult		 rc)
+{
+        if (!ok)
+                throw (rc);
+}
+
+        void
+lx_err::check (
+        int			 nonNeg,
+        LxResult		 rc)
+{
+        if (nonNeg < 0)
+                throw (rc);
+}
+
+
+/*
+ * ----------------------------------------------------------
+ * Memory tracking.
+ */
+        #ifndef LX_TRACEALLOC
+
+/*
+ * If there's no tracking we just need a no-op main entry point.
+ */
+        void
+lx::TraceObjects (
+        bool			 full,
+        bool			 toLog)
+{
+}
+
+        #else
+
+/*
+ * Tracking is handled by a table that's local to this plug-in module.
+ * It keeps a stack of location strings and a map from object pointers
+ * to descriptions.
+ */
+static class CAllocTrace {
+    public:
+        std::vector<const char *>		 stack;
+        std::map<CLxObject *, std::string>	 map;
+
+                void
+        get_Desc (
+                std::string		&desc)
+        {
+                int			 i = stack.size ();
+
+                if (!i)
+                {
+                        desc = "(unk)";
+                        return;
+                }
+
+                desc = "";
+                for (i--; i >= 0; i--)
+                {
+                        desc += stack[i];
+                        if (i)
+                                desc += " | ";
+                }
+        }
+}				 alloc_trace;
+
+static CLxMutexLock		*lock_trace;
+
+
+/*
+ * The trace object pushes and pops its description string for its scope.
+ */
+CLxTrace::CLxTrace (
+        const char		*name)
+{
+        if (!lock_trace)
+                lock_trace = new CLxMutexLock;
+
+        CLxArmLockedMutex	 scope_lock (*lock_trace);
+
+        alloc_trace.stack.push_back (name);
+}
+
+CLxTrace::~CLxTrace ()
+{
+        CLxArmLockedMutex	 scope_lock (*lock_trace);
+
+        alloc_trace.stack.pop_back ();
+}
+
+/*
+ * Objects store themselves in the map when allocated, erase when freed.
+ */
+CLxObject::CLxObject ()
+{
+        std::string		 desc;
+
+        alloc_trace.get_Desc (desc);
+        alloc_trace.map[this] = desc;
+}
+
+CLxObject::~CLxObject ()
+{
+        alloc_trace.map.erase (this);
+}
+
+
+/*
+ * Trace output can go to stdout and to the log, which we handle with two
+ * varients of the same abstract class.
+ *
+ * NOTE: log is unimplemented.
+ */
+class CTraceOut {
+    public:
+        virtual			~CTraceOut () {}
+        virtual void		 ln_Out (const char *line) {}
+
+                void
+        ln_Out (
+                std::string	 &line)
+        {
+                ln_Out (line.c_str ());
+        }
+};
+
+class CTrace_Stdout : public CTraceOut {
+    public:
+                void
+        ln_Out (
+                const char	*line)
+        {
+                fputs (line, stdout);
+        }
+};
+
+class CTrace_Log : public CTraceOut {
+    public:
+        CLxUser_LogService	 lS;
+
+        CTrace_Log ()
+        {
+        }
+
+                void
+        ln_Out (
+                const char	*line)
+        {
+        }
+};
+
+/*
+ * Trace output can be the whole table or just a summary of the common
+ * descriptions.
+ */
+        void
+lx::TraceObjects (
+        bool			 full,
+        bool			 toLog)
+{
+        CTraceOut		*out;
+        std::map<CLxObject *,std::string>::iterator
+                                 mit, term;
+        std::string		 line;
+        char			 buf[64];
+
+        if (toLog)
+                out = new CTrace_Log;
+        else
+                out = new CTrace_Stdout;
+
+        CLxArmAllocation<CTraceOut> free_out (out);
+
+        mit  = alloc_trace.map.begin ();
+        term = alloc_trace.map.end ();
+        if (mit == term)
+        {
+                out->ln_Out ("no unfreed objects");
+                return;
+        }
+
+        if (full)
+        {
+                for (; mit != term; mit++)
+                {
+                        sprintf (buf, "%p", mit->first);
+                        line = buf;
+                        line += " @ ";
+                        line += mit->second;
+
+                        out->ln_Out (line);
+                }
+
+                return;
+        }
+
+        std::map<std::string,int>		 hist;
+        std::map<std::string,int>::iterator	 hit;
+
+        for (; mit != term; mit++)
+        {
+                hit = hist.find (mit->second);
+                if (hit != hist.end ())
+                        hit->second ++;
+                else
+                        hist[mit->second] = 0;
+        }
+
+        for (hit = hist.begin (); hit != hist.end (); hit++)
+        {
+                sprintf (buf, "%d", hit->second);
+                line = buf;
+                line += ": ";
+                line += hit->first;
+
+                out->ln_Out (line);
+        }
+}
+
+        #endif
 
 

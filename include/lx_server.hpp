@@ -1,7 +1,7 @@
 /*
  * Plug-in SDK Header: C++ User Classes
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -40,12 +40,7 @@ class CLxUser_Factory : public CLxLoc_Factory
         New (
                 CLxLocalizedObject      &loc)
         {
-                LXtObjectID              obj;
-
-                if (LXx_FAIL (Spawn (&obj)))
-                        return false;
-
-                return loc.take (obj);
+                return Spawn (loc);
         }
 };
 class CLxUser_HostService : public CLxLoc_HostService

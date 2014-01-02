@@ -1,7 +1,7 @@
 /*
  * LX rndr module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -30,11 +30,8 @@
   extern "C" {
  #endif
 
-
 typedef struct vt_ILxRenderBucket ** ILxRenderBucketID;
 #include <lxvector.h>
-
-
 
 #define LXiIP_ALL_OPERATORS_ENABLED     0xFFFFFFFF
 #define LXiIP_ALL_OPERATORS_DISABLED    0x00000000
@@ -46,30 +43,35 @@ typedef struct vt_ILxRenderBucket ** ILxRenderBucketID;
 #define LXiIP_SOURCE_IMAGE_GAMMA        0x00000004
 
 #define LXiIP_BLOOM                     0x00000008
-#define LXiIP_LEVEL_OFFSET              0x00000010
-#define LXiIP_RGB_LEVEL_OFFSET          0x00000020
 
-#define LXiIP_INPUT_BLACK_LEVEL         0x00000040
-#define LXiIP_INPUT_GRAY_LEVEL          0x00000080
-#define LXiIP_INPUT_WHITE_LEVEL         0x00000100
+#define LXiIP_VIGNETTE                  0x00000010
 
-#define LXiIP_INPUT_MIN_RGB_LEVEL       0x00000200
-#define LXiIP_INPUT_RGB_GRAY_LEVEL      0x00000400
-#define LXiIP_INPUT_MAX_RGB_LEVEL       0x00000800
+#define LXiIP_LEVEL_OFFSET              0x00000020
+#define LXiIP_RGB_LEVEL_OFFSET          0x00000040
 
-#define LXiIP_TONE_MAPPING              0x00001000
-#define LXiIP_HUE_OFFSET                0x00002000
-#define LXiIP_SATURATION                0x00004000
-#define LXiIP_COLORIZATION              0x00008000
-#define LXiIP_OUTPUT_BLACK_LEVEL        0x00010000
-#define LXiIP_OUTPUT_WHITE_LEVEL        0x00020000
+#define LXiIP_INPUT_BLACK_LEVEL         0x00000080
+#define LXiIP_INPUT_GRAY_LEVEL          0x00000100
+#define LXiIP_INPUT_WHITE_LEVEL         0x00000200
 
-#define LXiIP_OUTPUT_MIN_RGB_LEVEL      0x00040000
-#define LXiIP_OUTPUT_MAX_RGB_LEVEL      0x00080000
+#define LXiIP_INPUT_MIN_RGB_LEVEL       0x00000400
+#define LXiIP_INPUT_RGB_GRAY_LEVEL      0x00000800
+#define LXiIP_INPUT_MAX_RGB_LEVEL       0x00001000
 
-#define LXiIP_OUTPUT_GAMMA              0x00100000
+#define LXiIP_TONE_MAPPING              0x00002000
+#define LXiIP_HUE_OFFSET                0x00004000
+#define LXiIP_SATURATION                0x00008000
+#define LXiIP_COLORIZATION              0x00010000
+#define LXiIP_OUTPUT_BLACK_LEVEL        0x00020000
+#define LXiIP_OUTPUT_WHITE_LEVEL        0x00040000
 
-#define LXiIP_DITHER                    0x00200000
+#define LXiIP_OUTPUT_MIN_RGB_LEVEL      0x00080000
+#define LXiIP_OUTPUT_MAX_RGB_LEVEL      0x00100000
+
+#define LXiIP_OUTPUT_GAMMA              0x00200000
+
+#define LXiIP_DITHER                    0x00400000
+
+#define LXiIP_USE_DISPLAY_GAMMA_PREF    0x00800000              // If both this and OUTPUT_GAMMA are set, OUTPUT_GAMMA is used
 
 typedef unsigned int                    LXtImageProcessingOperators;
 
@@ -100,7 +102,7 @@ typedef unsigned int                    LXtStereoEye;
 
 typedef unsigned int                    LXtStereoComposite;
 
-typedef struct st_RenderOutputProcess
+typedef struct st_LXtRenderOutputProcess
 {
         LXtImageProcessingOperators     ops;
 
@@ -122,6 +124,8 @@ typedef struct st_RenderOutputProcess
         int                             bloom;
         float                           bloomThr;
         float                           bloomRad;
+
+        float                           invResX, invResY, vignAmt;
 
         float                           levelOffset;
         float                           redLevelOffset;
@@ -176,16 +180,15 @@ typedef struct st_RenderOutputProcess
         float                           invGamma;
         char                            userName[64];
         char                            identity[256];
-} RenderOutputProcess;
+} LXtRenderOutputProcess;
 
 #define RENDER_OUTPUT_MAX        256
 
-typedef struct st_RenderOutputProcessList
+typedef struct st_LXtRenderOutputProcessList
 {
         unsigned                 count;
-        RenderOutputProcess      outputs[RENDER_OUTPUT_MAX];
-} RenderOutputProcessList;
-
+        LXtRenderOutputProcess   outputs[RENDER_OUTPUT_MAX];
+} LXtRenderOutputProcessList;
 #define LXiRENDEROUTPUT_INVALID         -1
 
 #define LXiRENDEROUTPUT_COLOR            0
@@ -225,46 +228,61 @@ typedef struct st_RenderOutputProcessList
 #define LXiRENDEROUTPUT_ICPOS            27
 #define LXiRENDEROUTPUT_ICVAL            28
 
-#define LXiRENDEROUTPUT_MDIFF            29
-#define LXiRENDEROUTPUT_MSPEC            30
-#define LXiRENDEROUTPUT_MREFL            31
+#define LXiRENDEROUTPUT_MDIFFCOL         29
+#define LXiRENDEROUTPUT_MDIFFAMT         30
+#define LXiRENDEROUTPUT_MDIFFENG         31
+#define LXiRENDEROUTPUT_MDIFF            32
+#define LXiRENDEROUTPUT_MSPEC            33
+#define LXiRENDEROUTPUT_MREFL            34
 
-#define LXiRENDEROUTPUT_ILLUM            32
-#define LXiRENDEROUTPUT_ILLUMDIR         33
-#define LXiRENDEROUTPUT_ILLUMIND         34
-#define LXiRENDEROUTPUT_ILLUMUNS         35
+#define LXiRENDEROUTPUT_ILLUM            35
+#define LXiRENDEROUTPUT_ILLUMDIR         36
+#define LXiRENDEROUTPUT_ILLUMIND         37
+#define LXiRENDEROUTPUT_ILLUMUNS         38
 
-#define LXiRENDEROUTPUT_SAMPLES          36
+#define LXiRENDEROUTPUT_SAMPLES          39
 
-#define LXiRENDEROUTPUT_VOL_LUM          37
-#define LXiRENDEROUTPUT_VOL_OPA          38
-#define LXiRENDEROUTPUT_VOL_DEPTH        39
+#define LXiRENDEROUTPUT_VOL_LUM          40
+#define LXiRENDEROUTPUT_VOL_OPA          41
+#define LXiRENDEROUTPUT_VOL_DEPTH        42
 
 typedef struct vt_ILxRenderBucket {
         ILxUnknown       iunk;
-
-
                 LXxMETHOD(  unsigned int,
         Thread) (
                 LXtObjectID              self);
-
                 LXxMETHOD(  LxResult,
         SampleVec) (
                 LXtObjectID              self,
                 void                   **ppvObj);
-
                 LXxMETHOD(  LxResult,
         PushRay) (
                 LXtObjectID              self);
-
                 LXxMETHOD(  LxResult,
         PopRay) (
+                LXtObjectID              self);
+                LXxMETHOD (  int,
+        GetGIBounce) (
+                LXtObjectID              self);
+                LXxMETHOD (  void,
+        GetPixel) (
+                LXtObjectID              self,
+                int                     *x,
+                int                     *y);
+                LXxMETHOD (  void,
+        GetSubPixel) (
+                LXtObjectID              self,
+                float                   *x,
+                float                   *y);
+                LXxMETHOD (  float,
+        GetTimeOffset) (
                 LXtObjectID              self);
 } ILxRenderBucket;
 
 #define LXe_GEO_SIZE_LIMIT       LXxFAILCODE(LXeSYS_REND,1)
 #define LXu_RENDERBUCKET        "ED6F0ABE-F76F-4EED-BEF5-A30FF7F71098"
-#define SVPs_RENDERBUCKET       "renderBucket"
+#define LXa_RENDERBUCKET        "renderBucket"
+#define LXsP_RENDERBUCKET       "renderBucket"
 
  #ifdef __cplusplus
   }

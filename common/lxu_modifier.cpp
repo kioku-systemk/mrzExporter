@@ -1,7 +1,7 @@
 /*
  * Plug-in SDK Source: Modifier Wrappers
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -141,6 +141,16 @@ CLxItemModifierServer::eval_Alloc (
         return LXe_OK;
 }
 
+
+/*
+ * Free the allocated element.
+ */
+CLxItemModifierNode::~CLxItemModifierNode ()
+{
+        delete p_elt;
+}
+
+
 /*
  * Test if this modifier node matches what we would create with Alloc().
  */
@@ -233,6 +243,116 @@ CLxObjectRefModifierCore::Eval (
         Alloc (eval, attr, 1, obj);
         ref.SetObject (obj);
         lx::UnkRelease (obj);
+}
+
+        void
+CLxRenderCamera::Camera (
+        CLxUser_Evaluation	&eval, 
+        CLxUser_Item		&camera)
+{
+        CLxUser_Scene		 scene (sceneObj);
+        int			 index;
+
+        index = scene.GetRenderCameraIndex (eval);
+        scene.GetRenderCameraByIndex (index, camera);
+}
+
+/*
+ * These implement the RenderCamera utility class.
+ */
+
+        void
+CLxRenderCamera::BuildList (void)
+{
+        ILxUnknownID		 camObj;
+        CLxUser_Scene		 scene (sceneObj);
+        CLxUser_Item		 camera;
+        int			 count;
+        
+        cameraList.clear ();
+
+        count = scene.NRenderCameras ();
+        if (count == 0) {
+                scene.GetRenderCameraByIndex (-1, camera);
+                camera.get ((void **) &camObj);
+                cameraList.push_back (camObj);
+        }
+        else {
+                for (int i = 0; i < count; i++) {
+                        scene.GetRenderCameraByIndex (i, camera);
+                        camera.get ((void **) &camObj);
+                        cameraList.push_back (camObj);
+                }
+        }
+}
+
+        bool
+CLxRenderCamera::ListIsValid (void)
+{
+        ILxUnknownID		 camObj;
+        CLxUser_Scene		 scene (sceneObj);
+        CLxUser_Item		 camera;
+        int			 count;
+
+        count = scene.NRenderCameras ();
+        if (count == 0) {
+                if (cameraList.size() != 1)
+                        return false;
+
+                scene.GetRenderCameraByIndex (-1, camera);
+                camera.get ((void **) &camObj);
+                if (camObj != cameraList[0])
+                        return false;
+        }
+        else if (count != cameraList.size ()) {
+                return false;
+        }
+        else {
+                for (int i = 0; i < count; i++) {
+                        scene.GetRenderCameraByIndex (i, camera);
+                        camera.get ((void **) &camObj);
+                        if (camObj != cameraList[i])
+                                return false;
+                }
+        }
+
+        return true;
+}
+
+        unsigned
+CLxRenderCamera::AttachIndexChan (
+        CLxUser_Evaluation	&eval)
+{
+        CLxUser_Scene		 scene (sceneObj);
+        CLxUser_Item		 render_item;
+        unsigned		 chanIdx;
+
+        scene.GetItem (LXi_CIT_RENDER, 0, render_item);
+
+        render_item.ChannelLookup ("cameraIndex", &chanIdx);
+
+        this->chanIndex = eval.AddChan (render_item, chanIdx);
+
+        return this->chanIndex;
+}
+
+        int
+CLxRenderCamera::Camera (CLxUser_Attributes &attr)
+{
+        return attr.Int (this->chanIndex);
+}
+
+        size_t
+CLxRenderCamera::size (void)
+{
+        return cameraList.size();
+}
+
+        ILxUnknownID &
+CLxRenderCamera::operator[] (
+        const int		 index)
+{
+        return cameraList[index];
 }
 
 

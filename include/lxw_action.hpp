@@ -1,7 +1,7 @@
 /*
  * C++ wrapper for lxaction.h
  *
- *	Copyright (c) 2008-2012 Luxology LLC
+ *	Copyright (c) 2008-2013 Luxology LLC
  *	
  *	Permission is hereby granted, free of charge, to any person obtaining a
  *	copy of this software and associated documentation files (the "Software"),
@@ -30,6 +30,7 @@
 
 #include <lxaction.h>
 #include <lx_wrap.hpp>
+#include <string>
 
 namespace lx {
     static const LXtGUID guid_ChannelWrite = {0x91BFE3B8,0x16C6,0x4195,0xBF,0xE5,0x3F,0x0E,0x3C,0x0C,0x5C,0x57};
@@ -55,6 +56,13 @@ public:
   {
     return m_loc[0]->ValueObj (m_loc,(ILxUnknownID)item,channel,ppvObj);
   }
+    bool
+  ValueObj (ILxUnknownID item, unsigned int channel, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->ValueObj (m_loc,(ILxUnknownID)item,channel,&obj)) && dest.take(obj);
+  }
     LxResult
   Integer (ILxUnknownID item, unsigned int channel, int value)
   {
@@ -74,6 +82,13 @@ public:
   Envelope (ILxUnknownID item, unsigned int channel, void **ppvObj)
   {
     return m_loc[0]->Envelope (m_loc,(ILxUnknownID)item,channel,ppvObj);
+  }
+    bool
+  Envelope (ILxUnknownID item, unsigned int channel, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Envelope (m_loc,(ILxUnknownID)item,channel,&obj)) && dest.take(obj);
   }
     LxResult
   IntegerKey (ILxUnknownID item, unsigned int channel, int value, int create)
@@ -95,11 +110,21 @@ public:
   {
     return m_loc[0]->BakeSamples (m_loc,(ILxUnknownID)item,channel,firstSample,spsRate,ppvObj);
   }
+    bool
+  BakeSamples (ILxUnknownID item, unsigned int channel, double firstSample, double spsRate, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->BakeSamples (m_loc,(ILxUnknownID)item,channel,firstSample,spsRate,&obj)) && dest.take(obj);
+  }
 };
 
 class CLxImpl_SimulationModifier {
   public:
     virtual ~CLxImpl_SimulationModifier() {}
+    virtual LxResult
+      sim_Enabled (ILxUnknownID chanRead)
+        { return LXe_TRUE; }
     virtual LxResult
       sim_Initialize (double time, double sample)
         { return LXe_NOTIMPL; }
@@ -112,10 +137,33 @@ class CLxImpl_SimulationModifier {
     virtual LxResult
       sim_Step (double dt)
         { return LXe_NOTIMPL; }
+    virtual LxResult
+      sim_Bake (double time)
+        { return LXe_NOTIMPL; }
 };
+#define LXxD_SimulationModifier_Enabled LxResult sim_Enabled (ILxUnknownID chanRead)
+#define LXxO_SimulationModifier_Enabled LXxD_SimulationModifier_Enabled LXx_OVERRIDE
+#define LXxD_SimulationModifier_Initialize LxResult sim_Initialize (double time, double sample)
+#define LXxO_SimulationModifier_Initialize LXxD_SimulationModifier_Initialize LXx_OVERRIDE
+#define LXxD_SimulationModifier_Cleanup void sim_Cleanup (void)
+#define LXxO_SimulationModifier_Cleanup LXxD_SimulationModifier_Cleanup LXx_OVERRIDE
+#define LXxD_SimulationModifier_StepSize LxResult sim_StepSize (double *stepSize)
+#define LXxO_SimulationModifier_StepSize LXxD_SimulationModifier_StepSize LXx_OVERRIDE
+#define LXxD_SimulationModifier_Step LxResult sim_Step (double dt)
+#define LXxO_SimulationModifier_Step LXxD_SimulationModifier_Step LXx_OVERRIDE
+#define LXxD_SimulationModifier_Bake LxResult sim_Bake (double time)
+#define LXxO_SimulationModifier_Bake LXxD_SimulationModifier_Bake LXx_OVERRIDE
 template <class T>
 class CLxIfc_SimulationModifier : public CLxInterface
 {
+    static LxResult
+  Enabled (LXtObjectID wcom, LXtObjectID chanRead)
+  {
+    LXCWxINST (CLxImpl_SimulationModifier, loc);
+    try {
+      return loc->sim_Enabled ((ILxUnknownID)chanRead);
+    } catch (LxResult rc) { return rc; }
+  }
     static LxResult
   Initialize (LXtObjectID wcom, double time, double sample)
   {
@@ -146,19 +194,143 @@ class CLxIfc_SimulationModifier : public CLxInterface
       return loc->sim_Step (dt);
     } catch (LxResult rc) { return rc; }
   }
+    static LxResult
+  Bake (LXtObjectID wcom, double time)
+  {
+    LXCWxINST (CLxImpl_SimulationModifier, loc);
+    try {
+      return loc->sim_Bake (time);
+    } catch (LxResult rc) { return rc; }
+  }
   ILxSimulationModifier vt;
 public:
   CLxIfc_SimulationModifier ()
   {
+    vt.Enabled = Enabled;
     vt.Initialize = Initialize;
     vt.Cleanup = Cleanup;
     vt.StepSize = StepSize;
     vt.Step = Step;
+    vt.Bake = Bake;
     vTable = &vt.iunk;
     iid = &lx::guid_SimulationModifier;
   }
 };
+class CLxLoc_SimulationModifier : public CLxLocalize<ILxSimulationModifierID>
+{
+public:
+  void _init() {m_loc=0;}
+  CLxLoc_SimulationModifier() {_init();}
+  CLxLoc_SimulationModifier(ILxUnknownID obj) {_init();set(obj);}
+  CLxLoc_SimulationModifier(const CLxLoc_SimulationModifier &other) {_init();set(other.m_loc);}
+  const LXtGUID * guid() const {return &lx::guid_SimulationModifier;}
+    LxResult
+  Enabled (ILxUnknownID chanRead)
+  {
+    return m_loc[0]->Enabled (m_loc,(ILxUnknownID)chanRead);
+  }
+    LxResult
+  Initialize (double time, double sample)
+  {
+    return m_loc[0]->Initialize (m_loc,time,sample);
+  }
+    void
+  Cleanup (void)
+  {
+    m_loc[0]->Cleanup (m_loc);
+  }
+    LxResult
+  StepSize (double *stepSize)
+  {
+    return m_loc[0]->StepSize (m_loc,stepSize);
+  }
+    LxResult
+  Step (double dt)
+  {
+    return m_loc[0]->Step (m_loc,dt);
+  }
+    LxResult
+  Bake (double time)
+  {
+    return m_loc[0]->Bake (m_loc,time);
+  }
+};
 
+class CLxImpl_ActionListener {
+  public:
+    virtual ~CLxImpl_ActionListener() {}
+    virtual void
+      actl_ActionChannelSignal (ILxUnknownID item, unsigned channel)
+        { }
+    virtual void
+      actl_ActionChannelConstantChange (ILxUnknownID item, unsigned channel)
+        { }
+    virtual void
+      actl_ActionChannelConstantPreChange (ILxUnknownID item, unsigned channel)
+        { }
+};
+#define LXxD_ActionListener_ActionChannelSignal void actl_ActionChannelSignal (ILxUnknownID item, unsigned channel)
+#define LXxO_ActionListener_ActionChannelSignal LXxD_ActionListener_ActionChannelSignal LXx_OVERRIDE
+#define LXxD_ActionListener_ActionChannelConstantChange void actl_ActionChannelConstantChange (ILxUnknownID item, unsigned channel)
+#define LXxO_ActionListener_ActionChannelConstantChange LXxD_ActionListener_ActionChannelConstantChange LXx_OVERRIDE
+#define LXxD_ActionListener_ActionChannelConstantPreChange void actl_ActionChannelConstantPreChange (ILxUnknownID item, unsigned channel)
+#define LXxO_ActionListener_ActionChannelConstantPreChange LXxD_ActionListener_ActionChannelConstantPreChange LXx_OVERRIDE
+template <class T>
+class CLxIfc_ActionListener : public CLxInterface
+{
+    static void
+  ActionChannelSignal (LXtObjectID wcom, LXtObjectID item, unsigned channel)
+  {
+    LXCWxINST (CLxImpl_ActionListener, loc);
+    loc->actl_ActionChannelSignal ((ILxUnknownID)item,channel);
+  }
+    static void
+  ActionChannelConstantChange (LXtObjectID wcom, LXtObjectID item, unsigned channel)
+  {
+    LXCWxINST (CLxImpl_ActionListener, loc);
+    loc->actl_ActionChannelConstantChange ((ILxUnknownID)item,channel);
+  }
+    static void
+  ActionChannelConstantPreChange (LXtObjectID wcom, LXtObjectID item, unsigned channel)
+  {
+    LXCWxINST (CLxImpl_ActionListener, loc);
+    loc->actl_ActionChannelConstantPreChange ((ILxUnknownID)item,channel);
+  }
+  ILxActionListener vt;
+public:
+  CLxIfc_ActionListener ()
+  {
+    vt.ActionChannelSignal = ActionChannelSignal;
+    vt.ActionChannelConstantChange = ActionChannelConstantChange;
+    vt.ActionChannelConstantPreChange = ActionChannelConstantPreChange;
+    vTable = &vt.iunk;
+    iid = &lx::guid_ActionListener;
+  }
+};
+class CLxLoc_ActionListener : public CLxLocalize<ILxActionListenerID>
+{
+public:
+  void _init() {m_loc=0;}
+  CLxLoc_ActionListener() {_init();}
+  CLxLoc_ActionListener(ILxUnknownID obj) {_init();set(obj);}
+  CLxLoc_ActionListener(const CLxLoc_ActionListener &other) {_init();set(other.m_loc);}
+  const LXtGUID * guid() const {return &lx::guid_ActionListener;}
+    void
+  ActionChannelSignal (ILxUnknownID item, unsigned channel)
+  {
+    m_loc[0]->ActionChannelSignal (m_loc,(ILxUnknownID)item,channel);
+  }
+    void
+  ActionChannelConstantChange (ILxUnknownID item, unsigned channel)
+  {
+    m_loc[0]->ActionChannelConstantChange (m_loc,(ILxUnknownID)item,channel);
+  }
+    void
+  ActionChannelConstantPreChange (ILxUnknownID item, unsigned channel)
+  {
+    m_loc[0]->ActionChannelConstantPreChange (m_loc,(ILxUnknownID)item,channel);
+  }
+};
 
 class CLxLoc_Evaluation : public CLxLocalize<ILxEvaluationID>
 {
@@ -193,6 +365,13 @@ public:
   {
     return m_loc[0]->SetAlternate (m_loc,ppvObj);
   }
+    bool
+  SetAlternate (CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->SetAlternate (m_loc,&obj)) && dest.take(obj);
+  }
     LxResult
   ClearAlternate (void)
   {
@@ -218,6 +397,28 @@ public:
   {
     return m_loc[0]->GetBakedSample (m_loc,index,bracket,fraction,ppvObj);
   }
+    bool
+  GetBakedSample (unsigned index, unsigned bracket, double *fraction, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->GetBakedSample (m_loc,index,bracket,fraction,&obj)) && dest.take(obj);
+  }
+    double
+  GetDT (void)
+  {
+    return m_loc[0]->GetDT (m_loc);
+  }
+    LxResult
+  SimulationState (unsigned *flags)
+  {
+    return m_loc[0]->SimulationState (m_loc,flags);
+  }
+    LxResult
+  SimulationRange (double *start, double *end)
+  {
+    return m_loc[0]->SimulationRange (m_loc,start,end);
+  }
 };
 
 class CLxLoc_ChannelRead : public CLxLocalize<ILxChannelReadID>
@@ -232,6 +433,13 @@ public:
   ValueObj (ILxUnknownID item, unsigned int channel, void **ppvObj)
   {
     return m_loc[0]->ValueObj (m_loc,(ILxUnknownID)item,channel,ppvObj);
+  }
+    bool
+  ValueObj (ILxUnknownID item, unsigned int channel, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->ValueObj (m_loc,(ILxUnknownID)item,channel,&obj)) && dest.take(obj);
   }
     LxResult
   Integer (ILxUnknownID item, unsigned int channel, int *value)
@@ -253,12 +461,19 @@ public:
   {
     return m_loc[0]->Envelope (m_loc,(ILxUnknownID)item,channel,ppvObj);
   }
+    bool
+  Envelope (ILxUnknownID item, unsigned int channel, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Envelope (m_loc,(ILxUnknownID)item,channel,&obj)) && dest.take(obj);
+  }
     double
   Time (void)
   {
     return m_loc[0]->Time (m_loc);
   }
-    LxResult
+    int
   IsAnimated (ILxUnknownID item, int index) const
   {
     return m_loc[0]->IsAnimated (m_loc,(ILxUnknownID)item,index);
@@ -272,6 +487,18 @@ public:
   BakedSamples (ILxUnknownID item, unsigned int channel, double *firstSample, double *spsRate, void **ppvObj)
   {
     return m_loc[0]->BakedSamples (m_loc,(ILxUnknownID)item,channel,firstSample,spsRate,ppvObj);
+  }
+    bool
+  BakedSamples (ILxUnknownID item, unsigned int channel, double *firstSample, double *spsRate, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->BakedSamples (m_loc,(ILxUnknownID)item,channel,firstSample,spsRate,&obj)) && dest.take(obj);
+  }
+    LxResult
+  SetTime (double time)
+  {
+    return m_loc[0]->SetTime (m_loc,time);
   }
 };
 
@@ -288,6 +515,12 @@ class CLxImpl_EvalModifier {
       eval_Alloc (ILxUnknownID item, unsigned index, ILxUnknownID eval, void **ppvObj)
         { return LXe_NOTIMPL; }
 };
+#define LXxD_EvalModifier_Reset LxResult eval_Reset (ILxUnknownID scene)
+#define LXxO_EvalModifier_Reset LXxD_EvalModifier_Reset LXx_OVERRIDE
+#define LXxD_EvalModifier_Next LXtObjectID eval_Next (unsigned *index)
+#define LXxO_EvalModifier_Next LXxD_EvalModifier_Next LXx_OVERRIDE
+#define LXxD_EvalModifier_Alloc LxResult eval_Alloc (ILxUnknownID item, unsigned index, ILxUnknownID eval, void **ppvObj)
+#define LXxO_EvalModifier_Alloc LXxD_EvalModifier_Alloc LXx_OVERRIDE
 template <class T>
 class CLxIfc_EvalModifier : public CLxInterface
 {
@@ -324,6 +557,30 @@ public:
     iid = &lx::guid_EvalModifier;
   }
 };
+class CLxLoc_EvalModifier : public CLxLocalize<ILxEvalModifierID>
+{
+public:
+  void _init() {m_loc=0;}
+  CLxLoc_EvalModifier() {_init();}
+  CLxLoc_EvalModifier(ILxUnknownID obj) {_init();set(obj);}
+  CLxLoc_EvalModifier(const CLxLoc_EvalModifier &other) {_init();set(other.m_loc);}
+  const LXtGUID * guid() const {return &lx::guid_EvalModifier;}
+    LxResult
+  Reset (ILxUnknownID scene)
+  {
+    return m_loc[0]->Reset (m_loc,(ILxUnknownID)scene);
+  }
+    ILxUnknownID
+  Next (unsigned *index)
+  {
+    return (ILxUnknownID) m_loc[0]->Next (m_loc,index);
+  }
+    LxResult
+  Alloc (ILxUnknownID item, unsigned index, ILxUnknownID eval, void **ppvObj)
+  {
+    return m_loc[0]->Alloc (m_loc,(ILxUnknownID)item,index,(ILxUnknownID)eval,ppvObj);
+  }
+};
 
 class CLxImpl_Modifier {
   public:
@@ -350,6 +607,20 @@ class CLxImpl_Modifier {
       mod_Free (void *cache)
         { }
 };
+#define LXxD_Modifier_Evaluate LxResult mod_Evaluate (void)
+#define LXxO_Modifier_Evaluate LXxD_Modifier_Evaluate LXx_OVERRIDE
+#define LXxD_Modifier_Test LxResult mod_Test (ILxUnknownID item, unsigned index)
+#define LXxO_Modifier_Test LXxD_Modifier_Test LXx_OVERRIDE
+#define LXxD_Modifier_Invalidate LxResult mod_Invalidate (ILxUnknownID item, unsigned index)
+#define LXxO_Modifier_Invalidate LXxD_Modifier_Invalidate LXx_OVERRIDE
+#define LXxD_Modifier_Validate LxResult mod_Validate (ILxUnknownID item, unsigned index, LxResult rc)
+#define LXxO_Modifier_Validate LXxD_Modifier_Validate LXx_OVERRIDE
+#define LXxD_Modifier_RequiredCount unsigned mod_RequiredCount (void)
+#define LXxO_Modifier_RequiredCount LXxD_Modifier_RequiredCount LXx_OVERRIDE
+#define LXxD_Modifier_Required LxResult mod_Required (unsigned index, unsigned *attr, void **ppvObj)
+#define LXxO_Modifier_Required LXxD_Modifier_Required LXx_OVERRIDE
+#define LXxD_Modifier_Free void mod_Free (void *cache)
+#define LXxO_Modifier_Free LXxD_Modifier_Free LXx_OVERRIDE
 template <class T>
 class CLxIfc_Modifier : public CLxInterface
 {
@@ -457,6 +728,13 @@ public:
   Required (unsigned index, unsigned *attr, void **ppvObj)
   {
     return m_loc[0]->Required (m_loc,index,attr,ppvObj);
+  }
+    bool
+  Required (unsigned index, unsigned *attr, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Required (m_loc,index,attr,&obj)) && dest.take(obj);
   }
     void
   Free (void *cache)

@@ -1,7 +1,7 @@
 /*
  * LX notify module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -103,6 +103,9 @@ typedef struct vt_ILxNotify {
 } ILxNotify;
 
 #define LXu_NOTIFYSYSSERVICE    "4A3B31B0-A8F8-430A-9611-9D30E51CBBBA"
+// [python] ILxNotifySysService:ByIndex obj Notifier
+// [python] ILxNotifySysService:Lookup  obj Notifier
+// [python] ILxNotifySysService:Spawn   obj Notifier
 #define LXsNOTIFIER_SELECT      "select.event"
 #define LXsNOTIFIER_MESHES      "meshes.event"
 #define LXsNOTIFIER_GRAPHS      "graphs.event"

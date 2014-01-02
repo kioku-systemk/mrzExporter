@@ -1,7 +1,7 @@
 /*
  * LX ilxmesh module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -58,10 +58,19 @@ typedef unsigned int    LXtMarkMode;
 #define LXsMARK_USER_5  "user5"
 #define LXsMARK_USER_6  "user6"
 #define LXsMARK_USER_7  "user7"
+#ifndef   LX_DEF_LXTMESHID
+  #define LX_DEF_LXTMESHID
+  typedef struct st_Mesh *      LXtMeshID;
+#endif
 typedef struct st_MeshVertex *    LXtPointID;
 typedef struct st_MeshPolygon *   LXtPolygonID;
 typedef struct st_MeshEdge *      LXtEdgeID;
 typedef struct st_MeshVertexMap * LXtMeshMapID;
+
+// [python] type LXtPointID     id
+// [python] type LXtPolygonID   id
+// [python] type LXtEdgeID      id
+// [python] type LXtMeshMapID   id
 
 typedef struct vt_ILxMeshService {
         ILxUnknown       iunk;
@@ -113,8 +122,18 @@ typedef struct vt_ILxMeshService {
                 LXxMETHOD(  LxResult,
         ConvertMesh) (
                 LXtObjectID              self,
-                LXtObjectID              triGroupItem,
-                LXtObjectID              meshItem);
+                LXtObjectID              triGroupObj,
+                LXtObjectID              meshObj);
+                LXxMETHOD(  LxResult,
+        MeshFromMeshID) (
+                LXtObjectID              self,
+                LXtMeshID                meshID,
+                void                   **ppvObj);
+
+                LXxMETHOD(  LXtMeshID,
+        MeshToMeshID) (
+                LXtObjectID              self,
+                LXtObjectID              mesh);
 } ILxMeshService;
 typedef struct vt_ILxMesh {
         ILxUnknown       iunk;
@@ -208,7 +227,7 @@ typedef struct vt_ILxMesh {
         TestSameMesh) (
                 LXtObjectID              self,
                 LXtObjectID              other);
-                LXxMETHOD(  LxResult,
+                LXxMETHOD(  unsigned,
         PTagCount) (
                 LXtObjectID              self,
                 LXtID4                   type);
@@ -307,7 +326,7 @@ typedef struct vt_ILxPoint {
                 LXxMETHOD(  LxResult,
         New) (
                 LXtObjectID              self,
-                LXtVector                pos,
+                const LXtVector          pos,
                 LXtPointID              *pointID);
                 LXxMETHOD(  LxResult,
         Copy) (
@@ -319,7 +338,7 @@ typedef struct vt_ILxPoint {
                 LXxMETHOD(  LxResult,
         SetPos) (
                 LXtObjectID              self,
-                LXtVector                pos);
+                const LXtVector          pos);
                 LXxMETHOD(  LxResult,
         SetMapValue) (
                 LXtObjectID              self,
@@ -705,7 +724,7 @@ typedef struct vt_ILxMeshFilter {
                 LXxMETHOD(  LxResult,
         Generate) (
                 LXtObjectID              self,
-                void                   **ppvMesh);
+                void                   **ppvObj);
 } ILxMeshFilter;
 typedef struct vt_ILxMeshFilterBBox {
         ILxUnknown       iunk;
@@ -717,13 +736,27 @@ typedef struct vt_ILxMeshFilterBBox {
 
 #define LXa_MESHSERVICE "meshservice"
 #define LXu_MESHSERVICE "82B739EC-F92E-4CC9-A5FB-584A866D5897"
+
+// [python] ILxMeshService:CreateMesh           obj Mesh
+// [python] ILxMeshService:MeshFromMeshID       obj Mesh
+// [python] ILxMeshService:VMapIsContinuous     bool
+// [python] ILxMeshService:VMapIsEdgeMap        bool
+// [python] ILxMeshService:VMapZeroDefault      bool
 #define LXa_MESH        "mesh"
 #define LXu_MESH        "1F1BB7BF-A862-4810-95FF-3346AF738209"
+
+#define LXsTYPE_MESH    "mesh"
+
 // [local]  ILxMesh
-// [const] ILxMesh:PointCount
-// [const] ILxMesh:PolygonCount
-// [const] ILxMesh:EdgeCount
-// [const] ILxMesh:MapCount
+// [const]  ILxMesh:PointCount
+// [const]  ILxMesh:PolygonCount
+// [const]  ILxMesh:EdgeCount
+// [const]  ILxMesh:MapCount
+// [python] ILxMesh:TestSameMesh        bool
+// [python] ILxMesh:PointAccessor       obj Point
+// [python] ILxMesh:PolygonAccessor     obj Polygon
+// [python] ILxMesh:EdgeAccessor        obj Edge
+// [python] ILxMesh:MeshMapAccessor     obj MeshMap
 #define LXf_MESHEDIT_POSITION            0x001
 #define LXf_MESHEDIT_POINTS              0x002
 #define LXf_MESHEDIT_POLYGONS            0x004
@@ -736,12 +769,30 @@ typedef struct vt_ILxMeshFilterBBox {
 #define LXf_MESHEDIT_MAP_OTHER           0x100
 #define LXiPSUB_BOUND_SMOOTH     0
 #define LXiPSUB_BOUND_CREASE     1
+// [python] ILxPoint:Spawn      obj Point
+// [python] ILxPolygon:Spawn    obj Polygon
+// [python] ILxEdge:Spawn       obj Edge
+// [python] ILxMeshMap:Spawn    obj MeshMap
 #define LXa_POINT       "point"
 #define LXu_POINT       "37B477FE-ED3C-4EDC-A4A8-9BB24F58A4E6"
 // [local]  ILxPoint
+// [python] ILxPoint:TestMarks          bool
+// [python] ILxPoint:MapValue           bool
+// [python] ILxPoint:MapValue:value     vector
+// [python] ILxPoint:MapEvaluate        bool
+// [python] ILxPoint:MapEvaluate:value  vector
 #define LXa_POLYGON     "polygon"
 #define LXu_POLYGON     "5839056D-28BF-4D72-8A26-E4AA00DA788F"
 // [local]  ILxPolygon
+// [python] ILxPolygon:TestMarks                bool
+// [python] ILxPolygon:FirstIsControlEndpoint   bool
+// [python] ILxPolygon:LastIsControlEndpoint    bool
+// [python] ILxPolygon:IsBorder                 bool
+// [python] ILxPolygon:Closest                  bool
+// [python] ILxPolygon:MapValue                 bool
+// [python] ILxPolygon:MapValue:value           vector
+// [python] ILxPolygon:MapEvaluate              bool
+// [python] ILxPolygon:MapEvaluate:value        vector
 #define LXi_POLY_MAXVERT         65535
 #define LXsPTYP_FACE            "face"
 #define LXsPTYP_CURVE           "curve"
@@ -757,6 +808,16 @@ typedef struct vt_ILxMeshFilterBBox {
 #define LXiPTYP_SPCH            LXxID4('S','P','C','H')
 #define LXiPTYP_TEXT            LXxID4('T','E','X','T')
 #define LXiPTYP_PSUB            LXxID4('P','S','U','B')
+#define LXiPTYP_BEZR            LXiPTYP_BEZIER
+#define LXiPTYP_CURV            LXiPTYP_CURVE
+#define LXi_POLYTAG_MATERIAL            LXxID4('M','A','T','R')
+#define LXi_POLYTAG_PART                LXxID4('P','A','R','T')
+#define LXi_POLYTAG_SMOOTHING_GROUP     LXxID4('S','M','G','P')
+#define LXi_POLYTAG_PICK                LXxID4('P','I','C','K')
+#define LXi_POLYTAG_FONT                LXxID4('F','O','N','T')
+#define LXi_POLYTAG_TEXT                LXxID4('T','E','X','T')
+#define LXi_POLYTAG_JUST                LXxID4('J','U','S','T')
+
 #define LXi_PTAG_MATR           LXxID4('M','A','T','R')
 #define LXi_PTAG_PART           LXxID4('P','A','R','T')
 #define LXi_PTAG_PICK           LXxID4('P','I','C','K')
@@ -766,9 +827,18 @@ typedef struct vt_ILxMeshFilterBBox {
 #define LXa_EDGE        "edge"
 #define LXu_EDGE        "19A44432-E2CF-4BCF-9EA6-D696E7A0F16E"
 // [local]  ILxEdge
+// [python] ILxEdge:TestMarks           bool
+// [python] ILxEdge:IsBorder            bool
+// [python] ILxEdge:MapValue            bool
+// [python] ILxEdge:MapValue:value      vector
+// [python] ILxEdge:MapEvaluate         bool
+// [python] ILxEdge:MapEvaluate:value   vector
 #define LXa_MESHMAP     "meshmap"
 #define LXu_MESHMAP     "2AEBA454-2AC4-4F1E-B892-7A16F7601030"
 // [local]  ILxMeshMap
+// [python] ILxMeshMap:IsContinuous     bool
+// [python] ILxMeshMap:IsEdgeMap        bool
+// [python] ILxMeshMap:ZeroDefault      bool
 #define LXi_VMAP_OBJECTPOS      LXxID4('O','P','O','S')
 #define LXi_VMAP_MORPH          LXxID4('M','O','R','F')
 #define LXi_VMAP_SPOT           LXxID4('S','P','O','T')
@@ -789,6 +859,7 @@ typedef struct vt_ILxMeshFilterBBox {
 #define LXu_MESHFILTER  "F5896BA1-7EC5-4EE9-852F-BF977E451953"
 // [local]   ILxMeshFilter
 // [export]  ILxMeshFilter mfilt
+// [python]  ILxMeshFilter:Generate     obj Mesh
 #define LXu_MESHFILTERBBOX      "FBD83166-4B50-42A0-8C91-C36D3BB76904"
 // [local]  ILxMeshFilterBBox
 // [export] ILxMeshFilterBBox mfbbox

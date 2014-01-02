@@ -1,7 +1,7 @@
 /*
  * LX ilxitem module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -44,16 +44,16 @@ typedef struct vt_ILxChannelGraph ** ILxChannelGraphID;
 typedef int              LXtItemType;
 #define LXiTYPE_ANY      -1
 #define LXiTYPE_NONE      0
-typedef enum en_LXtTransformType {
-        LXiXFRM_SCALE,
-        LXiXFRM_ROTATION,
-        LXiXFRM_POSITION,
-        LXiXFRM_PIVOT,
-        LXiXFRM_PIVOT_C,
-        LXiXFRM_SHEAR,
-        LXiXFRM_PIVOT_ROT,
-        LXiXFRM_PIVOT_ROT_C
-} LXtTransformType;
+typedef unsigned        LXtTransformType;
+
+#define LXiXFRM_SCALE           0
+#define LXiXFRM_ROTATION        1
+#define LXiXFRM_POSITION        2
+#define LXiXFRM_PIVOT           3
+#define LXiXFRM_PIVOT_C         4
+#define LXiXFRM_SHEAR           5
+#define LXiXFRM_PIVOT_ROT       6
+#define LXiXFRM_PIVOT_ROT_C     7
 
 typedef struct vt_ILxSceneService {
         ILxUnknown       iunk;
@@ -170,6 +170,13 @@ typedef struct vt_ILxSceneService {
                 LXtObjectID              self,
                 LXtObjectID              replicatorItem,
                 void                   **ppvObj);
+                LXxMETHOD( LxResult,
+        ItemTypeGetTag) (
+                LXtObjectID              self,
+                LXtItemType              type,
+                const char              *tag,
+                unsigned                 super,
+                const char             **value);
 } ILxSceneService;
 typedef struct vt_ILxScene2Service {
         ILxUnknown       iunk;
@@ -446,13 +453,13 @@ typedef struct vt_ILxScene {
                 LXxMETHOD(  LxResult,
         ItemCountByTypes) (
                 LXtObjectID              self,
-                LXtItemType             *types,
+                const LXtItemType       *types,
                 unsigned                *count);
 
                 LXxMETHOD(  LxResult,
         ItemByIndexByTypes) (
                 LXtObjectID              self,
-                LXtItemType             *types,
+                const LXtItemType       *types,
                 unsigned                 index,
                 void                   **ppvObj);
                 LXxMETHOD(  LxResult,
@@ -535,6 +542,20 @@ typedef struct vt_ILxScene {
                 LXtObjectID              self,
                 const char              *id,
                 void                   **ppvObj);
+                LXxMETHOD(  LxResult,
+        RenderCameraCount) (
+                LXtObjectID              self,
+                int                     *count);
+                LXxMETHOD(  LxResult,
+        RenderCameraByIndex) (
+                LXtObjectID              self,
+                int                      index,
+                void                   **ppvObj);
+                LXxMETHOD(  LxResult,
+        RenderCameraIndex) (
+                LXtObjectID              self,
+                LXtObjectID              eval,
+                int                     *index);
 } ILxScene;
 typedef struct vt_ILxItem {
         ILxUnknown       iunk;
@@ -549,7 +570,7 @@ typedef struct vt_ILxItem {
                 LXxMETHOD(  LxResult,
         TestTypes) (
                 LXtObjectID              self,
-                LXtItemType             *types);
+                const LXtItemType       *types);
                 LXxMETHOD(  LxResult,
         Ident) (
                 LXtObjectID              self,
@@ -856,6 +877,15 @@ typedef struct vt_ILxChannelGraph {
 
 #define LXa_SCENESERVICE        "sceneservice3"
 #define LXu_SCENESERVICE        "50190141-0059-48FE-B27D-6C98E1348D7B"
+// [python] ILxSceneService:CreateScene                 obj Scene
+// [python] ILxSceneService:GetMeshInstSourceItem       obj Item
+// [python] ILxSceneService:GetReplicatorEnumerator     obj ReplicatorEnumerator (particle)
+// [python] ILxSceneService:LoadImage                   obj Unknown
+// [python] ILxSceneService:MeshInstanceByIndex         obj Item
+// [python] ILxSceneService:Root                        obj Scene
+// [python] ILxSceneService:SubSceneLoad                obj Scene
+// [python] ILxSceneService:ItemTypeTest                bool
+// [python] ILxSceneService:LoadImage:flags             vector
 #define LXf_LOADIMG_SEARCH_PATHS        1
 #define LXf_LOADIMG_USER_REPLACE        2
 #define LXa_SCENE2SERVICE       "sceneservice2"
@@ -878,28 +908,61 @@ typedef struct vt_ILxChannelGraph {
 #define LXu_SCENE               "FF870F44-FED9-4dbc-95BA-2972A43FC936"
 #define LXa_SCENE               "scene2"
 // [local]  ILxScene
-// [const] ILxScene:Channels
-// [const] ILxScene:SetupChannels
-// [const] ILxScene:ItemCount
-// [const] ILxScene:ItemByIndex
-// [const] ILxScene:ItemLookup
-// [const] ILxScene:ItemCountByTypes
-// [const] ILxScene:ItemByIndexByTypes
-// [const] ILxScene:AnyItemOfType
-// [const] ILxScene:GraphLookup
-// [const] ILxScene:GraphCount
-// [const] ILxScene:GraphByIndex
+// [const]  ILxScene:Channels
+// [const]  ILxScene:SetupChannels
+// [const]  ILxScene:ItemCount
+// [const]  ILxScene:ItemByIndex
+// [const]  ILxScene:ItemLookup
+// [const]  ILxScene:ItemCountByTypes
+// [const]  ILxScene:ItemByIndexByTypes
+// [const]  ILxScene:AnyItemOfType
+// [const]  ILxScene:GraphLookup
+// [const]  ILxScene:GraphCount
+// [const]  ILxScene:GraphByIndex
+// [const]  ILxScene:RenderCameraCount
+// [const]  ILxScene:RenderCameraByIndex
+// [const]  ILxScene:RenderCameraIndex
+// [python] ILxScene:SubSceneByIndex            obj Scene
+// [python] ILxScene:Channels                   obj ChannelRead (action)
+// [python] ILxScene:SetupChannels              obj ChannelRead
+// [python] ILxScene:GraphByIndex               obj SceneGraph
+// [python] ILxScene:GraphLookup                obj SceneGraph
+// [python] ILxScene:AnyItemOfType              obj Item
+// [python] ILxScene:ItemAdd                    obj Item
+// [python] ILxScene:ItemAddReference           obj Item
+// [python] ILxScene:ItemByIndex                obj Item
+// [python] ILxScene:RenderCameraByIndex        obj Item
+// [python] ILxScene:ItemDuplicate              obj Item
+// [python] ILxScene:ItemLocalize               obj Item
+// [python] ILxScene:ItemLookup                 obj Item
+// [python] ILxScene:ItemLookupIdent            obj Item
+// [python] ILxScene:ItemLookupImported         obj Item
+// [python] ILxScene:ItemByIndexByTypes         obj Item
+// [python] ILxScene:ItemReplace                obj Item
+// [python] ILxScene:Parent                     obj Item
+// [python] ILxScene:SetupMode                  bool
 #define LXfSCENENAME_STAR        1
 #define LXfSCENENAME_SHORT       2
 #define LXa_ITEM                "item"
 #define LXu_ITEM                "7FF2D6D5-5E28-4650-93ED-89FF257F9629"
 // [local]  ILxItem
-// [const] ILxItem:PackageTest
-// [const] ILxItem:ChannelCount
-// [const] ILxItem:ChannelLookup
-// [const] ILxItem:ChannelName
-// [const] ILxItem:ChannelIntHint
-// [const] ILxItem:Ident
+// [const]  ILxItem:PackageTest
+// [const]  ILxItem:ChannelCount
+// [const]  ILxItem:ChannelLookup
+// [const]  ILxItem:ChannelName
+// [const]  ILxItem:ChannelIntHint
+// [const]  ILxItem:Ident
+// [python] ILxItem:TestType            bool
+// [python] ILxItem:TestTypes           bool
+// [python] ILxItem:IsReferenced        bool
+// [python] ILxItem:PackageTest         bool
+// [python] ILxItem:WasLoaded           bool
+// [python] ILxItem:Context     obj Scene
+// [python] ILxItem:Parent      obj Item
+// [python] ILxItem:Reference   obj Item
+// [python] ILxItem:Root        obj Item
+// [python] ILxItem:Source      obj Item
+// [python] ILxItem:SubByIndex  obj Item
 #define LXiCHANTYPE_NONE         0
 #define LXiCHANTYPE_INTEGER      1
 #define LXiCHANTYPE_FLOAT        2
@@ -916,12 +979,20 @@ typedef struct vt_ILxChannelGraph {
 #define LXa_SCENEGRAPH          "scenegraph"
 #define LXu_SCENEGRAPH          "FE07D3C5-C7E4-46af-8F0A-5AB173D48445"
 // [local]  ILxSceneGraph
+// [python] ILxSceneGraph:Context       obj Scene
+// [python] ILxSceneGraph:RootByIndex   obj Item
+// [python] ILxSceneGraph:RootFirst     obj Item
+// [python] ILxSceneGraph:RootNext      obj Item
 #define LXa_ITEMGRAPH           "itemgraph"
 #define LXu_ITEMGRAPH           "C34D7C65-031A-4c9d-8C01-3187D383937B"
 // [local]  ILxItemGraph
+// [python] ILxItemGraph:FwdByIndex     obj Item
+// [python] ILxItemGraph:RevByIndex     obj Item
 #define LXa_CHANNELGRAPH        "channelgraph"
 #define LXu_CHANNELGRAPH        "F70C8AD7-C15F-42e7-98F6-4C4C7F6D577E"
 // [local]  ILxChannelGraph
+// [python] ILxChannelGraph:FwdByIndex  obj Item
+// [python] ILxChannelGraph:RevByIndex  obj Item
 
  #ifdef __cplusplus
   }

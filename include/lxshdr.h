@@ -1,7 +1,7 @@
 /*
  * LX shdr module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -44,8 +44,8 @@ typedef struct vt_ILxShaderService {
                 LXxMETHOD(  float,
         ComputeFresnel) (
                 LXtObjectID              self,
-                LXtFVector               inRay,
-                LXtFVector               normalRay,
+                const LXtFVector         inRay,
+                const LXtFVector         normalRay,
                 float                    normReflAmt);
                 LXxMETHOD(  float,
         ScalarBlendValue) (
@@ -59,8 +59,8 @@ typedef struct vt_ILxShaderService {
         ColorBlendValue) (
                 LXtObjectID              self,
                 LXtFVector               c,
-                LXtFVector               c1,
-                LXtFVector               c2,
+                const LXtFVector         c1,
+                const LXtFVector         c2,
                 float                    opa,
                 int                      mode);
                 LXxMETHOD(  void,
@@ -68,6 +68,11 @@ typedef struct vt_ILxShaderService {
                 LXtObjectID              self,
                 float                   *x,
                 float                   *y);
+                LXxMETHOD(  LxResult,
+        SampleCloud) (
+                LXtObjectID              self,
+                LXtObjectID              sample,
+                void                    **ppvObj);
                 LXxMETHOD(                LxResult,
         MeshShaderAccessor) (
                 LXtObjectID               self,
@@ -80,6 +85,21 @@ typedef struct vt_ILxShaderService {
                 LXtObjectID               meshItem,
                 LXtPolygonID              polyID,
                 void                    **ppvObj);
+                LXxMETHOD(  float,
+        RussianRoulette) (
+                LXtObjectID              self,
+                LXtObjectID              vector,
+                float                    importance);
+                LXxMETHOD(  float,
+        NextRandom) (
+                LXtObjectID              self,
+                LXtObjectID              vector);  
+                LXxMETHOD(  LxResult,
+        PoissonOffset) (
+                LXtObjectID              self,
+                LXtObjectID              vector,
+                float                   *u,
+                float                   *v);    
 } ILxShaderService;
 typedef struct vt_ILxShader {
         ILxUnknown       iunk;
@@ -99,14 +119,26 @@ typedef struct vt_ILxShader {
 
 #define LXu_SHADERSERVICE        "0b4e73ac-9325-4920-afcc-7814953a26b6"
 #define LXa_SHADERSERVICE        "shaderservice"
-//[local] ILxShaderService
-//[const] ILxShaderService:ComputeFresnel
-//[const] ILxShaderService:ScalarBlend
-//[const] ILxShaderService:ColorBlend
-//[const] ILxShaderService:SquareToCircle
+// [local]  ILxShaderService
+// [const]  ILxShaderService:ComputeFresnel
+// [const]  ILxShaderService:ScalarBlend
+// [const]  ILxShaderService:ColorBlend
+// [const]  ILxShaderService:SquareToCircle
+// [const]  ILxShaderService:SampleCloud
+// [const]  ILxShaderService:RussianRoulette
+// [const]  ILxShaderService:NextRandom
+// [const]  ILxShaderService:PoissonOffset
+// [python] ILxShaderService:SampleCloud        obj SampleCloud
+// [python] ILxShaderService:MeshShaderAccessor obj Shader
+// [python] ILxShaderService:PolyShaderAccessor obj Shader
+// [python] ILxShaderService:SquareToCircle:x   vector
+// [python] ILxShaderService:SquareToCircle:y   vector
+// [python] type LXtPolygonID   id
 #define LXa_SHADER      "shader"
 #define LXu_SHADER      "051ba6d8-46ba-4722-8b07-943961c3aeda"
 // [local]  ILxShader
+// [python] ILxShader:ShaderItemGet     obj Item
+// [python] ILxShader:Spawn             obj Shader
 
  #ifdef __cplusplus
   }

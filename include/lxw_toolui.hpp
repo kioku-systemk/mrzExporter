@@ -1,7 +1,7 @@
 /*
  * C++ wrapper for lxtoolui.h
  *
- *	Copyright (c) 2008-2012 Luxology LLC
+ *	Copyright (c) 2008-2013 Luxology LLC
  *	
  *	Permission is hereby granted, free of charge, to any person obtaining a
  *	copy of this software and associated documentation files (the "Software"),
@@ -30,6 +30,7 @@
 
 #include <lxtoolui.h>
 #include <lx_wrap.hpp>
+#include <string>
 
 namespace lx {
     static const LXtGUID guid_PaintBrushPacket = {0x9283C21E,0x77FC,0x402D,0xB2,0x2A,0x7B,0x26,0x28,0x58,0x88,0xC4};

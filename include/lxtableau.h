@@ -1,7 +1,7 @@
 /*
  * LX tableau module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -42,22 +42,27 @@ typedef struct vt_ILxTableauProxy ** ILxTableauProxyID;
 typedef struct vt_ILxTableauInstance ** ILxTableauInstanceID;
 typedef struct vt_ILxTableauShader ** ILxTableauShaderID;
 typedef struct vt_ILxShaderSlice ** ILxShaderSliceID;
-typedef struct vt_ILxTableauVertex ** ILxTableauVertexID;
 typedef struct vt_ILxTableauFilter ** ILxTableauFilterID;
 typedef struct vt_ILxTableauSource ** ILxTableauSourceID;
+typedef struct vt_ILxTableauSource1 ** ILxTableauSource1ID;
 typedef struct vt_ILxTableauService ** ILxTableauServiceID;
+typedef struct vt_ILxTableauListener ** ILxTableauListenerID;
 #include <lxvector.h>
 
 typedef float            LXtTableauBox[6];
 typedef struct st_LXpLightQuality {
         LXtFVector               center;
         float                    radius;
+        float                    intensity;
         float                    power;
         unsigned int             infinite;
         unsigned int             indirect;
+        unsigned int             fallType;
         unsigned int             shadType;
         unsigned int             samples;
         unsigned int             fast;
+        unsigned int             linkMode;
+        void                    *linkGroup;
         void                    *item;
 } LXpLightQuality;
 typedef struct st_LXpLightShadowing {
@@ -71,6 +76,9 @@ typedef struct st_LXpLightSource {
         LXtFVector               wPos, oPos;
         LXtFVector               dir;
         float                    len;
+        float                    nDotWi;
+        int                      sampleIndex;
+        void                    *lightSource;
 } LXpLightSource;
 typedef struct st_LXpLightColor {
         LXtFVector               color;
@@ -97,6 +105,18 @@ typedef struct st_LXpEnvVisibility {
         unsigned int             reflection;
         unsigned int             refraction;
 } LXpEnvVisibility;
+typedef struct st_LXpEnvShape {
+        unsigned int             sphereVis;
+        float                    size;
+        float                    height;
+        unsigned int             flatten;
+        LXtVector                pos;
+        LXtMatrix                xfrmInv;
+} LXpEnvShape;
+typedef struct st_LXpEnvFog {
+        LXtFVector               color;
+        LXtFVector               opacity;
+} LXpEnvFog;
 typedef struct st_LXpGlobalLighting {
         LXtFVector               ambientColor;
         float                    ambientIntensity;
@@ -147,6 +167,8 @@ typedef struct st_LXpGlobalIndirect {
         unsigned int             irrLEnable;
         unsigned int             irrSEnable;
         unsigned int             radCache;
+        unsigned int             envSample;
+        unsigned int             envRays;
         char                    *irrLName;
         char                    *irrSName;
 } LXpGlobalIndirect;
@@ -163,6 +185,7 @@ typedef struct st_LXpGlobalRendering {
         float                    fineThresh;
         float                    aaImpMin;
         unsigned int             multiGeo;
+        unsigned int             mergeFur;
         unsigned int             subdAdapt;
         unsigned int             renderType;
         unsigned int             aa;
@@ -173,7 +196,7 @@ typedef struct st_LXpGlobalRendering {
         unsigned int             dof;
         unsigned int             stereo;
         unsigned int             stereoEye;
-        unsigned int             stereoComposite;
+        unsigned int             stereoComp;
         unsigned int             upAxis;
         unsigned int             bucketX;
         unsigned int             bucketY;
@@ -262,6 +285,27 @@ typedef struct vt_ILxTableau {
                 LXxMETHOD(  LXtObjectID,
         InstanceItem) (
                 LXtObjectID              self);
+                LXxMETHOD(  LxResult,
+        Update) (
+                LXtObjectID              self,
+                LXtObjectID              visitor,
+                int                      immediate);
+
+                LXxMETHOD(  LxResult,
+        UpdateAll) (
+                LXtObjectID              self);
+
+                LXxMETHOD(  LxResult,
+        EltNotify) (
+                LXtObjectID              self,
+                LXtObjectID              element,
+                int                      event);
+
+                LXxMETHOD(  LxResult,
+        InstNotify) (
+                LXtObjectID              self,
+                LXtObjectID              instance,
+                int                      event);
 } ILxTableau;
 typedef struct vt_ILxTableauElement {
         ILxUnknown       iunk;
@@ -396,7 +440,8 @@ typedef struct vt_ILxTableauVolume {
                 LXtObjectID              densitySlice,
                 LXtObjectID              sv,
                 LXtObjectID              raycastObj,
-                double                  *dist);
+                double                  *dist,
+                int                     *localShader);
 
                 LXxMETHOD(  LxResult,
         Density) (
@@ -439,7 +484,8 @@ typedef struct vt_ILxTableauLight {
                 float                    jv,
                 const LXtFVector         dir,
                 LXtFVector               wPos,
-                LXtFVector               oPos);
+                LXtFVector               oPos,
+                float                    t);
 
                 LXxMETHOD(  int,
         Geometry) (
@@ -530,38 +576,6 @@ typedef struct vt_ILxShaderSlice {
                 LXtObjectID              self,
                 LXtObjectID              vecstack);
 } ILxShaderSlice;
-typedef struct vt_ILxTableauVertex {
-        ILxUnknown       iunk;
-                LXxMETHOD(  LxResult,
-        AddFeature) (
-                LXtObjectID              self,
-                LXtID4                   type,
-                const char              *name,
-                unsigned int            *index);
-
-                LXxMETHOD(  LxResult,
-        Lookup) (
-                LXtObjectID              self,
-                LXtID4                   type,
-                const char              *name,
-                unsigned int            *offset);
-
-                LXxMETHOD(  unsigned int,
-        Size) (
-                LXtObjectID              self);
-
-                LXxMETHOD(  unsigned int,
-        Count) (
-                LXtObjectID              self);
-
-                LXxMETHOD(  LxResult,
-        ByIndex) (
-                LXtObjectID              self,
-                unsigned int             index,
-                LXtID4                  *type,
-                const char             **name,
-                unsigned int            *offset);
-} ILxTableauVertex;
 typedef struct vt_ILxTableauFilter {
         ILxUnknown       iunk;
                 LXxMETHOD(  const char *,
@@ -626,7 +640,50 @@ typedef struct vt_ILxTableauSource {
                 LXtObjectID              tableau,
                 LXtObjectID              tags,
                 void                   **ppvObj);
+
+                LXxMETHOD(  LxResult,
+        ElementType) (
+                LXtObjectID              self,
+                int                      type,
+                int                     *supported);
 } ILxTableauSource;
+typedef struct vt_ILxTableauSource1 {
+        ILxUnknown       iunk;
+                LXxMETHOD(  LxResult,
+        Elements) (
+                LXtObjectID              self,
+                LXtObjectID              tableau);
+
+                LXxMETHOD(  LxResult,
+        Preview) (
+                LXtObjectID              self,
+                LXtObjectID              tableau);
+
+                LXxMETHOD(  LxResult,
+        Instance) (
+                LXtObjectID              self,
+                LXtObjectID              tableau,
+                LXtObjectID              instance);
+
+                LXxMETHOD(  LxResult,
+        SubShader) (
+                LXtObjectID              self,
+                LXtObjectID              tableau,
+                void                   **ppvObj);
+
+                LXxMETHOD(  LxResult,
+        PreviewUpdate) (
+                LXtObjectID              self,
+                int                      chanIndex,
+                int                     *update);
+
+                LXxMETHOD(  LxResult,
+        GetCurves) (
+                LXtObjectID              self,
+                LXtObjectID              tableau,
+                LXtObjectID              tags,
+                void                   **ppvObj);
+} ILxTableauSource1;
 typedef struct vt_ILxTableauService {
         ILxUnknown       iunk;
                 LXxMETHOD(  LxResult,
@@ -639,9 +696,49 @@ typedef struct vt_ILxTableauService {
                 LXtObjectID              self,
                 void                   **ppvObj);
 } ILxTableauService;
+typedef struct vt_ILxTableauListener {
+        ILxUnknown       iunk;
+                LXxMETHOD( void,
+        ChannelChange) (
+                LXtObjectID              self,
+                LXtObjectID              tableau,
+                LXtObjectID              item,
+                int                      channel);
+                LXxMETHOD( void,
+        FlushElements) (
+                LXtObjectID              self,
+                LXtObjectID              tableau);
+                LXxMETHOD( void,
+        TableauDestroy) (
+                LXtObjectID              self,
+                LXtObjectID              tableau);
+} ILxTableauListener;
 
+#define LXiTBX_SURF_ADD                 0x0
+#define LXiTBX_SURF_REMOVE              (LXiTBX_SURF_ADD + 1)
+#define LXiTBX_SURF_GEO                 (LXiTBX_SURF_REMOVE + 1)
+#define LXiTBX_SURF_XFRM                (LXiTBX_SURF_GEO + 1)
+#define LXiTBX_SURF_SHADER              (LXiTBX_SURF_XFRM + 1)  
+
+#define LXiTBX_LGT_ADD                  (LXiTBX_SURF_SHADER + 1)
+#define LXiTBX_LGT_REMOVE               (LXiTBX_LGT_ADD + 1)
+#define LXiTBX_LGT_DATA                 (LXiTBX_LGT_REMOVE + 1)
+#define LXiTBX_LGT_XFRM                 (LXiTBX_LGT_DATA + 1)
+#define LXiTBX_LGT_SHADER               (LXiTBX_LGT_XFRM + 1)
+
+#define LXiTBX_VOL_ADD                  (LXiTBX_LGT_SHADER + 1)
+#define LXiTBX_VOL_REMOVE               (LXiTBX_VOL_ADD + 1)
+#define LXiTBX_VOL_DATA                 (LXiTBX_VOL_REMOVE + 1)
+#define LXiTBX_VOL_XFRM                 (LXiTBX_VOL_DATA + 1)
+#define LXiTBX_VOL_SHADER               (LXiTBX_VOL_XFRM + 1)
+#define LXiTBX_INST_ADD                 0x0
+#define LXiTBX_INST_REMOVE              (LXiTBX_INST_ADD + 1)
+#define LXiTBX_INST_XFRM                (LXiTBX_INST_REMOVE + 1)
 #define LXu_TABLEAU     "76C4EDD9-5FF9-4342-BB08-EFCD0B344004"
 // [local]  ILxTableau
+// [python] ILxTableau:Channels         obj ChannelRead (action)
+// [python] ILxTableau:FindShader       obj TableauShader
+// [python] ILxTableau:Visible          bool
 #define LXe_INFINITE_BOUND      LXxGOODCODE(LXeSYS_REND,1)
 #define LXiTBLX_BASEFEATURE     LXxID4(' ','v','r','t')
 #define LXsTBLX_FEATURE_POS     "pos"
@@ -650,18 +747,8 @@ typedef struct vt_ILxTableauService {
 #define LXsTBLX_FEATURE_NORMAL  "norm"
 #define LXsTBLX_FEATURE_RADIUS  "rad"
 #define LXsTBLX_FEATURE_PARAM_LENGTH    "plen"
+#define LXsTBLX_FEATURE_PARTID  "partID"
 #define LXiTBLX_DPDU            LXxID4('d','p','d','u')
-#define LXiTBLX_PARTICLES       LXxID4('p','r','t','i')
-#define LXsTBLX_PARTICLE_POS    "pos"
-#define LXsTBLX_PARTICLE_XFRM   "xfrm"
-#define LXsTBLX_PARTICLE_ID     "id"
-#define LXsTBLX_PARTICLE_SIZE   "size"
-#define LXsTBLX_PARTICLE_VEL    "vel"
-#define LXsTBLX_PARTICLE_MASS   "mass"
-#define LXsTBLX_PARTICLE_FORCE  "force"
-#define LXsTBLX_PARTICLE_AGE    "age"
-#define LXsTBLX_PARTICLE_PATH   "pathLength"
-#define LXsTBLX_PARTICLE_DISS   "dissolve"
 #define LXu_TABLEAUELEMENT      "71D90AD9-3E30-4CE8-9E2B-F70DA281B2DC"
 #define LXa_TABLEAUELEMENT      "tableauElement"
 // [local]  ILxTableauElement
@@ -681,21 +768,29 @@ typedef struct vt_ILxTableauService {
 // [default] ILxTableauSurface:FeatureByIndex = LXe_OUTOFBOUNDS
 // [local]   ILxTriangleSoup
 // [export]  ILxTriangleSoup soup
+// [default] ILxTriangleSoup:TestBox = 1
+// [default] ILxTriangleSoup:Segment = LXe_TRUE
 #define LXfTBLX_VOL_VOLUME       1
 #define LXfTBLX_VOL_CLIPPING     2
 #define LXfTBLX_VOL_IMPSURF      4
 #define LXu_TABLEAUVOLUME       "97962302-4B49-4282-B259-F347F1012818"
 #define LXa_TABLEAUVOLUME       "tableauVolume"
+// [local]   ILxTableauVolume
 // [export]  ILxTableauVolume tvol
 // [default] ILxTableauVolume:FeatureCount   = 0
 // [default] ILxTableauVolume:FeatureByIndex = LXe_OUTOFBOUNDS
 #define LXu_TABLEAULIGHT        "7FE816D1-4A7F-4BE5-9689-4991C03CAEE0"
 #define LXa_TABLEAULIGHT        "tableauLight"
 #define LXu_LIGHTSAMPLE         "43734621-9B93-4174-AC63-E2FE7DDA8794"
+// [local]   ILxTableauLight
 // [export]  ILxTableauLight tlgt
 // [default] ILxTableauLight:FeatureCount   = 0
 // [default] ILxTableauLight:FeatureByIndex = LXe_OUTOFBOUNDS
 // [local]   ILxLightSample
+#define LXsP_LGT_QUALITY        "light.quality"
+#define LXsP_LGT_SHADOWING      "light.shadowing"
+#define LXsP_LGT_SOURCE         "light.source"
+#define LXsP_LGT_COLOR          "light.color"
 #define LXs_FX_LIGHTCOLOR       "lightColor"
 #define LXs_FX_LIGHTSHADOW      "lightShadow"
 #define LXs_FX_LIGHTDIFFUSE     "lightDiffuse"
@@ -710,8 +805,12 @@ typedef struct vt_ILxTableauService {
 #define LXs_FX_VOLDENSITY       "volDensity"
 #define LXs_FX_VOLLEVEL         "volLevel"
 #define LXs_FX_VOLSMPDENSITY    "volSampleDensity"
+#define LXs_FX_VOLAMB_COL       "volAmbientColor"
+#define LXs_FX_VOLLUMI          "volLuminosity"
+#define LXs_FX_VOLLUMI_COL      "volLuminosityColor"
 #define LXu_TABLEAUPROXY        "FB34BD64-099C-4B30-8EF7-2BB04CA0E92C"
 #define LXa_TABLEAUPROXY        "tableauProxy"
+// [local]   ILxTableauProxy
 // [export]  ILxTableauProxy tpro
 // [default] ILxTableauProxy:FeatureCount   = 0
 // [default] ILxTableauProxy:FeatureByIndex = LXe_OUTOFBOUNDS
@@ -726,11 +825,10 @@ typedef struct vt_ILxTableauService {
 #define LXu_TABLEAUSHADER       "A0E3B574-B0AC-4530-A43F-7CC8DA536E25"
 #define LXa_TABLEAUSHADER       "tableauShader"
 #define LXu_SHADERSLICE         "47B885B9-B1D9-4F86-829F-A6AABBD7FFF7"
-#define LXu_TABLEAUVERTEX       "F90A0A39-EE2A-4D11-912B-9338EF271DFF"
 // [export] ILxTableauShader tsha
 // [local]  ILxTableauShader
+// [python] ILxTableauShader:Slice      obj ShaderSlice
 // [local]  ILxShaderSlice
-// [local]  ILxTableauVertex
 #define LXsP_CAM_RAY            "camera.ray"
 #define LXsP_CAM_RAY_T1         "camera.ray_T1"
 #define LXsP_ENV_INFINITECOLOR  "environment.color"
@@ -753,9 +851,21 @@ typedef struct vt_ILxTableauService {
 #define LXfTBLX_PREVIEW_UPDATE_NONE      0x00
 #define LXfTBLX_PREVIEW_UPDATE_GEOMETRY  0x01
 #define LXfTBLX_PREVIEW_UPDATE_SHADING   0x02
-#define LXu_TABLEAUSOURCE       "1121C167-F934-4421-8ABE-32F8E4659324"
-// [export] ILxTableauSource tsrc
+#define LXiTBXELT_SURFACE       0
+#define LXiTBXELT_VOLUME        1
+#define LXiTBXELT_LIGHT         2
+#define LXiTBXELT_FILTER        3
+#define LXiTBXELT_PROXY         4
+#define LXu_TABLEAUSOURCE       "9CC7F9F4-9540-4EEA-8EE9-710D58EC68F9"
+// [local]   ILxTableauSource
+// [export]  ILxTableauSource tsrc
+// [default] ILxTableauSource:ElementType = LXe_NOTIMPL
+#define LXu_TABLEAUSOURCE1      "1121C167-F934-4421-8ABE-32F8E4659324"
+// [export]  ILxTableauSource1 tsrc
 #define LXu_TABLEAUSERVICE      "8DF92316-3172-465A-A199-254792D37732"
+// [python] ILxTableauService:AllocVertex       obj TableauVertex
+#define LXu_TABLEAULISTENER     "848C5B64-4C9F-404E-8E3F-CF725007F74D"
+// [export] ILxTableauListener tli
 
  #ifdef __cplusplus
   }

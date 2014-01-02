@@ -1,7 +1,7 @@
 /*
  * C++ wrapper for lxpersist.h
  *
- *	Copyright (c) 2008-2012 Luxology LLC
+ *	Copyright (c) 2008-2013 Luxology LLC
  *	
  *	Permission is hereby granted, free of charge, to any person obtaining a
  *	copy of this software and associated documentation files (the "Software"),
@@ -30,6 +30,7 @@
 
 #include <lxpersist.h>
 #include <lx_wrap.hpp>
+#include <string>
 
 namespace lx {
     static const LXtGUID guid_PersistenceService = {0x4CB5705E,0xC705,0x499D,0x95,0x61,0x6F,0xD3,0x69,0xCE,0xFE,0x99};
@@ -44,7 +45,7 @@ public:
   void _init() {m_loc=0;}
   CLxLoc_PersistenceService() {_init();set();}
  ~CLxLoc_PersistenceService() {}
-  void set() {m_loc=reinterpret_cast<ILxPersistenceServiceID>(lx::GetGlobal(&lx::guid_PersistenceService));}
+  void set() {if(!m_loc)m_loc=reinterpret_cast<ILxPersistenceServiceID>(lx::GetGlobal(&lx::guid_PersistenceService));}
     LxResult
   ScriptQuery (void **ppvObj)
   {
@@ -64,6 +65,13 @@ public:
   End (void **ppvObj)
   {
     return m_loc[0]->End (m_loc,ppvObj);
+  }
+    bool
+  End (CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->End (m_loc,&obj)) && dest.take(obj);
   }
     LxResult
   AddValue (const char *typeName)
@@ -85,6 +93,12 @@ class CLxImpl_PersistenceClient {
       cc_SyncWrite (void)
         { return LXe_NOTIMPL; }
 };
+#define LXxD_PersistenceClient_Setup LxResult cc_Setup (void)
+#define LXxO_PersistenceClient_Setup LXxD_PersistenceClient_Setup LXx_OVERRIDE
+#define LXxD_PersistenceClient_SyncRead LxResult cc_SyncRead (void)
+#define LXxO_PersistenceClient_SyncRead LXxD_PersistenceClient_SyncRead LXx_OVERRIDE
+#define LXxD_PersistenceClient_SyncWrite LxResult cc_SyncWrite (void)
+#define LXxO_PersistenceClient_SyncWrite LXxD_PersistenceClient_SyncWrite LXx_OVERRIDE
 template <class T>
 class CLxIfc_PersistenceClient : public CLxInterface
 {
@@ -121,6 +135,30 @@ public:
     vt.SyncWrite = SyncWrite;
     vTable = &vt.iunk;
     iid = &lx::guid_PersistenceClient;
+  }
+};
+class CLxLoc_PersistenceClient : public CLxLocalize<ILxPersistenceClientID>
+{
+public:
+  void _init() {m_loc=0;}
+  CLxLoc_PersistenceClient() {_init();}
+  CLxLoc_PersistenceClient(ILxUnknownID obj) {_init();set(obj);}
+  CLxLoc_PersistenceClient(const CLxLoc_PersistenceClient &other) {_init();set(other.m_loc);}
+  const LXtGUID * guid() const {return &lx::guid_PersistenceClient;}
+    LxResult
+  Setup (void)
+  {
+    return m_loc[0]->Setup (m_loc);
+  }
+    LxResult
+  SyncRead (void)
+  {
+    return m_loc[0]->SyncRead (m_loc);
+  }
+    LxResult
+  SyncWrite (void)
+  {
+    return m_loc[0]->SyncWrite (m_loc);
   }
 };
 

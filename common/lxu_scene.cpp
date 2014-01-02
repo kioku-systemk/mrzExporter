@@ -1,7 +1,7 @@
 /*
  * Plug-in SDK Source: Common Utility
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -1158,6 +1158,13 @@ CLxSceneBuilder::SetChannelEncoded (
 }
 
         void
+CLxSceneBuilder::SetEditTime (
+        double			 frameTime)
+{
+        pv->Err ( pv->scene.SetChannels (pv->anim, LXs_ACTIONLAYER_EDIT, frameTime) ? LXe_OK : LXe_FAILED );
+}
+
+        void
 CLxSceneBuilder::AddEnvelope (
         const char		*channel,
         CLxLoc_Envelope		&env)
@@ -1910,15 +1917,17 @@ CLxSceneLoader::~CLxSceneLoader ()
 
         LxResult
 CLxSceneLoader::load_Recognize (
-        LXtLoadAccess		*load)
+        const char		*filename,
+        ILxUnknownID		 ldInfo)
 {
         CLxFileParser		*par = sl_Parser ();
         CLxUser_SceneService	 svc;
 
         SL_DBG (("CLxSceneLoader::load_Recognize %s\n", load->filename));
 
+        cp_filename = filename;
         try {
-                if (!par->fp_Open (load->filename))
+                if (!par->fp_Open (filename))
                         return LXe_FAILED;
 
                 if (par->fp_HasError ())
@@ -1940,12 +1949,15 @@ CLxSceneLoader::load_Recognize (
                 return LXe_FAILED;
         }
 
-        load_target.itemType	= svc.ItemType (LXsITYPE_MESH);
-        load_target.flags	= 0;
-        load->found		= lx::LookupGUID (LXu_SCENE);
-        load->opaque		= 0;
-        load->target		= &load_target;
-        load->options		= (sl_HasOptions () ? 1 : 0);
+        CLxUser_LoaderInfo		 info (ldInfo);
+
+        ld_target.set (ldInfo);
+
+        info.SetClass (&lx::guid_Scene);
+        if (sl_HasOptions ())
+                info.SetFlags (LXfLOAD_OPTIONS);
+
+        ld_target.SetRootType (LXsITYPE_MESH);
 
         SL_DBG (("  Recognized!\n"));
         par->fp_Cleanup ();
@@ -1954,18 +1966,19 @@ CLxSceneLoader::load_Recognize (
 
         LxResult
 CLxSceneLoader::load_LoadObject (
-        LXtLoadAccess		*load,
+        ILxUnknownID		 ldInfo,
+        ILxUnknownID		 monitor,
         ILxUnknownID		 dest)
 {
         CLxFileParser		*par = sl_Parser ();
         LxResult		 error, res = LXe_OK;
 
         try {
-                if (!par->fp_Open (load->filename))
+                if (!par->fp_Open (cp_filename))
                         throw (LXe_FAILED);
 
-                if (load->monitor)
-                        par->fp_SetMonitor (load->monitor);
+                if (monitor)
+                        par->fp_SetMonitor (monitor);
 
                 if (par->fp_HasError ())
                         throw (par->fp_ErrorCode ());
@@ -2007,13 +2020,12 @@ CLxSceneLoader::load_LoadObject (
         return res;
 }
 
-        LxResult
-CLxSceneLoader::load_Cleanup (
-        LXtLoadAccess		*load)
+        void
+CLxSceneLoader::load_Cleanup ()
 {
+        ld_target.clear ();
         scene_build.Cleanup ();
         sl_Parser () -> fp_Cleanup ();
-        return LXe_OK;
 }
 
         LxResult
@@ -2635,6 +2647,20 @@ CLxSceneSaver::NextSelectedMesh ()
         return ok;
 }
 
+        bool
+CLxSceneSaver::GetMesh(
+        CLxLoc_Mesh		&mesh)
+{
+                return mesh.set (pv->mesh);
+}
+
+        bool
+CLxSceneSaver::GetPolygon(
+        CLxLoc_Polygon		&poly)
+{
+        return poly.set (pv->poly);
+}
+
 /*
  * Layers in the shader tree are selected by mask strings. The initialization
  * method scans the tree recursively and finds all layers that match the masks.
@@ -2782,7 +2808,7 @@ CLxSceneSaver::SetMeshTime (
                     false == srcMeshItem.take (iMesh) ||
                     LXe_TRUE == iMesh[0]->TestType (iMesh, LXsITYPE_TRISURF) ||
                     LXx_FAIL (iMesh[0]->ChannelIndex (iMesh, LXsICHAN_MESH_MESH, &index)) ||
-                    LXx_FAIL (fChan.Object (srcMeshItem, index, pv->meshFilter)))
+                    false == fChan.Object (srcMeshItem, index, pv->meshFilter))
                         return false;
         }
 
@@ -2790,7 +2816,7 @@ CLxSceneSaver::SetMeshTime (
                 return false;
 
         else if (0 > (index = pv->item.ChannelIndex (LXsICHAN_MESH_MESH)) ||
-                 LXx_FAIL (fChan.Object (pv->item, index, pv->meshFilter)))
+                 false == fChan.Object (pv->item, index, pv->meshFilter))
                         return false;
 
         return pv->meshFilter.GetMesh (pv->mesh) && pv->mesh.GetPoints (pv->point);
@@ -3114,7 +3140,7 @@ CLxSceneSaver::ChanIsAnimated (
         unsigned		 index) const
 {
         // we need to use the time-based channel reader
-        return pv->chanXForm.IsAnimated (pv->item, index);
+        return 0 != pv->chanXForm.IsAnimated (pv->item, index);
 }
 
         unsigned

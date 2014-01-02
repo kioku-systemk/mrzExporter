@@ -1,7 +1,7 @@
 /*
  * LX dfrm module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -42,6 +42,9 @@ typedef struct vt_ILxDeformerService ** ILxDeformerServiceID;
 #include <lxmesh.h>
 
 typedef void *           LXtDeformElt;
+
+// [python] type LXtDeformElt   id
+// [python] type LXtPointID     id
 
 typedef struct vt_ILxFalloff {
         ILxUnknown       iunk;
@@ -116,14 +119,14 @@ typedef struct vt_ILxDeformer {
         Weight) (
                 LXtObjectID              self,
                 LXtDeformElt             elt,
-                LXtFVector               pos);
+                const LXtFVector         pos);
 
                 LXxMETHOD( void,
         Offset) (
                 LXtObjectID              self,
                 LXtDeformElt             elt,
                 float                    weight,
-                LXtFVector               pos,
+                const LXtFVector         pos,
                 LXtFVector               offset);
                 LXxMETHOD( LxResult,
         WeightRun) (
@@ -338,9 +341,12 @@ typedef struct vt_ILxDeformerService {
 // [local]   ILxMeshInfluence
 // [default] ILxMeshInfluence:MeshCount = 0
 // [default] ILxMeshInfluence:PartitionIndex = index
+// [python]  ILxMeshInfluence:MeshByIndex       obj Item
 #define LXu_ITEMINFLUENCE       "2141BD0B-DEFC-4A92-A4A5-30760C09F18B"
 // [export]  ILxItemInfluence iinf
 // [local]   ILxItemInfluence
+// [python]  ILxItemInfluence:GetItem   obj Item
+// [python]  ILxItemInfluence:HasItems  bool
 
 #define LXfITEMINF_POSITION      0x01
 #define LXfITEMINF_ROTATION      0x02
@@ -361,6 +367,9 @@ typedef struct vt_ILxDeformerService {
 #define LXsICVAL_DEFORMGROUP_INTERPOLATION_DQS          "dqs"
 #define LXu_GROUPDEFORMER       "4BC04F3F-29FC-4EA3-B090-10280331C757"
 // [local]   ILxGroupDeformer
+// [python]  ILxGroupDeformer:DeformerByIndex   obj Item
+// [python]  ILxGroupDeformer:PointEffect:deformer      vector
+// [python]  ILxGroupDeformer:PointEffect:weight        vector
 #define LXsITYPE_DEFORMFOLDER           "deformFolder"
 
 #define LXsICHAN_DEFORMFOLDER_ENABLE    "enable"
@@ -384,6 +393,9 @@ typedef struct vt_ILxDeformerService {
 #define LXsICVAL_ITEMINFLUENCE_INTERPOLATION_LINEAR     "linear"
 #define LXa_DEFORMERSERVICE     "deformerservice"
 #define LXu_DEFORMERSERVICE     "8267068C-FDBB-430A-8230-BE64F72CE3E3"
+// [python] ILxDeformerService:DeformerDeformationItem  obj item
+// [python] ILxDeformerService:GroupDeformer    obj GroupDeformer
+// [python] ILxDeformerService:MeshByIndex      obj Item (item)
 
  #ifdef __cplusplus
   }

@@ -1,7 +1,7 @@
 /*
  * LX log module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -35,6 +35,7 @@ typedef struct vt_ILxLogService ** ILxLogServiceID;
 typedef struct vt_ILxLogInfoBlock ** ILxLogInfoBlockID;
 typedef struct vt_ILxLog ** ILxLogID;
 typedef struct vt_ILxLogEntry ** ILxLogEntryID;
+typedef struct vt_ILxLogListener ** ILxLogListenerID;
 #include <lxcom.h>
 #include <lxvmath.h>
 #ifdef long
@@ -59,14 +60,7 @@ typedef struct vt_ILxLogEntry ** ILxLogEntryID;
 #endif
 
 
-typedef struct st_LXtLogEntryEvent {
-        ILxLogID                 system;
-        ILxLogEntryID            entry;
-} LXtLogEntryEvent;
-typedef struct st_LXtLogEntryChildEvent {
-        ILxLogEntryID            parent;
-        ILxLogEntryID            entry;
-} LXtLogEntryChildEvent;
+
 typedef struct vt_ILxLogService {
         ILxUnknown       iunk;
                 LXxMETHOD(  LxResult,
@@ -211,7 +205,7 @@ typedef struct vt_ILxLog {
                 LXtObjectID              self,
                 unsigned int             index,
                 void                   **ppvObj );
-                LXxMETHOD(  ILxLogEntryID,
+                LXxMETHOD(  LXtObjectID,
         PeekEntryByIndex) (
                 LXtObjectID              self,
                 unsigned int             index );
@@ -289,7 +283,7 @@ typedef struct vt_ILxLogEntry {
                 LXtObjectID              self,
                 unsigned int             index,
                 void                   **ppvObj );
-                LXxMETHOD(  ILxLogEntryID,
+                LXxMETHOD(  LXtObjectID,
         PeekChildByIndex) (
                 LXtObjectID              self,
                 unsigned int             index );
@@ -339,9 +333,60 @@ typedef struct vt_ILxLogEntry {
                 unsigned int              index,
                 const char              **value );
 } ILxLogEntry;
+typedef struct vt_ILxLogListener {
+        ILxUnknown       iunk;
+                LXxMETHOD( void,
+        SystemAdded) (
+                LXtObjectID              self,
+                LXtObjectID              system);
+                LXxMETHOD( void,
+        EntryAdded) (
+                LXtObjectID              self,
+                LXtObjectID              system,
+                LXtObjectID              entry);
+                LXxMETHOD( void,
+        ChildEntryAdded) (
+                LXtObjectID              self,
+                LXtObjectID              entry,
+                LXtObjectID              parentEntry);
+                LXxMETHOD( void,
+        EntryDropped) (
+                LXtObjectID              self,
+                LXtObjectID              system,
+                LXtObjectID              entry);
+                LXxMETHOD( void,
+        RollingEntryAdded) (
+                LXtObjectID              self,
+                LXtObjectID              system,
+                LXtObjectID              entry);
+
+                LXxMETHOD( void,
+        RollingChildEntryAdded) (
+                LXtObjectID              self,
+                LXtObjectID              entry,
+                LXtObjectID              parentEntry);
+
+                LXxMETHOD( void,
+        RollingEntryDropped) (
+                LXtObjectID              self,
+                LXtObjectID              system,
+                LXtObjectID              entry);
+} ILxLogListener;
 
 #define LXu_LOGSERVICE  "0BC355C2-5E6B-49EF-B368-600D9F26F543"
 #define LXa_LOGSERVICE  "logservice"
+
+// [python] ILxLogService:CreateEntryInfoBlock  obj LogEntry
+// [python] ILxLogService:CreateEntryMessage    obj LogEntry
+// [python] ILxLogService:CreateEntryMessageFromMsgObj  obj LogEntry
+// [python] ILxLogService:CreateEntryPaired     obj LogEntry
+// [python] ILxLogService:InfoBlockByIndex      obj LogInfoBlock
+// [python] ILxLogService:InfoBlockLookup       obj LogInfoBlock
+// [python] ILxLogService:MasterSubSystem       obj Log
+// [python] ILxLogService:SubSystemByIndex      obj Log
+// [python] ILxLogService:SubSystemLookup       obj Log
+// [python] ILxLogService:InfoBlockFieldsAreSameGroup   bool
+// [python] ILxLogService:IsLoggingEnabled      bool
 #define LXsLOG_LOGSYS    "logsys"
 #define LXsSRV_LOGSUBSYSTEM     "server.logsubsystem"
 #define LXsLOG_MASTERSYS         "master"
@@ -357,26 +402,22 @@ typedef struct vt_ILxLogEntry {
 #define LXu_LOG         "1890538F-D64C-478c-8472-228B7C9AB1DF"
 #define LXa_LOG         "logsubsystem"
 // [local]  ILxLog
+
+// [python] ILxLog:EntryByIndex         obj LogEntry
+// [python] ILxLog:GetCurrentEntry      obj LogEntry
+// [python] ILxLog:GetRolling           obj LogEntry
 #define LXu_LOGENTRY    "E83679B2-DB4D-4D90-B81B-5F786D212FB3"
 #define LXa_LOGENTRY    "logentry"
 // [local]  ILxLogEntry
+
+// [python] ILxLogEntry:ChildByIndex            obj LogEntry
+// [python] ILxLogEntry:InfoBlock               obj LogInfoBlock
+// [python] ILxLogEntry:InfoBlockValue          obj Unknown
+// [python] ILxLogEntry:SubSystemByIndex        obj Unknown
 #define LXiLOGCLASS_MESSAGE     0
 #define LXiLOGCLASS_BLOCK       1
 #define LXiLOGCLASS_PAIRS       2
-#define LXsLOG_PORTNAME                 "logglobal"
-
-#define LXiLOGEVENT_SUBSYSTEM_ADD       0x1000
-#define LXfLOGEVENT_ENTRY               0x2000
-
-#define LXfLOGEVENT_ROLLING             0x0100
-
-#define LXfLOGEVENT_ADD                 0x0010
-#define LXfLOGEVENT_ADD_CHILD           0x0020
-#define LXfLOGEVENT_DROP                0x0030
-
-#define LXmLOGEVENT_CLASS               0xF000
-#define LXmLOGEVENT_STYLE               0x0F00
-#define LXmLOGEVENT_ACTION              0x00F0
+#define LXu_LOGLISTENER         "c5fd260b-cab7-4283-b876-2314144ae83a"
 
  #ifdef __cplusplus
   }

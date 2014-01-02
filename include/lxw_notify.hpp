@@ -1,7 +1,7 @@
 /*
  * C++ wrapper for lxnotify.h
  *
- *	Copyright (c) 2008-2012 Luxology LLC
+ *	Copyright (c) 2008-2013 Luxology LLC
  *	
  *	Permission is hereby granted, free of charge, to any person obtaining a
  *	copy of this software and associated documentation files (the "Software"),
@@ -30,6 +30,7 @@
 
 #include <lxnotify.h>
 #include <lx_wrap.hpp>
+#include <string>
 
 namespace lx {
     static const LXtGUID guid_Notify = {0x15C9BFC0,0xA0A7,0x448c,0x8C,0xD5,0xA8,0xFC,0xA2,0xCB,0x14,0x5B};
@@ -57,6 +58,16 @@ class CLxImpl_Notifier {
       noti_RemoveClient (ILxUnknownID object)
         { return LXe_NOTIMPL; }
 };
+#define LXxD_Notifier_Name LxResult noti_Name (const char **name)
+#define LXxO_Notifier_Name LXxD_Notifier_Name LXx_OVERRIDE
+#define LXxD_Notifier_SetArgs LxResult noti_SetArgs (const char *args)
+#define LXxO_Notifier_SetArgs LXxD_Notifier_SetArgs LXx_OVERRIDE
+#define LXxD_Notifier_Args LxResult noti_Args (const char **args)
+#define LXxO_Notifier_Args LXxD_Notifier_Args LXx_OVERRIDE
+#define LXxD_Notifier_AddClient LxResult noti_AddClient (ILxUnknownID object)
+#define LXxO_Notifier_AddClient LXxD_Notifier_AddClient LXx_OVERRIDE
+#define LXxD_Notifier_RemoveClient LxResult noti_RemoveClient (ILxUnknownID object)
+#define LXxO_Notifier_RemoveClient LXxD_Notifier_RemoveClient LXx_OVERRIDE
 template <class T>
 class CLxIfc_Notifier : public CLxInterface
 {
@@ -155,7 +166,7 @@ public:
   void _init() {m_loc=0;}
   CLxLoc_NotifySysService() {_init();set();}
  ~CLxLoc_NotifySysService() {}
-  void set() {m_loc=reinterpret_cast<ILxNotifySysServiceID>(lx::GetGlobal(&lx::guid_NotifySysService));}
+  void set() {if(!m_loc)m_loc=reinterpret_cast<ILxNotifySysServiceID>(lx::GetGlobal(&lx::guid_NotifySysService));}
     LxResult
   ScriptQuery (void **ppvObj)
   {
@@ -165,6 +176,13 @@ public:
   Spawn (const char *name, const char *args, void **ppvObj)
   {
     return m_loc[0]->Spawn (m_loc,name,args,ppvObj);
+  }
+    bool
+  Spawn (const char *name, const char *args, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Spawn (m_loc,name,args,&obj)) && dest.take(obj);
   }
     LxResult
   Count (unsigned int *count)
@@ -176,6 +194,13 @@ public:
   {
     return m_loc[0]->ByIndex (m_loc,index,ppvObj);
   }
+    bool
+  ByIndex (unsigned int index, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->ByIndex (m_loc,index,&obj)) && dest.take(obj);
+  }
     LxResult
   NameByIndex (unsigned int index, const char **name)
   {
@@ -185,6 +210,13 @@ public:
   Lookup (const char *name, const char *args, void **ppvObj)
   {
     return m_loc[0]->Lookup (m_loc,name,args,ppvObj);
+  }
+    bool
+  Lookup (const char *name, const char *args, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Lookup (m_loc,name,args,&obj)) && dest.take(obj);
   }
 };
 

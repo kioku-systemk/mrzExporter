@@ -1,7 +1,7 @@
 /*
  * C++ wrapper for lxlayer.h
  *
- *	Copyright (c) 2008-2012 Luxology LLC
+ *	Copyright (c) 2008-2013 Luxology LLC
  *	
  *	Permission is hereby granted, free of charge, to any person obtaining a
  *	copy of this software and associated documentation files (the "Software"),
@@ -30,6 +30,7 @@
 
 #include <lxlayer.h>
 #include <lx_wrap.hpp>
+#include <string>
 
 namespace lx {
     static const LXtGUID guid_Scene1Service = {0x11D99CDC,0xF662,0x40FF,0x9A,0xC3,0xB7,0x6E,0x59,0xC8,0xDE,0xB0};
@@ -91,7 +92,7 @@ public:
   void _init() {m_loc=0;}
   CLxLoc_LayerService() {_init();set();}
  ~CLxLoc_LayerService() {}
-  void set() {m_loc=reinterpret_cast<ILxLayerServiceID>(lx::GetGlobal(&lx::guid_LayerService));}
+  void set() {if(!m_loc)m_loc=reinterpret_cast<ILxLayerServiceID>(lx::GetGlobal(&lx::guid_LayerService));}
     LxResult
   ScriptQuery (void **ppvObj)
   {
@@ -103,9 +104,16 @@ public:
     return m_loc[0]->SetScene (m_loc,(ILxUnknownID)scene);
   }
     LxResult
-  Scene (void **xcin)
+  Scene (void **ppvObj)
   {
-    return m_loc[0]->Scene (m_loc,xcin);
+    return m_loc[0]->Scene (m_loc,ppvObj);
+  }
+    bool
+  Scene (CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Scene (m_loc,&obj)) && dest.take(obj);
   }
     LxResult
   Count (unsigned int *count)
@@ -123,14 +131,28 @@ public:
     return m_loc[0]->Slot (m_loc,index,slot);
   }
     LxResult
-  Item (unsigned int index, void **item)
+  Item (unsigned int index, void **ppvObj)
   {
-    return m_loc[0]->Item (m_loc,index,item);
+    return m_loc[0]->Item (m_loc,index,ppvObj);
+  }
+    bool
+  Item (unsigned int index, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Item (m_loc,index,&obj)) && dest.take(obj);
   }
     LxResult
-  Mesh (unsigned int index, void **mesh)
+  Mesh (unsigned int index, void **ppvObj)
   {
-    return m_loc[0]->Mesh (m_loc,index,mesh);
+    return m_loc[0]->Mesh (m_loc,index,ppvObj);
+  }
+    bool
+  Mesh (unsigned int index, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Mesh (m_loc,index,&obj)) && dest.take(obj);
   }
     LxResult
   Flags (unsigned int index, int *flags)
@@ -148,7 +170,7 @@ public:
     return m_loc[0]->PatchSubdivision (m_loc,index,level);
   }
     LxResult
-  Bounds (unsigned int index, double *min, double *max)
+  Bounds (unsigned int index, LXtVector min, LXtVector max)
   {
     return m_loc[0]->Bounds (m_loc,index,min,max);
   }
@@ -197,6 +219,13 @@ public:
   {
     return m_loc[0]->LayerVMap (m_loc,index,ppvObj);
   }
+    bool
+  LayerVMap (unsigned int index, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->LayerVMap (m_loc,index,&obj)) && dest.take(obj);
+  }
     LxResult
   LayerClipCount (int *num)
   {
@@ -207,6 +236,13 @@ public:
   {
     return m_loc[0]->LayerClip (m_loc,index,ppvObj);
   }
+    bool
+  LayerClip (unsigned int index, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->LayerClip (m_loc,index,&obj)) && dest.take(obj);
+  }
     LxResult
   LayerMaterialCount (int *num)
   {
@@ -216,6 +252,13 @@ public:
   LayerMaterial (unsigned int index, void **ppvObj)
   {
     return m_loc[0]->LayerMaterial (m_loc,index,ppvObj);
+  }
+    bool
+  LayerMaterial (unsigned int index, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->LayerMaterial (m_loc,index,&obj)) && dest.take(obj);
   }
     LxResult
   LayerPartCount (int *num)
@@ -247,6 +290,13 @@ public:
   {
     return m_loc[0]->LayerTexture (m_loc,layer,index,ppvObj);
   }
+    bool
+  LayerTexture (int layer, unsigned int index, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->LayerTexture (m_loc,layer,index,&obj)) && dest.take(obj);
+  }
     LxResult
   LayerTagTextureCount (int layer, unsigned int type, const char *tag, int *num)
   {
@@ -256,6 +306,13 @@ public:
   LayerTagTexture (int layer, unsigned int type, const char *tag, unsigned int index, void **ppvObj)
   {
     return m_loc[0]->LayerTagTexture (m_loc,layer,type,tag,index,ppvObj);
+  }
+    bool
+  LayerTagTexture (int layer, unsigned int type, const char *tag, unsigned int index, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->LayerTagTexture (m_loc,layer,type,tag,index,&obj)) && dest.take(obj);
   }
     LxResult
   LayerVertexCount (int mode, int *num)
@@ -267,6 +324,13 @@ public:
   {
     return m_loc[0]->LayerVertex (m_loc,mode,index,ppvObj);
   }
+    bool
+  LayerVertex (int mode, unsigned int index, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->LayerVertex (m_loc,mode,index,&obj)) && dest.take(obj);
+  }
     LxResult
   LayerPolyCount (int mode, int *num)
   {
@@ -276,6 +340,13 @@ public:
   LayerPoly (int mode, unsigned int index, void **ppvObj)
   {
     return m_loc[0]->LayerPoly (m_loc,mode,index,ppvObj);
+  }
+    bool
+  LayerPoly (int mode, unsigned int index, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->LayerPoly (m_loc,mode,index,&obj)) && dest.take(obj);
   }
     LxResult
   LayerEdgeCount (int mode, int *num)
@@ -287,10 +358,24 @@ public:
   {
     return m_loc[0]->LayerEdge (m_loc,mode,index,ppvObj);
   }
+    bool
+  LayerEdge (int mode, unsigned int index, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->LayerEdge (m_loc,mode,index,&obj)) && dest.take(obj);
+  }
     LxResult
   ScanAllocate (unsigned flags, void **ppvObj)
   {
     return m_loc[0]->ScanAllocate (m_loc,flags,ppvObj);
+  }
+    bool
+  ScanAllocate (unsigned flags, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->ScanAllocate (m_loc,flags,&obj)) && dest.take(obj);
   }
     LxResult
   CurrentMap (LXtID4 type, const char **name)
@@ -301,6 +386,13 @@ public:
   XfrmAllocate (ILxUnknownID toolVec, void **ppvObj)
   {
     return m_loc[0]->XfrmAllocate (m_loc,(ILxUnknownID)toolVec,ppvObj);
+  }
+    bool
+  XfrmAllocate (ILxUnknownID toolVec, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->XfrmAllocate (m_loc,(ILxUnknownID)toolVec,&obj)) && dest.take(obj);
   }
 };
 
@@ -332,25 +424,60 @@ public:
   {
     return m_loc[0]->MeshItem (m_loc,index,ppvObj);
   }
+    bool
+  MeshItem (unsigned index, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->MeshItem (m_loc,index,&obj)) && dest.take(obj);
+  }
     LxResult
   MeshAction (unsigned index, void **ppvObj)
   {
     return m_loc[0]->MeshAction (m_loc,index,ppvObj);
+  }
+    bool
+  MeshAction (unsigned index, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->MeshAction (m_loc,index,&obj)) && dest.take(obj);
   }
     LxResult
   MeshBase (unsigned index, void **ppvObj)
   {
     return m_loc[0]->MeshBase (m_loc,index,ppvObj);
   }
+    bool
+  MeshBase (unsigned index, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->MeshBase (m_loc,index,&obj)) && dest.take(obj);
+  }
     LxResult
   MeshInstance (unsigned index, void **ppvObj)
   {
     return m_loc[0]->MeshInstance (m_loc,index,ppvObj);
   }
+    bool
+  MeshInstance (unsigned index, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->MeshInstance (m_loc,index,&obj)) && dest.take(obj);
+  }
     LxResult
   MeshEdit (unsigned index, void **ppvObj)
   {
     return m_loc[0]->MeshEdit (m_loc,index,ppvObj);
+  }
+    bool
+  MeshEdit (unsigned index, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->MeshEdit (m_loc,index,&obj)) && dest.take(obj);
   }
     LxResult
   SetMeshChange (unsigned index, unsigned int edits)

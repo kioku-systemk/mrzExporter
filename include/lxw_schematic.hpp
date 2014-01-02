@@ -1,7 +1,7 @@
 /*
  * C++ wrapper for lxschematic.h
  *
- *	Copyright (c) 2008-2012 Luxology LLC
+ *	Copyright (c) 2008-2013 Luxology LLC
  *	
  *	Permission is hereby granted, free of charge, to any person obtaining a
  *	copy of this software and associated documentation files (the "Software"),
@@ -30,67 +30,191 @@
 
 #include <lxschematic.h>
 #include <lx_wrap.hpp>
+#include <string>
 
 namespace lx {
-    static const LXtGUID guid_Schematic = {0xF656CC26,0x2580,0x4B4C,0x8C,0xBC,0x8B,0xDD,0x01,0x37,0x8B,0xFD};
+    static const LXtGUID guid_SchematicConnection = {0x5AC0A075,0x72B7,0x4935,0x8D,0xA5,0x58,0x8D,0xF7,0x99,0x90,0x69};
 };
 
-class CLxImpl_Schematic {
+class CLxImpl_SchematicConnection {
   public:
-    virtual ~CLxImpl_Schematic() {}
+    virtual ~CLxImpl_SchematicConnection() {}
     virtual LxResult
-      schm_GraphRegister (char *string)
+      schm_ItemFlags (ILxUnknownID item, unsigned *flags)
         { return LXe_NOTIMPL; }
     virtual LxResult
-      schm_GraphTest (ILxUnknownID from, ILxUnknownID to)
+      schm_AllowConnect (ILxUnknownID from, ILxUnknownID to)
         { return LXe_NOTIMPL; }
+    virtual LxResult
+      schm_GraphName (const char **name)
+        { return LXe_NOTIMPL; }
+    virtual LxResult
+      schm_Count (ILxUnknownID item, unsigned *count)
+        { return LXe_NOTIMPL; }
+    virtual LxResult
+      schm_ByIndex (ILxUnknownID item, unsigned index, void **ppvObj)
+        { return LXe_NOTIMPL; }
+    virtual LxResult
+      schm_Connect (ILxUnknownID from, ILxUnknownID to, int toIndex)
+        { return LXe_NOTIMPL; }
+    virtual LxResult
+      schm_Disconnect (ILxUnknownID from, ILxUnknownID to)
+        { return LXe_NOTIMPL; }
+    virtual int
+      schm_BaseFlags (void)
+        { return 0; }
 };
+#define LXxD_SchematicConnection_ItemFlags LxResult schm_ItemFlags (ILxUnknownID item, unsigned *flags)
+#define LXxO_SchematicConnection_ItemFlags LXxD_SchematicConnection_ItemFlags LXx_OVERRIDE
+#define LXxD_SchematicConnection_AllowConnect LxResult schm_AllowConnect (ILxUnknownID from, ILxUnknownID to)
+#define LXxO_SchematicConnection_AllowConnect LXxD_SchematicConnection_AllowConnect LXx_OVERRIDE
+#define LXxD_SchematicConnection_GraphName LxResult schm_GraphName (const char **name)
+#define LXxO_SchematicConnection_GraphName LXxD_SchematicConnection_GraphName LXx_OVERRIDE
+#define LXxD_SchematicConnection_Count LxResult schm_Count (ILxUnknownID item, unsigned *count)
+#define LXxO_SchematicConnection_Count LXxD_SchematicConnection_Count LXx_OVERRIDE
+#define LXxD_SchematicConnection_ByIndex LxResult schm_ByIndex (ILxUnknownID item, unsigned index, void **ppvObj)
+#define LXxO_SchematicConnection_ByIndex LXxD_SchematicConnection_ByIndex LXx_OVERRIDE
+#define LXxD_SchematicConnection_Connect LxResult schm_Connect (ILxUnknownID from, ILxUnknownID to, int toIndex)
+#define LXxO_SchematicConnection_Connect LXxD_SchematicConnection_Connect LXx_OVERRIDE
+#define LXxD_SchematicConnection_Disconnect LxResult schm_Disconnect (ILxUnknownID from, ILxUnknownID to)
+#define LXxO_SchematicConnection_Disconnect LXxD_SchematicConnection_Disconnect LXx_OVERRIDE
+#define LXxD_SchematicConnection_BaseFlags int schm_BaseFlags (void)
+#define LXxO_SchematicConnection_BaseFlags LXxD_SchematicConnection_BaseFlags LXx_OVERRIDE
 template <class T>
-class CLxIfc_Schematic : public CLxInterface
+class CLxIfc_SchematicConnection : public CLxInterface
 {
     static LxResult
-  GraphRegister (LXtObjectID wcom, char *string)
+  ItemFlags (LXtObjectID wcom, LXtObjectID item, unsigned *flags)
   {
-    LXCWxINST (CLxImpl_Schematic, loc);
+    LXCWxINST (CLxImpl_SchematicConnection, loc);
     try {
-      return loc->schm_GraphRegister (string);
+      return loc->schm_ItemFlags ((ILxUnknownID)item,flags);
     } catch (LxResult rc) { return rc; }
   }
     static LxResult
-  GraphTest (LXtObjectID wcom, LXtObjectID from, LXtObjectID to)
+  AllowConnect (LXtObjectID wcom, LXtObjectID from, LXtObjectID to)
   {
-    LXCWxINST (CLxImpl_Schematic, loc);
+    LXCWxINST (CLxImpl_SchematicConnection, loc);
     try {
-      return loc->schm_GraphTest ((ILxUnknownID)from,(ILxUnknownID)to);
+      return loc->schm_AllowConnect ((ILxUnknownID)from,(ILxUnknownID)to);
     } catch (LxResult rc) { return rc; }
   }
-  ILxSchematic vt;
-public:
-  CLxIfc_Schematic ()
+    static LxResult
+  GraphName (LXtObjectID wcom, const char **name)
   {
-    vt.GraphRegister = GraphRegister;
-    vt.GraphTest = GraphTest;
+    LXCWxINST (CLxImpl_SchematicConnection, loc);
+    try {
+      return loc->schm_GraphName (name);
+    } catch (LxResult rc) { return rc; }
+  }
+    static LxResult
+  Count (LXtObjectID wcom, LXtObjectID item, unsigned *count)
+  {
+    LXCWxINST (CLxImpl_SchematicConnection, loc);
+    try {
+      return loc->schm_Count ((ILxUnknownID)item,count);
+    } catch (LxResult rc) { return rc; }
+  }
+    static LxResult
+  ByIndex (LXtObjectID wcom, LXtObjectID item, unsigned index, void **ppvObj)
+  {
+    LXCWxINST (CLxImpl_SchematicConnection, loc);
+    try {
+      return loc->schm_ByIndex ((ILxUnknownID)item,index,ppvObj);
+    } catch (LxResult rc) { return rc; }
+  }
+    static LxResult
+  Connect (LXtObjectID wcom, LXtObjectID from, LXtObjectID to, int toIndex)
+  {
+    LXCWxINST (CLxImpl_SchematicConnection, loc);
+    try {
+      return loc->schm_Connect ((ILxUnknownID)from,(ILxUnknownID)to,toIndex);
+    } catch (LxResult rc) { return rc; }
+  }
+    static LxResult
+  Disconnect (LXtObjectID wcom, LXtObjectID from, LXtObjectID to)
+  {
+    LXCWxINST (CLxImpl_SchematicConnection, loc);
+    try {
+      return loc->schm_Disconnect ((ILxUnknownID)from,(ILxUnknownID)to);
+    } catch (LxResult rc) { return rc; }
+  }
+    static int
+  BaseFlags (LXtObjectID wcom)
+  {
+    LXCWxINST (CLxImpl_SchematicConnection, loc);
+    return loc->schm_BaseFlags ();
+  }
+  ILxSchematicConnection vt;
+public:
+  CLxIfc_SchematicConnection ()
+  {
+    vt.ItemFlags = ItemFlags;
+    vt.AllowConnect = AllowConnect;
+    vt.GraphName = GraphName;
+    vt.Count = Count;
+    vt.ByIndex = ByIndex;
+    vt.Connect = Connect;
+    vt.Disconnect = Disconnect;
+    vt.BaseFlags = BaseFlags;
     vTable = &vt.iunk;
-    iid = &lx::guid_Schematic;
+    iid = &lx::guid_SchematicConnection;
   }
 };
-class CLxLoc_Schematic : public CLxLocalize<ILxSchematicID>
+class CLxLoc_SchematicConnection : public CLxLocalize<ILxSchematicConnectionID>
 {
 public:
   void _init() {m_loc=0;}
-  CLxLoc_Schematic() {_init();}
-  CLxLoc_Schematic(ILxUnknownID obj) {_init();set(obj);}
-  CLxLoc_Schematic(const CLxLoc_Schematic &other) {_init();set(other.m_loc);}
-  const LXtGUID * guid() const {return &lx::guid_Schematic;}
+  CLxLoc_SchematicConnection() {_init();}
+  CLxLoc_SchematicConnection(ILxUnknownID obj) {_init();set(obj);}
+  CLxLoc_SchematicConnection(const CLxLoc_SchematicConnection &other) {_init();set(other.m_loc);}
+  const LXtGUID * guid() const {return &lx::guid_SchematicConnection;}
     LxResult
-  GraphRegister (char *string)
+  ItemFlags (ILxUnknownID item, unsigned *flags)
   {
-    return m_loc[0]->GraphRegister (m_loc,string);
+    return m_loc[0]->ItemFlags (m_loc,(ILxUnknownID)item,flags);
   }
     LxResult
-  GraphTest (ILxUnknownID from, ILxUnknownID to)
+  AllowConnect (ILxUnknownID from, ILxUnknownID to)
   {
-    return m_loc[0]->GraphTest (m_loc,(ILxUnknownID)from,(ILxUnknownID)to);
+    return m_loc[0]->AllowConnect (m_loc,(ILxUnknownID)from,(ILxUnknownID)to);
+  }
+    LxResult
+  GraphName (const char **name)
+  {
+    return m_loc[0]->GraphName (m_loc,name);
+  }
+    LxResult
+  Count (ILxUnknownID item, unsigned *count)
+  {
+    return m_loc[0]->Count (m_loc,(ILxUnknownID)item,count);
+  }
+    LxResult
+  ByIndex (ILxUnknownID item, unsigned index, void **ppvObj)
+  {
+    return m_loc[0]->ByIndex (m_loc,(ILxUnknownID)item,index,ppvObj);
+  }
+    bool
+  ByIndex (ILxUnknownID item, unsigned index, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->ByIndex (m_loc,(ILxUnknownID)item,index,&obj)) && dest.take(obj);
+  }
+    LxResult
+  Connect (ILxUnknownID from, ILxUnknownID to, int toIndex)
+  {
+    return m_loc[0]->Connect (m_loc,(ILxUnknownID)from,(ILxUnknownID)to,toIndex);
+  }
+    LxResult
+  Disconnect (ILxUnknownID from, ILxUnknownID to)
+  {
+    return m_loc[0]->Disconnect (m_loc,(ILxUnknownID)from,(ILxUnknownID)to);
+  }
+    int
+  BaseFlags (void)
+  {
+    return m_loc[0]->BaseFlags (m_loc);
   }
 };
 

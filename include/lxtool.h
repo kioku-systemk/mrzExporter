@@ -1,7 +1,7 @@
 /*
  * LX tpipe module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -45,11 +45,12 @@ typedef struct vt_ILxParticleGeneratorPacket ** ILxParticleGeneratorPacketID;
 #include <lxcom.h>
 #include <lxvalue.h>
 #include <lxvector.h>
+#include <lxmesh.h>
 
 
 typedef struct st_LXpToolSubject {
         LXtMeshID                mesh;
-        LXtVMapID                vmap;
+        LXtMeshMapID             vmap;
         LXtID4                   type;
         LXtMeshID                base;
 } LXpToolSubject;
@@ -161,7 +162,7 @@ typedef struct vt_ILxFalloffPacket {
         Evaluate) (
                 LXtObjectID              self,
                 LXtFVector               pos,
-                LXtPntID                 vrx);
+                LXtPointID               vrx);
                 LXxMETHOD(  double,
         Screen) (
                 LXtObjectID              self,
@@ -181,23 +182,23 @@ typedef struct vt_ILxSymmetryPacket {
                 LXtFVector               axvec,
                 float                   *offset);
 
-                LXxMETHOD(  LXtPntID,
+                LXxMETHOD(  LXtPointID,
         Point) (
                 LXtObjectID              self,
                 LXtMeshID                mesh,
-                LXtPntID                 vrx);
+                LXtPointID               vrx);
 
-                LXxMETHOD(  LXtPolID,
+                LXxMETHOD(  LXtPolygonID,
         Polygon) (
                 LXtObjectID              self,
                 LXtMeshID                mesh,
-                LXtPolID                 pol);
+                LXtPolygonID             pol);
 
-                LXxMETHOD(  LXtOldEdgeID,
+                LXxMETHOD(  LXtEdgeID,
         Edge) (
                 LXtObjectID              self,
                 LXtMeshID                mesh,
-                LXtOldEdgeID             edge);
+                LXtEdgeID                edge);
 
                 LXxMETHOD(  int,
         Position) (
@@ -211,8 +212,8 @@ typedef struct vt_ILxTexturePacket {
         Evaluate) (
                 LXtObjectID              self,
                 LXtFVector               pos,
-                LXtPntID                 vrx,
-                LXtPolID                 pol,
+                LXtPointID               vrx,
+                LXtPolygonID             pol,
                 int                      context,
                 double                  *res);
 } ILxTexturePacket;
@@ -221,7 +222,7 @@ typedef struct vt_ILxElementAxisPacket {
                 LXxMETHOD(  LxResult,
         Axis) (
                 LXtObjectID              self,
-                LXtPntID                 vrx,
+                LXtPointID               vrx,
                 LXtFVector               axis,
                 LXtMatrix                m,
                 LXtMatrix                mInv);
@@ -231,7 +232,7 @@ typedef struct vt_ILxElementCenterPacket {
                 LXxMETHOD(  LxResult,
         Center) (
                 LXtObjectID              self,
-                LXtPntID                 vrx,
+                LXtPointID               vrx,
                 LXtFVector               center);
 } ILxElementCenterPacket;
 typedef struct vt_ILxPathGeneratorPacket {
@@ -254,7 +255,7 @@ typedef struct vt_ILxPathGeneratorPacket {
                 LXtObjectID              vts,
                 double                   t,
                 double                  *tan);
-                LXxMETHOD(  LXtPolID,
+                LXxMETHOD(  LXtPolygonID,
         Source) (
                 LXtObjectID              self,
                 LXtObjectID              vts);
@@ -376,6 +377,7 @@ typedef struct vt_ILxParticleGeneratorPacket {
 #define LXs_ORD_POST            "\xF1"
 #define LXu_TOOL        "12E79F81-565E-11D7-A4CF-000A95765C9E"
 #define LXa_TOOL        "tool"
+// [local]   ILxTool
 // [export]  ILxTool
 // [default] ILxTool:ShouldBeAttribute = 0
 #define LXu_ATTRSEQUENCE                "F54FEF16-223F-439D-8593-6F350783993E"

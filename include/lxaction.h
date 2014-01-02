@@ -1,7 +1,7 @@
 /*
  * LX action module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -103,7 +103,7 @@ typedef struct vt_ILxChannelRead {
                 LXxMETHOD( double,
         Time) (
                 LXtObjectID              self);
-                LXxMETHOD( LxResult,
+                LXxMETHOD( int,
         IsAnimated) (
                 LXtObjectID              self,
                 LXtObjectID              item,
@@ -122,6 +122,10 @@ typedef struct vt_ILxChannelRead {
                 double                  *firstSample,
                 double                  *spsRate,
                 void                   **ppvObj);
+                LXxMETHOD( LxResult,
+        SetTime) (
+                LXtObjectID              self,
+                double                   time);
 } ILxChannelRead;
 typedef struct vt_ILxChannelWrite {
         ILxUnknown       iunk;
@@ -255,6 +259,11 @@ typedef struct vt_ILxModifier {
 typedef struct vt_ILxSimulationModifier {
         ILxUnknown       iunk;
                 LXxMETHOD( LxResult,
+        Enabled) (
+                LXtObjectID              self,
+                LXtObjectID              chanRead);
+
+                LXxMETHOD( LxResult,
         Initialize) (
                 LXtObjectID              self,
                 double                   time,
@@ -273,6 +282,11 @@ typedef struct vt_ILxSimulationModifier {
         Step) (
                 LXtObjectID              self,
                 double                   dt);
+
+                LXxMETHOD( LxResult,
+        Bake) (
+                LXtObjectID              self,
+                double                   time);
 } ILxSimulationModifier;
 typedef struct vt_ILxEvaluation {
         ILxUnknown       iunk;
@@ -327,6 +341,19 @@ typedef struct vt_ILxEvaluation {
                 unsigned                 bracket,
                 double                  *fraction,
                 void                   **ppvObj);
+                LXxMETHOD( double,
+        GetDT) (
+                LXtObjectID              self);
+                LXxMETHOD( LxResult,
+        SimulationState) (
+                LXtObjectID              self,
+                unsigned                *flags);
+
+                LXxMETHOD( LxResult,
+        SimulationRange) (
+                LXtObjectID              self,
+                double                  *start,
+                double                  *end);
 } ILxEvaluation;
 typedef struct vt_ILxModifier1 {
         ILxUnknown       iunk;
@@ -364,19 +391,29 @@ typedef struct vt_ILxModifier1 {
 } ILxModifier1;
 
 #define LXu_ACTIONLISTENER      "4819A297-A922-11D8-B1AD-000393CE9680"
+// [export] ILxActionListener actl
+// [local]  ILxActionListener
 #define LXu_CHANNELREAD         "D5A8C4FD-151C-4D8B-97E1-6E1B4087886B"
 // [local]   ILxChannelRead
-// [default] ILxChannelRead:IsBaked = LXe_FALSE
 // [const]   ILxChannelRead:IsAnimated
+// [default] ILxChannelRead:IsBaked = LXe_FALSE
 // [const]   ILxChannelRead:IsBaked
+// [python]  ILxChannelRead:IsBaked             bool
+// [python]  ILxChannelRead:BakedSamples        obj ValueArray (value)
+// [python]  ILxChannelRead:Envelope            obj Envelope (envelope)
+// [python]  ILxChannelRead:ValueObj            obj Unknown
 #define LXu_CHANNELWRITE        "91BFE3B8-16C6-4195-BFE5-3F0E3C0C5C57"
-// [local]  ILxChannelWrite
+// [local]   ILxChannelWrite
+// [python]  ILxChannelWrite:ValueObj           obj Unknown
+// [python]  ILxChannelWrite:BakeSamples        obj ValueArray
+// [python]  ILxChannelWrite:Envelope           obj Envelope
 #define LXs_ACTIONLAYER_SETUP   "setup"
 #define LXs_ACTIONLAYER_ANIM    "scene"
 #define LXs_ACTIONLAYER_EDIT    "edit"
 #define LXu_EVALMODIFIER        "30AAAF24-9699-4737-8E3B-E264AA4B7A3E"
 #define LXa_EVALMODIFIER        "evalModifier"
 // [export]  ILxEvalModifier eval
+// [local]   ILxEvalModifier
 // [default] ILxEvalModifier:Next = 0
 #define LXsMOD_TYPELIST         "modifier.typeList"
 #define LXsMOD_GRAPHLIST        "modifier.graphList"
@@ -389,15 +426,26 @@ typedef struct vt_ILxModifier1 {
 // [export]  ILxModifier mod
 // [default] ILxModifier:RequiredCount = 0
 // [default] ILxModifier:Test = LXe_TRUE
+// [python]  ILxModifier:Required       obj Item (item)
+// [python]  ILxModifier:Test           bool
+// [python]  ILxModifier:Invalidate     bool
 #define LXu_SIMULATIONMODIFIER          "A44F37F3-E94F-4042-85E2-1BBF633E00D2"
 // [export]  ILxSimulationModifier sim
+// [local]   ILxSimulationModifier
+// [default] ILxSimulationModifier:Enabled = LXe_TRUE
+// [python]  ILxSimulationModifier:Enabled   bool
 #define LXfECHAN_READ            0x01
 #define LXfECHAN_WRITE           0x02
 #define LXfECHAN_SETUP           0x04
 
+#define LXfSIM_NOCACHE           0x01
+#define LXfSIM_CONTINUOUS        0x02
+
 #define LXu_EVALUATION          "FB552E5F-746E-4d74-885C-40A931B82B84"
 // [local]   ILxEvaluation
 // [default] ILxEvaluation:GetCache = 0
+// [python]  ILxEvaluation:GetBakedSample       obj Unknown
+// [python]  ILxEvaluation:SetAlternate         obj ChannelWrite
 #define LXu_MODIFIER1           "FA406E1C-5E6A-4574-A795-AA0F07DFAFB5"
 
  #ifdef __cplusplus

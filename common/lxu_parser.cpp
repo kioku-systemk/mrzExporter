@@ -1,7 +1,7 @@
 /*
  * Plug-in SDK Header: Common Utility
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -30,6 +30,7 @@
 #include <lx_io.hpp>
 #include <lx_wrap.hpp>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string>
 
 /*
@@ -48,22 +49,26 @@ using namespace std;
  * ----------------------------------------------------------------
  * CLxLineParser : Implementation
  *
- * Private data is the filename string and the file stream.  Since streams
+ * Private data is the filename string and the file stream. Since streams
  * have problems being closed and re-opened we allocate a new one for each
  * file.
  */
 class pv_LineParser {
     public:
         pv_LineParser ();
-        void			 InitMon ();
-        char *			 ReadLine (char *, unsigned &);
+        bool			 Open     (const char *name);
+        void			 Close    ();
+        void			 InitMon  ();
+        void			 ReadLine (string &);
 
-        string			 filename;
-        FILE			*file;
-        CLxUser_Monitor		 mon;
-        LxResult		 error;
-        unsigned int		 length, pos, monPos;
-        bool			 moninit;
+        string			 filename;	// filename for reading
+        FILE			*file;		// file stream, when open
+        CLxUser_Monitor		 mon;		// read progress monitor
+        bool			 moninit;	// true if monitor needs init
+        LxResult		 error;		// last error, if any
+        unsigned int		 length;	// total file length
+        unsigned int		 pos, monPos;	// current position, monitor position
+        size_t			 bufLen;	// size of line_buf
 };
 
 
@@ -71,8 +76,45 @@ pv_LineParser::pv_LineParser ()
 {
         filename = "";
         file     = 0;
+        moninit  = false;
         error    = LXe_FALSE;
-        moninit  = 0;
+        bufLen   = 0;
+}
+
+        bool
+pv_LineParser::Open (
+        const char		*name)
+{
+        FILE			*tempFile;
+
+        filename = name;
+
+        // Need to get the filesize in binary mode
+        tempFile = fopen (filename.c_str (), "rb");
+        if (tempFile == NULL) {
+                error = LXe_NOTFOUND;
+                return false;
+        }
+
+        fseek (tempFile, 0, SEEK_END);
+        length = ftell (tempFile);
+        fclose (tempFile);
+
+        file = fopen (filename.c_str (), "r");
+        if (!file) {
+                error = LXe_NOTFOUND;
+                return false;
+        }
+
+        if (ferror (file)) {
+                error = LXe_IO_ERROR;
+                return false;
+        }
+
+        pos     = 0;
+        moninit = true;
+        error   = LXe_OK;
+        return true;
 }
 
         void
@@ -81,30 +123,44 @@ pv_LineParser::InitMon ()
         if (mon.test () && moninit) {
                 mon.Initialize (length);
                 monPos	= pos;
-                moninit = 0;
+                moninit = false;
         }
 }
 
-        char *
+/*
+ * Read a line from the input stream. Characters are appended to the dest
+ * string, and we don't return until we get some kind of end-of-line
+ * indicator.
+ */
+        void
 pv_LineParser::ReadLine (
-        char			*buf,
-        unsigned		&len)
+        string			&dest)
 {
         int			 c;
 
-        while (len > 1) {
+        while (1) {
                 c = getc (file);
-                this->pos++;
-                if (c == EOF || c == '\n' || c == 10 || c == 13) {
-                        *buf = 0;
-                        return buf;
-                }
+                pos++;
 
-                *buf++ = c;
-                len--;
+                if (!c || c == EOF || c == '\n' || c == 10 || c == 13)
+                        return;
+
+                dest += c;
         }
+}
 
-        return 0;
+        void
+pv_LineParser::Close ()
+{
+        error = LXe_FALSE;
+        filename = "";
+        mon.clear ();
+        moninit  = false;
+
+        if (file) {
+                fclose (file);
+                file = 0;
+        }
 }
 
 
@@ -113,65 +169,34 @@ CLxLineParser::CLxLineParser ()
         pv = new pv_LineParser;
 
         cur_pos  = 0;
-
-        line_buf = new char[lp_MaxLine ()];
-        line_buf[0] = 0;
-}
-
-CLxLineParser::CLxLineParser (unsigned maxLine)
-{
-        pv = new pv_LineParser;
-
-        cur_pos  = 0;
-
-        line_buf = new char[maxLine];
-        line_buf[0] = 0;
+        line_buf = 0;
 }
 
 CLxLineParser::~CLxLineParser ()
 {
         fp_Cleanup ();
-        delete[] line_buf;
+
+        if (pv->bufLen)
+        {
+                delete[] line_buf;
+                line_buf = 0;
+        }
+
+        delete pv;
 }
 
         bool
 CLxLineParser::fp_Open (
         const char		*filename)
 {
-        FILE *tempFile;
-
         fp_Cleanup ();
 
-        pv->filename = filename;
+        if (!pv->Open (filename))
+                return false;
+
         file_name = pv->filename.c_str ();
 
-        // Need to get the filesize in binary
-        // mode
-        tempFile = fopen (filename, "rb");
-        if (tempFile == NULL) {
-                pv->error = LXe_NOTFOUND;
-                return false;
-        }
-        fseek (tempFile, 0, SEEK_END);
-        pv->length = ftell (tempFile);
-        fclose (tempFile);
-
-        pv->file = fopen (filename, "r");
-        if (!pv->file) {
-                pv->error = LXe_NOTFOUND;
-                return false;
-        }
-
-        if (ferror (pv->file)) {
-                pv->error = LXe_IO_ERROR;
-                return false;
-        }
-
-        pv->pos     = 0;
-        pv->moninit = 1;
         pv->InitMon ();
-
-        pv->error = LXe_OK;
         return true;
 }
 
@@ -198,24 +223,32 @@ CLxLineParser::fp_ErrorCode ()
         void
 CLxLineParser::fp_Cleanup ()
 {
-        pv->error = LXe_FALSE;
-        pv->filename = "";
-        pv->mon.clear ();
-        pv->moninit  = 0;
+        pv->Close ();
         cur_pos = 0;
 
-        if (pv->file) {
-                fclose (pv->file);
-                pv->file = 0;
-        }
 }
 
+        void
+CLxLineParser::set_line (
+        const char		*buf)
+{
+        size_t			 len = strlen (buf) + 24;
+
+        if (pv->bufLen < len)
+        {
+                if (pv->bufLen)
+                        delete [] line_buf;
+
+                line_buf = new char [len];
+                pv->bufLen = len;
+        }
+
+        strcpy (line_buf, buf);
+}
 
         bool
 CLxLineParser::lp_ReadLine ()
 {
-        char			*s, *buf;
-        unsigned int		 pos;
         LxResult		 rc;
         unsigned int		 len;
         bool			 blank;
@@ -223,33 +256,30 @@ CLxLineParser::lp_ReadLine ()
         if (fp_HasError () || !pv->file || feof (pv->file))
                 return false;
 
-        if (pv->mon.test ()) {
-                if (fp_HasError ())
-                        return false;
-                if (feof (pv->file))
-                        return false;
+        if (ferror (pv->file)) {
+                pv->error = LXe_IO_ERROR;
+                return false;
+        }
 
-                if (ferror (pv->file)) {
-                        pv->error = LXe_IO_ERROR;
+        if (pv->mon.test () && pv->pos > pv->monPos) {
+                rc = pv->mon.Increment (pv->pos - pv->monPos);
+                pv->monPos = pv->pos;
+                if (LXx_FAIL (rc)) {
+                        pv->error = rc;
                         return false;
-                }
-
-                if (pv->pos > pv->monPos) {
-                        rc = pv->mon.Increment (pv->pos - pv->monPos);
-                        pv->monPos = pv->pos;
-                        if (LXx_FAIL (rc)) {
-                                pv->error = rc;
-                                return false;
-                        }
                 }
         }
 
         do {
-                len = lp_MaxLine ();
-                buf = line_buf;
+                string		 buf;
+                char		*s;
+
+                // store if we've hit a continuation on prev line
+                bool		prevContinue = false;
+
                 while (1) {
-                        buf = pv->ReadLine (buf, len);
-                        if (!buf || ferror (pv->file)) {
+                        pv->ReadLine (buf);
+                        if (ferror (pv->file)) {
                                 pv->error = LXe_IO_ERROR;
                                 return false;
                         }
@@ -257,13 +287,19 @@ CLxLineParser::lp_ReadLine ()
                         if (feof (pv->file))
                                 return false;
 
-                        if (!lp_Continue ())
+                        set_line (buf.c_str ());
+
+                        // check for if to Continue
+                        bool shouldContinue = lp_Continue();
+
+                        // if we don't already have to continue and haven't just got a continue, break
+                        if( !prevContinue && !shouldContinue )
                                 break;
 
-                        while (buf >= line_buf && !buf[0]) {
-                                buf--;
-                                len++;
-                        }
+                        // update prevContinue
+                        prevContinue = shouldContinue;
+
+                        buf = line_buf;
                 }
 
                 if (lp_StripWhite ()) {
@@ -281,7 +317,7 @@ CLxLineParser::lp_ReadLine ()
                 blank = lp_SkipBlank ();
                 for (s = line_buf; *s && blank; s++)
                         if (!IsBlank (*s))
-                                blank = 0;
+                                blank = false;
 
         } while (blank || lp_IsComment ());
 
@@ -292,7 +328,7 @@ CLxLineParser::lp_ReadLine ()
 
 /*
  * PullWhite and PullNonWhite advance the cur_pos pointer past characters of
- * their respective types.  PullNonWhite will read into an optional buffer.
+ * their respective types.  PullNonWhite will read into an optional string.
  */
         void
 CLxLineParser::PullWhite ()
@@ -301,28 +337,20 @@ CLxLineParser::PullWhite ()
                 cur_pos++;
 }
 
-/*
- * [TODO] The basic design of reading an unlimited number of
- *        characters needs to be revisited, since it's too easy
- *        to overflow the buffer with malformed input.
- *
- *        Ultimately, CLxLineParser::PullNonWhite should take a max
- *        buffer size, and also return a bool result, so callers
- *        can gracefully fail the load on malformed input.
- */
+        void
+CLxLineParser::PullNonWhite ()
+{
+        while (cur_pos[0] && !IsBlank (cur_pos[0]))
+                cur_pos++;
+}
+
         void
 CLxLineParser::PullNonWhite (
-        char			*dest)
+        string			&dest)
 {
-        while (cur_pos[0] && !IsBlank (cur_pos[0])) {
-                if (dest)
-                        *dest++ = cur_pos[0];
-
-                cur_pos++;
-        }
-
-        if (dest)
-                *dest = 0;
+        dest = "";
+        while (cur_pos[0] && !IsBlank (cur_pos[0]))
+                dest += *cur_pos++;
 }
 
 /*
@@ -334,20 +362,14 @@ CLxLineParser::PullNonWhite (
 CLxLineParser::PullNum (
         float			*value)
 {
-        /*
-         * [TODO] Increasing the size to decrease the chance of overflow.
-         *        The basic design of PullNonWhite, which reads an unlimited
-         *        number of characters, needs to be revisited, since it's too
-         *        easy to overflow the buffer with malformed input.
-         */
-        char			 buf[1024];
+        string			 buf;
 
         PullWhite ();
         PullNonWhite (buf);
-        if (buf[0] == 0)
+        if (!buf.length ())
                 return false;
 
-        value[0] = static_cast<float>(atof (buf));
+        value[0] = static_cast<float>(atof (buf.c_str ()));
         return true;
 }
 
@@ -355,20 +377,14 @@ CLxLineParser::PullNum (
 CLxLineParser::PullNum (
         double			*value)
 {
-        /*
-         * [TODO] Increasing the size here as a temporary fix.
-         *        The basic design of PullNonWhite, which reads an unlimited
-         *        number of characters, needs to be revisited, since it's too
-         *        easy to overflow the buffer with malformed input.
-         */
-        char			 buf[1024];
+        string			 buf;
 
         PullWhite ();
         PullNonWhite (buf);
-        if (buf[0] == 0)
+        if (!buf.length ())
                 return false;
 
-        value[0] = atof (buf);
+        value[0] = atof (buf.c_str ());
         return true;
 }
 
@@ -376,45 +392,37 @@ CLxLineParser::PullNum (
 CLxLineParser::PullNum (
         unsigned		*value)
 {
-        /*
-         * [TODO] Increasing the size to decrease the chance of overflow.
-         *        The basic design of PullNonWhite, which reads an unlimited
-         *        number of characters, needs to be revisited, since it's too
-         *        easy to overflow the buffer with malformed input.
-         */
-        char			 buf[1024];
-        int			 i;
+        string			 buf;
 
         PullWhite ();
-        i = 0;
         while (IsDigit (cur_pos[0]))
-                buf[i++] = *cur_pos++;
+                buf += *cur_pos++;
 
-        if (i == 0)
+        if (!buf.length ())
                 return false;
 
-        buf[i] = 0;
-        value[0] = atoi (buf);
+        buf += '\0';
+        value[0] = atoi (buf.c_str ());
         return true;
 }
 
         bool
 CLxLineParser::PullNum (
-        int		*value)
+        int			*value)
 {
-        int		sign(1);
-        bool		pulled;
-        unsigned	unsignedValue;
+        int			sign;
+        unsigned		uval;
 
-        if (PullExpected ('-')) {
+        if (PullExpected ('-'))
                 sign = -1;
-        }
+        else
+                sign = 1;
 
-        pulled = PullNum (&unsignedValue);
+        if (!PullNum (&uval))
+                return false;
 
-        *value = unsignedValue * sign;
-
-        return pulled;
+        *value = uval * sign;
+        return true;
 }
 
         bool
@@ -463,13 +471,12 @@ CLxLineParser::Lower (
                 return c;
 }
 
+
+
+
 /*
  * ----------------------------------------------------------------
- * CLxLineParser : Implementation
- *
- * Private data is the filename string and the file stream.  Since streams
- * have problems being closed and re-opened we allocate a new one for each
- * file.
+ * CLxBinaryParser : Implementation
  */
 
 class pv_BinaryParser {

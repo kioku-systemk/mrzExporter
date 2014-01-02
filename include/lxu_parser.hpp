@@ -1,7 +1,7 @@
 /*
  * Plug-in SDK Header: C++ Wrapper Classes
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -32,6 +32,8 @@
 #include <lxw_io.hpp>
 
 #include <string.h>
+#include <string>
+
 
 /*
  * ----------------------------------------------------------------
@@ -62,7 +64,6 @@ class CLxLineParser : public CLxFileParser
 {
     public:
                                  CLxLineParser ();
-                                 CLxLineParser (unsigned maxLine);
         virtual			~CLxLineParser ();
 
         virtual bool		 fp_Open       (const char *)	LXx_OVERRIDE;
@@ -72,14 +73,14 @@ class CLxLineParser : public CLxFileParser
         virtual void		 fp_Cleanup    ()		LXx_OVERRIDE;
 
         virtual bool		 lp_ReadLine   ();
-        virtual unsigned	 lp_MaxLine    ()	{ return 32768; }
         virtual bool		 lp_IsComment  ()	{ return false; }
         virtual bool		 lp_Continue   ()	{ return false; }
         virtual bool		 lp_StripWhite ()	{ return false; }
         virtual bool		 lp_SkipBlank  ()	{ return false; }
 
         void			 PullWhite     ();
-        void			 PullNonWhite  (char *dest = 0);
+        void			 PullNonWhite  ();
+        void			 PullNonWhite  (std::string &dest);
         bool			 PullNum       (float *);
         bool			 PullNum       (double *);
         bool			 PullNum       (unsigned *);
@@ -95,6 +96,7 @@ class CLxLineParser : public CLxFileParser
         char			*cur_pos;
 
     private:
+        void			 set_line (const char *);
         class pv_LineParser	*pv;
 };
 

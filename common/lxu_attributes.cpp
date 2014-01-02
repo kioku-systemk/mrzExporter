@@ -1,7 +1,7 @@
 /*
  * Plug-in SDK Header: Common Utility
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -131,7 +131,7 @@ class pv_DynaAttributes {
         } DynaAttr;
 
         DynaAttr &		 Elt (unsigned int index);
-        void			 Set (unsigned int index, bool value = true);
+        void			 Set (CLxDynamicAttributes *, unsigned int index, bool value = true);
 
         LxResult		 sgs_GetString (char *buf, unsigned len);
         unsigned		 sgs_index;
@@ -202,7 +202,8 @@ CLxDynamicAttributes::dyna_Value (
 
 /*
  * Public method to read the 'set' flag, which is true if the value is not its
- * default, plus a private method to set it.
+ * default, plus a private method to set it. Setting it takes the dynamic attrs
+ * object so we can call the client's Changed method.
  */
         bool
 CLxDynamicAttributes::dyna_IsSet (
@@ -213,10 +214,13 @@ CLxDynamicAttributes::dyna_IsSet (
 
         void
 pv_DynaAttributes::Set (
+        CLxDynamicAttributes	*dyna,
         unsigned int		 index,
         bool			 value)
 {
         Elt (index) . set = value;
+        if (value)
+                dyna->dyna_Changed (index);
 }
 
 
@@ -327,7 +331,7 @@ CLxDynamicAttributes::attr_Value (
         int			 writeOK)
 {
         if (writeOK)
-                pv->Set (index);
+                pv->Set (this, index);
 
         dyna_Value (index) . get (ppvObj);
         return LXe_OK;
@@ -338,10 +342,11 @@ CLxDynamicAttributes::attr_GetBool (
         unsigned int		 index,
         bool			*val)
 {
-        int value;
-        LxResult result = dyna_Value (index) . GetInt (&value);
-        *val = value ? true : false;
+        int			 value;
+        LxResult		 result;
 
+        result = dyna_Value (index) . GetInt (&value);
+        val[0] = !!value;
         return result;
 }
 
@@ -352,7 +357,7 @@ CLxDynamicAttributes::attr_SetBool (
 {
         int			 value = val ? 1 : 0;
 
-        pv->Set (index);
+        pv->Set (this, index);
         return dyna_Value (index) . SetInt (value);
 }
 
@@ -369,7 +374,7 @@ CLxDynamicAttributes::attr_SetInt (
         unsigned int		 index,
         int			 val)
 {
-        pv->Set (index);
+        pv->Set (this, index);
         return dyna_Value (index) . SetInt (val);
 }
 
@@ -386,7 +391,7 @@ CLxDynamicAttributes::attr_SetFlt (
         unsigned int		 index,
         double			 val)
 {
-        pv->Set (index);
+        pv->Set (this, index);
         return dyna_Value (index) . SetFlt (val);
 }
 
@@ -404,7 +409,7 @@ CLxDynamicAttributes::attr_SetString (
         unsigned int		 index,
         const char		*val)
 {
-        pv->Set (index);
+        pv->Set (this, index);
         return dyna_Value (index) . SetString (val);
 }
 
@@ -579,7 +584,7 @@ CLxUIListPopup::PopCount ()
         internal_list.clear ();
         UpdateLists ();
 
-        return user_list.size ();
+        return (unsigned)user_list.size ();
 }
 
         const char *

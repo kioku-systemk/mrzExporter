@@ -1,7 +1,7 @@
 /*
  * Plug-in SDK Header: C++ Services
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -186,9 +186,10 @@ class CLxItemSelectionType :
                 public CLxItemSelection
 {
     public:
-        LXtItemType			 type;
+        CLxItemType			 type;
 
-                        CLxItemSelectionType (const char *typeName);
+        CLxItemSelectionType (const char *typeName) : type (typeName) {}
+
         bool		Include (CLxUser_Item &);
 };
 

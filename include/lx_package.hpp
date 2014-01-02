@@ -1,7 +1,7 @@
 /*
  * Plug-in SDK Header: C++ User Classes
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -30,6 +30,14 @@
 #include <lxw_package.hpp>
 
 
+class CLxUser_SceneLoaderTarget : public CLxLoc_SceneLoaderTarget
+{
+    public:
+        CLxUser_SceneLoaderTarget () {}
+        CLxUser_SceneLoaderTarget (ILxUnknownID obj) : CLxLoc_SceneLoaderTarget (obj) {}
+
+
+};
 class CLxUser_AddChannel : public CLxLoc_AddChannel
 {
     public:

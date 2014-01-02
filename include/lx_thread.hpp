@@ -1,7 +1,7 @@
 /*
  * Plug-in SDK Header: C++ User Classes
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -28,7 +28,7 @@
 #define LXUSER_thread_HPP
 
 #include <lxw_thread.hpp>
-
+#include <lx_util.hpp>
 
 class CLxUser_WorkList : public CLxLoc_WorkList
 {
@@ -137,7 +137,42 @@ class CLxUser_ThreadService : public CLxLoc_ThreadService
 
 };
 
+class CLxMutexLock : public CLxUser_ThreadMutex
+{
+    public:
+        CLxMutexLock ()
+        {
+                CLxUser_ThreadService ts;
+                ts.NewMutex (*this);
+        }
+};
 
+class CLxCritSecLock : public CLxUser_ThreadMutex
+{
+    public:
+        CLxCritSecLock ()
+        {
+                CLxUser_ThreadService ts;
+                ts.NewCritSec (*this);
+        }
+};
+
+class CLxArmLockedMutex : public CLxArm
+{
+    public:
+        CLxUser_ThreadMutex     &lock;
+
+        CLxArmLockedMutex (CLxUser_ThreadMutex &mux) : lock (mux)
+        {
+                lock.Enter ();
+        }
+
+        ~CLxArmLockedMutex ()
+        {
+                if (armed)
+                        lock.Leave ();
+        }
+};
 
 #endif
 

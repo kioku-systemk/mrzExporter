@@ -1,7 +1,7 @@
 /*
  * C++ wrapper for lxdraw.h
  *
- *	Copyright (c) 2008-2012 Luxology LLC
+ *	Copyright (c) 2008-2013 Luxology LLC
  *	
  *	Permission is hereby granted, free of charge, to any person obtaining a
  *	copy of this software and associated documentation files (the "Software"),
@@ -30,6 +30,7 @@
 
 #include <lxdraw.h>
 #include <lx_wrap.hpp>
+#include <string>
 
 namespace lx {
     static const LXtGUID guid_StrokeDraw = {0xDA71480A,0x95AA,0x11D9,0x93,0x6D,0x00,0x0A,0x95,0x6C,0x2E,0x10};
@@ -45,22 +46,22 @@ public:
   CLxLoc_StrokeDraw(const CLxLoc_StrokeDraw &other) {_init();set(other.m_loc);}
   const LXtGUID * guid() const {return &lx::guid_StrokeDraw;}
     void
-  Begin (int type, LXtVector color, double alpha)
+  Begin (int type, const LXtVector color, double alpha)
   {
     m_loc[0]->Begin (m_loc,type,color,alpha);
   }
     void
-  BeginW (int type, LXtVector color, double alpha, double width)
+  BeginW (int type, const LXtVector color, double alpha, double width)
   {
     m_loc[0]->BeginW (m_loc,type,color,alpha,width);
   }
     void
-  BeginWD (int type, LXtVector color, double alpha, double width, int dashPattern)
+  BeginWD (int type, const LXtVector color, double alpha, double width, int dashPattern)
   {
     m_loc[0]->BeginWD (m_loc,type,color,alpha,width,dashPattern);
   }
     void
-  Vertex (LXtVector pos, int flags)
+  Vertex (const LXtVector pos, int flags)
   {
     m_loc[0]->Vertex (m_loc,pos,flags);
   }
@@ -95,7 +96,7 @@ public:
     m_loc[0]->SetPart (m_loc,part);
   }
     void
-  BeginPoints (double size, LXtVector color, double alpha)
+  BeginPoints (double size, const LXtVector color, double alpha)
   {
     m_loc[0]->BeginPoints (m_loc,size,color,alpha);
   }

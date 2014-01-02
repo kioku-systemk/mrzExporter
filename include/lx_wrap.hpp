@@ -1,7 +1,7 @@
 /*
  * Plug-in SDK Header: C++ Wrapper Classes
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -38,6 +38,8 @@
 #define LX_CWRAP_HPP
 
 #include <lx_util.hpp>
+#include <exception>
+
 
 /*
  * Disable the multiple assignment operators warning in Visual C++.
@@ -192,6 +194,30 @@ class CLxLocalize : public CLxLocalizedObject
 
 
 /*
+ * Catch LxResult or allocation exceptions and return the RC code. Returns
+ * OK if the 'try' succeeded.
+ */
+#define LXx_CATCH_RET	catch (std::bad_alloc &) { return LXe_OUTOFMEMORY; }	\
+                        catch (LxResult rc)      { return rc; }			\
+                        return LXe_OK
+
+/*
+ * Macros for making localized versions of functions that read strings into
+ * a buffer and length. Between 1 & 2 the rc code is set to the attempt to
+ * get the string.
+ */
+#define LXWx_SBUF1							\
+        try { unsigned len=512; char *buf=0; LxResult rc;		\
+          while (!buf) { buf=new char[len];
+
+#define LXWx_SBUF2							\
+            if (rc==LXe_SHORTBUFFER) { delete[] buf; buf=0; len*=2; }	\
+            else if (LXx_FAIL(rc)) throw (rc);				\
+          } result = buf; delete[] buf;					\
+        } LXx_CATCH_RET;
+
+
+/*
  * ----------------------------------------------------------
  * Exported COM Objects:
  *
@@ -217,9 +243,9 @@ typedef struct st_LXtCOMProxy *		LXtCOMProxyID;
 typedef struct st_LXtCOMInstance *	LXtCOMInstanceID;
 
 /*
- * A Proxy is a real COM object with a vTable at the start.  The proxy
+ * A Proxy is a real COM object with a vTable at the start. The proxy
  * points back to the instance to keep counts rights, and it also has the
- * object cached locally for quicker access.  Note that there does not
+ * object cached locally for quicker access. Note that there does not
  * seem to be a way to do this with type-safety, so we rely on a void
  * pointer to the actual client object.
  */
@@ -232,10 +258,10 @@ typedef struct st_LXtCOMProxy {
         unsigned		 refCount;
 } LXtCOMProxy;
 
-
 /*
  * An instance is a struct holding the actual object and a list of its
- * proxies.  Again the actual client object is a void pointer.
+ * proxies. Again the actual client object is a void pointer and it will
+ * be null for a zombie instance whose polymorph has been destroyed. 
  */
 typedef struct st_LXtCOMInstance {
         class CLxGenericPolymorph *polymorph;
@@ -286,7 +312,7 @@ class CLxGenericPolymorph
 
     public:
                                  CLxGenericPolymorph () {}
-        virtual			~CLxGenericPolymorph () {}
+        virtual			~CLxGenericPolymorph ();
         virtual void *		 NewObj  ()       = 0;
         virtual void		 FreeObj (void *) = 0;
 

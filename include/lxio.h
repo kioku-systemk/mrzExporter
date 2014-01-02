@@ -1,7 +1,7 @@
 /*
  * LX IO module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -34,10 +34,12 @@
 typedef struct vt_ILxBlockRead ** ILxBlockReadID;
 typedef struct vt_ILxBlockWrite ** ILxBlockWriteID;
 typedef struct vt_ILxLoader ** ILxLoaderID;
+typedef struct vt_ILxLoaderInfo ** ILxLoaderInfoID;
 typedef struct vt_ILxSaver ** ILxSaverID;
 typedef struct vt_ILxMonitor ** ILxMonitorID;
 typedef struct vt_ILxStreamIO ** ILxStreamIOID;
 typedef struct vt_ILxIOService ** ILxIOServiceID;
+typedef struct vt_ILxLoader1 ** ILxLoader1ID;
 #include <lxcom.h>
 
 
@@ -45,7 +47,7 @@ typedef struct st_LXtBlockHeader {
         LXtID4                   id;
         const char              *token;
 } LXtBlockHeader;
-typedef struct st_LXtLoadAccess {
+typedef struct st_LXtLoadAccess1 {
         const char              *filename;
         const LXtGUID          **types;
         LXtObjectID              monitor;
@@ -54,7 +56,7 @@ typedef struct st_LXtLoadAccess {
         void                    *target;
         const char              *format;
         int                      options;
-} LXtLoadAccess;
+} LXtLoadAccess1;
 typedef struct vt_ILxBlockRead {
         ILxUnknown       iunk;
                 LXxMETHOD( LxResult,
@@ -232,27 +234,51 @@ typedef struct vt_ILxLoader {
                 LXxMETHOD( LxResult,
         Recognize) (
                 LXtObjectID              self,
-                LXtLoadAccess           *load);
+                const char              *filename,
+                LXtObjectID              loadInfo);
                 LXxMETHOD( LxResult,
         LoadInstance) (
                 LXtObjectID              self,
-                LXtLoadAccess           *load,
+                LXtObjectID              loadInfo,
+                LXtObjectID              monitor,
                 void                   **ppvObj);
 
                 LXxMETHOD( LxResult,
         LoadObject) (
                 LXtObjectID              self,
-                LXtLoadAccess           *load,
+                LXtObjectID              loadInfo,
+                LXtObjectID              monitor,
                 LXtObjectID              dest);
-                LXxMETHOD( LxResult,
+                LXxMETHOD( void,
         Cleanup) (
-                LXtObjectID              self,
-                LXtLoadAccess           *load);
+                LXtObjectID              self);
                 LXxMETHOD( LxResult,
         SpawnOptions) (
                 LXtObjectID              self,
                 void                   **ppvObj);
 } ILxLoader;
+typedef struct vt_ILxLoaderInfo {
+        ILxUnknown       iunk;
+                LXxMETHOD( LxResult,
+        TestClass) (
+                LXtObjectID              self,
+                const LXtGUID           *clsGUID,
+                unsigned                *priority);
+                LXxMETHOD( LxResult,
+        SetClass) (
+                LXtObjectID              self,
+                const LXtGUID           *clsGUID);
+
+                LXxMETHOD( LxResult,
+        SetFlags) (
+                LXtObjectID              self,
+                unsigned                 flags);
+
+                LXxMETHOD( LxResult,
+        SetFormat) (
+                LXtObjectID              self,
+                const char              *format);
+} ILxLoaderInfo;
 typedef struct vt_ILxSaver {
         ILxUnknown       iunk;
                 LXxMETHOD( LxResult,
@@ -307,6 +333,35 @@ typedef struct vt_ILxIOService {
         PeekOptions) (
                 LXtObjectID              self);
 } ILxIOService;
+typedef struct vt_ILxLoader1 {
+        ILxUnknown       iunk;
+                LXxMETHOD( LxResult,
+        Recognize) (
+                LXtObjectID              self,
+                LXtLoadAccess1          *load);
+
+                LXxMETHOD( LxResult,
+        LoadInstance) (
+                LXtObjectID              self,
+                LXtLoadAccess1          *load,
+                void                   **ppvObj);
+
+                LXxMETHOD( LxResult,
+        LoadObject) (
+                LXtObjectID              self,
+                LXtLoadAccess1          *load,
+                LXtObjectID              dest);
+
+                LXxMETHOD( LxResult,
+        Cleanup) (
+                LXtObjectID              self,
+                LXtLoadAccess1          *load);
+
+                LXxMETHOD( LxResult,
+        SpawnOptions) (
+                LXtObjectID              self,
+                void                   **ppvObj);
+} ILxLoader1;
 
 #define LXe_IO_ERROR            LXxFAILCODE(LXeSYS_IO,1)
 #define LXe_REF_BADID           LXxFAILCODE(LXeSYS_IO,22)
@@ -322,18 +377,28 @@ typedef struct vt_ILxIOService {
 // [local]  ILxBlockWrite
 #define LXfBLKS_FORCE    (1<<0)
 #define LXfBLKS_RAW      (1<<1)
+// [python] ILxBlockRead:ReadI4:data    vector (count)
 #define LXfREADSTRING_FORCE     0x01
 #define LXfREADSTRING_RAW       0x02
 #define LXfREADSTRING_PARTIAL   0x04
 #define LXfBLKW_LEAF     (1<<0)
 #define LXfBLKW_PARAM    (1<<1)
-#define LXu_LOADER      "73333A41-3C0A-4B0E-A7C5-D76609827A2D"
-#define LXa_LOADER      "loader"
+#define LXfLOAD_OPAQUE           0x01
+#define LXfLOAD_OPTIONS          0x02
+#define LXu_LOADERINFO  "4CA8BE1A-6ADE-4F93-99F6-1F0EFC8A581E"
+#define LXa_LOADERINFO  "loaderinfo"
+// [export] ILxLoaderInfo linf
+// [local]  ILxLoaderInfo
+
+#define LXu_LOADER      "7711F608-B8FF-48BF-81ED-CEBDE54D34DE"
+#define LXa_LOADER      "loader2"
 // [export] ILxLoader
 // [local]  ILxLoader
+// [python] ILxLoader:SpawnOptions      obj Unknown
 #define LXsLOD_CLASSLIST        "loader.classList"
 #define LXsLOD_DOSPATTERN       "loader.dosPattern"
 #define LXsLOD_MACPATTERN       "loader.macPattern"
+#define LXsLOD_THREADSAFE       "loader.threadsafe"
 #define LXu_SIDEEFFECT  "3414D56B-31DE-47C7-B751-092B51591DD2"
 #define LXa_SIDEEFFECT  "sideeffect"
 #define LXu_SAVER       "75AD8F36-5B69-413b-A77B-5A78D39AEF51"
@@ -358,6 +423,10 @@ typedef struct vt_ILxIOService {
 // [local]  ILxStreamIO
 #define LXu_IOSERVICE   "9970CCAD-7322-4CD6-A6BA-963A63DE57D7"
 #define LXa_IOSERVICE   "ioservice"
+#define Int64 MCtINT_PTR
+#define LXu_LOADER1     "73333A41-3C0A-4B0E-A7C5-D76609827A2D"
+#define LXa_LOADER1     "loader"
+// [export] ILxLoader1
 
  #ifdef __cplusplus
   }

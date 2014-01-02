@@ -1,7 +1,7 @@
 /*
  * C++ wrapper for lxvolume.h
  *
- *	Copyright (c) 2008-2012 Luxology LLC
+ *	Copyright (c) 2008-2013 Luxology LLC
  *	
  *	Permission is hereby granted, free of charge, to any person obtaining a
  *	copy of this software and associated documentation files (the "Software"),
@@ -30,6 +30,7 @@
 
 #include <lxvolume.h>
 #include <lx_wrap.hpp>
+#include <string>
 
 namespace lx {
     static const LXtGUID guid_Raymarch = {0x1E84C5A8,0xC002,0x4120,0xBA,0xB0,0x9E,0xEB,0x17,0x22,0x68,0x8B};
@@ -54,6 +55,16 @@ class CLxImpl_Raymarch {
       rmrch_Jitter1D (ILxUnknownID vector, float *offset)
         { return LXe_NOTIMPL; }
 };
+#define LXxD_Raymarch_AddVolume LxResult rmrch_AddVolume (ILxUnknownID vector, LXtVolumeSample *vs)
+#define LXxO_Raymarch_AddVolume LXxD_Raymarch_AddVolume LXx_OVERRIDE
+#define LXxD_Raymarch_AddSurface LxResult rmrch_AddSurface (ILxUnknownID vector, LXtSurfFragment *ss)
+#define LXxO_Raymarch_AddSurface LXxD_Raymarch_AddSurface LXx_OVERRIDE
+#define LXxD_Raymarch_GetOpacity LxResult rmrch_GetOpacity (ILxUnknownID vector, double dist, double *opa)
+#define LXxO_Raymarch_GetOpacity LXxD_Raymarch_GetOpacity LXx_OVERRIDE
+#define LXxD_Raymarch_ShaderEvaluate LxResult rmrch_ShaderEvaluate (ILxUnknownID vector, ILxUnknownID shader)
+#define LXxO_Raymarch_ShaderEvaluate LXxD_Raymarch_ShaderEvaluate LXx_OVERRIDE
+#define LXxD_Raymarch_Jitter1D LxResult rmrch_Jitter1D (ILxUnknownID vector, float *offset)
+#define LXxO_Raymarch_Jitter1D LXxD_Raymarch_Jitter1D LXx_OVERRIDE
 template <class T>
 class CLxIfc_Raymarch : public CLxInterface
 {

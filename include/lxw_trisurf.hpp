@@ -1,7 +1,7 @@
 /*
  * C++ wrapper for lxtrisurf.h
  *
- *	Copyright (c) 2008-2012 Luxology LLC
+ *	Copyright (c) 2008-2013 Luxology LLC
  *	
  *	Permission is hereby granted, free of charge, to any person obtaining a
  *	copy of this software and associated documentation files (the "Software"),
@@ -30,6 +30,7 @@
 
 #include <lxtrisurf.h>
 #include <lx_wrap.hpp>
+#include <string>
 
 namespace lx {
     static const LXtGUID guid_TriangleGroup = {0x6975B2A4,0x69E8,0x4ED2,0x90,0x58,0x9C,0x09,0x48,0xCB,0xB4,0x3C};
@@ -49,10 +50,24 @@ public:
   {
     return m_loc[0]->AddSurface (m_loc,ppvObj);
   }
+    bool
+  AddSurface (CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->AddSurface (m_loc,&obj)) && dest.take(obj);
+  }
     LxResult
   GetSurface (unsigned index, void **ppvObj)
   {
     return m_loc[0]->GetSurface (m_loc,index,ppvObj);
+  }
+    bool
+  GetSurface (unsigned index, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->GetSurface (m_loc,index,&obj)) && dest.take(obj);
   }
 };
 

@@ -1,7 +1,7 @@
 /*
  * LX rndjob module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -33,6 +33,7 @@
 
 typedef struct vt_ILxRenderService ** ILxRenderServiceID;
 typedef struct vt_ILxRenderJob ** ILxRenderJobID;
+typedef struct vt_ILxRenderProgressListener ** ILxRenderProgressListenerID;
 typedef struct vt_ILxRenderStats ** ILxRenderStatsID;
 typedef struct vt_ILxBuffer ** ILxBufferID;
 typedef struct vt_ILxFrameBuffer ** ILxFrameBufferID;
@@ -50,8 +51,7 @@ typedef struct vt_ILxImageProcessingService ** ILxImageProcessingServiceID;
 #include <lxrender.h>
 
 typedef struct st_Buffer        *LXtBufferID;
-typedef void                    *TileTreeID;
-
+typedef void                    *LXtTileTreeID;
 
 typedef struct vt_ILxRenderService {
         ILxUnknown       iunk;
@@ -165,7 +165,7 @@ typedef struct vt_ILxRenderService {
                 char                    *renderPassName,
                 unsigned                *width,
                 unsigned                *height,
-                RenderOutputProcessList *outputs);
+                LXtRenderOutputProcessList      *outputs);
 
                 LXxMETHOD(  LxResult,
         FrameSaveImage) (
@@ -422,6 +422,16 @@ typedef struct vt_ILxRenderJob {
         ProgressTickle) (
                 LXtObjectID               self);
 } ILxRenderJob;
+typedef struct vt_ILxRenderProgressListener {
+        ILxUnknown       iunk;
+                LXxMETHOD( void,
+        Begin) (
+                LXtObjectID              self );
+                LXxMETHOD( void,
+        End) (
+                LXtObjectID              self,
+                LXtObjectID              stats );
+} ILxRenderProgressListener;
 typedef struct vt_ILxRenderStats {
         ILxUnknown       iunk;
                 LXxMETHOD(  LxResult,
@@ -460,11 +470,11 @@ typedef struct vt_ILxBuffer {
         Flags) (
                 LXtObjectID              self);
 
-                LXxMETHOD(  int,
+                LXxMETHOD(  unsigned,
         DataType) (
                 LXtObjectID              self);
 
-                LXxMETHOD(  ILxVectorTypeID,
+                LXxMETHOD(  LXtObjectID,
         VectorType) (
                 LXtObjectID              self);
 
@@ -486,13 +496,11 @@ typedef struct vt_ILxBuffer {
         SetEyeSide) (
                 LXtObjectID              self,
                 int                      eyeSide);
-
                 LXxMETHOD(  void,
         Clear) (
                 LXtObjectID              self,
                 int                      x,
                 int                      y);
-
                 LXxMETHOD(  LxResult,
         Convert) (
                 LXtObjectID              self,
@@ -500,13 +508,11 @@ typedef struct vt_ILxBuffer {
                 int                      x,
                 int                      y,
                 float                    blend);
-
                 LXxMETHOD(  void *,
         Pixel) (
                 LXtObjectID              self,
                 int                      x,
                 int                      y);
-
                 LXxMETHOD(  void *,
         Line) (
                 LXtObjectID              self,
@@ -515,7 +521,7 @@ typedef struct vt_ILxBuffer {
                 LXxMETHOD(  LxResult,
         Name) (
                 LXtObjectID              self,
-                char                   **name);
+                const char             **name);
 
                 LXxMETHOD(  LxResult,
         SetUserName) (
@@ -525,7 +531,7 @@ typedef struct vt_ILxBuffer {
                 LXxMETHOD(  LxResult,
         UserName) (
                 LXtObjectID              self,
-                char                   **name);
+                const char             **name);
 
                 LXxMETHOD(  LxResult,
         CreateImageTileTree) (
@@ -535,7 +541,7 @@ typedef struct vt_ILxBuffer {
         DestroyImageTileTree) (
                 LXtObjectID              self);
 
-                LXxMETHOD(  TileTreeID,
+                LXxMETHOD(  LXtTileTreeID,
         GetImageTileTree) (
                 LXtObjectID              self);
 
@@ -626,13 +632,13 @@ typedef struct vt_ILxFrameBuffer {
                 LXtObjectID              self,
                 int                      index);
 
-                LXxMETHOD(  ILxBufferID,
+                LXxMETHOD(  LXtObjectID,
         Lookup) (
                 LXtObjectID              self,
                 const char              *name,
                 LXtObjectID              item);
 
-                LXxMETHOD(  ILxBufferID,
+                LXxMETHOD(  LXtObjectID,
         LookupByIdentity) (
                 LXtObjectID              self,
                 const char              *identity);
@@ -641,12 +647,12 @@ typedef struct vt_ILxFrameBuffer {
         Count) (
                 LXtObjectID              self);
 
-                LXxMETHOD(  ILxBufferID,
+                LXxMETHOD(  LXtObjectID,
         ByIndex) (
                 LXtObjectID              self,
                 int                      index);
 
-                LXxMETHOD(  ILxBufferID,
+                LXxMETHOD(  LXtObjectID,
         Alpha) (
                 LXtObjectID              self,
                 int                      index);
@@ -709,6 +715,17 @@ typedef struct vt_ILxFrameBuffer {
 
                 LXxMETHOD(  LxResult,
         SetBloomRadius) (
+                LXtObjectID              self,
+                int                      bufferIndex,
+                double                   radius);
+
+                LXxMETHOD(  double,
+        GetVignetteAmount) (
+                LXtObjectID              self,
+                int                      bufferIndex);
+
+                LXxMETHOD(  LxResult,
+        SetVignetteAmount) (
                 LXtObjectID              self,
                 int                      bufferIndex,
                 double                   radius);
@@ -1099,12 +1116,12 @@ typedef struct vt_ILxImageProcessing {
                 LXxMETHOD(  LxResult,
         CopyToRenderProcess) (
                 LXtObjectID              self,
-                RenderOutputProcess     *rop);
+                LXtRenderOutputProcess  *rop);
 
                 LXxMETHOD(  LxResult,
         CopyFromRenderProcess) (
                 LXtObjectID                     self,
-                const RenderOutputProcess       *rop);
+                const LXtRenderOutputProcess    *rop);
 
                 LXxMETHOD(  LxResult,
         CopySettingsFromFrameBuffer) (
@@ -1258,6 +1275,16 @@ typedef struct vt_ILxImageProcessing {
         SetBloomRadius) (
                 LXtObjectID              self,
                 double                   radius);
+
+                LXxMETHOD(  LxResult,
+        GetVignetteAmount) (
+                LXtObjectID              self,
+                double                  *amount);
+
+                LXxMETHOD(  LxResult,
+        SetVignetteAmount) (
+                LXtObjectID              self,
+                double                   amount);
 
                 LXxMETHOD(  LxResult,
         GetLevelOffset) (
@@ -1602,13 +1629,13 @@ typedef struct vt_ILxImageProcessingRead {
         ILxUnknown       iunk;
                 LXxMETHOD(  LxResult,
         GetIdentifier) (
-                LXtObjectID               self,
-                const char              **string);
+                LXtObjectID              self,
+                const char             **string);
 
                 LXxMETHOD(  LxResult,
         CopyToRenderProcess) (
                 LXtObjectID              self,
-                RenderOutputProcess     *rop);
+                LXtRenderOutputProcess  *rop);
 
                 LXxMETHOD(  LxResult,
         CopySettingsToFrameBuffer) (
@@ -1903,13 +1930,18 @@ typedef struct vt_ILxImageProcessingService {
 
 #define LXa_RENDERSERVICE               "renderservice"
 #define LXu_RENDERSERVICE               "8D1710CE-7AF4-46cd-B6B1-222A7DC4C53F"
-//[const] ILxRenderService:JobCurrent
-//[const] ILxRenderService:JobGetCurrent
-//[const] ILxRenderService:JobStatus
-//[const] ILxRenderService:JobIsSlave
-//[const] ILxRenderService:JobRenderOutputCount
-//[const] ILxRenderService:JobRenderOutputName
-//[const] ILxRenderService:JobRenderOutputType
+// [const]  ILxRenderService:JobCurrent
+// [const]  ILxRenderService:JobGetCurrent
+// [const]  ILxRenderService:JobStatus
+// [const]  ILxRenderService:JobIsSlave
+// [const]  ILxRenderService:JobRenderOutputCount
+// [const]  ILxRenderService:JobRenderOutputName
+// [const]  ILxRenderService:JobRenderOutputType
+// [python] ILxRenderService:FrameRecall                obj FrameBuffer
+// [python] ILxRenderService:FrameRecallStats           obj RenderStats
+// [python] ILxRenderService:FrameRecallThumbnail       obj Image
+// [python] ILxRenderService:JobCurrent                 obj RenderJob
+// [python] ILxRenderService:FrameTestRecall            bool
 
 #define LXe_RENDER_IDLE                 LXxGOODCODE( LXeSYS_RENDER, 1)
 #define LXe_RENDER_RENDERING            LXxGOODCODE( LXeSYS_RENDER, 2)
@@ -1926,25 +1958,28 @@ typedef struct vt_ILxImageProcessingService {
 
 #define LXa_RENDERJOB                   "renderjob"
 #define LXu_RENDERJOB                   "091C8EB2-5DC1-4d01-AF9B-3C735F2FFB1D"
-// [local] ILxRenderJob
+// [local]  ILxRenderJob
 // [export] ILxRenderJob rjob
-// [const] ILxRenderJob:RenderItem
-// [const] ILxRenderJob:ActionName
-// [const] ILxRenderJob:GroupName
-// [const] ILxRenderJob:RenderAs
-// [const] ILxRenderJob:RenderAtTime
-// [const] ILxRenderJob:RenderTurntableFPS
-// [const] ILxRenderJob:RenderTurntableNumFrames
-// [const] ILxRenderJob:RenderBakeVMap
-// [const] ILxRenderJob:RenderBakeLookDistance
-// [const] ILxRenderJob:RenderBakeItem
-// [const] ILxRenderJob:RenderBakeEffect
-// [const] ILxRenderJob:RenderBakeImage
-// [const] ILxRenderJob:FrameBufferSlot
-// [const] ILxRenderJob:FrameBufferRegionBackgroundSlot
-// [const] ILxRenderJob:OutputFormat
-// [const] ILxRenderJob:OutputFilename
-// [const] ILxRenderJob:Options
+// [const]  ILxRenderJob:RenderItem
+// [const]  ILxRenderJob:ActionName
+// [const]  ILxRenderJob:GroupName
+// [const]  ILxRenderJob:RenderAs
+// [const]  ILxRenderJob:RenderAtTime
+// [const]  ILxRenderJob:RenderTurntableFPS
+// [const]  ILxRenderJob:RenderTurntableNumFrames
+// [const]  ILxRenderJob:RenderBakeVMap
+// [const]  ILxRenderJob:RenderBakeLookDistance
+// [const]  ILxRenderJob:RenderBakeItem
+// [const]  ILxRenderJob:RenderBakeEffect
+// [const]  ILxRenderJob:RenderBakeImage
+// [const]  ILxRenderJob:FrameBufferSlot
+// [const]  ILxRenderJob:FrameBufferRegionBackgroundSlot
+// [const]  ILxRenderJob:OutputFormat
+// [const]  ILxRenderJob:OutputFilename
+// [const]  ILxRenderJob:Options
+// [python] ILxRenderJob:RenderBakeImage        obj Image (image)
+// [python] ILxRenderJob:RenderItem             obj Item (item)
+// [python] ILxRenderJob:TestItem               bool
 #define LXiRENDERTYPE_FRAME                     0
 #define LXiRENDERTYPE_ANIM                      1
 #define LXiRENDERTYPE_TURNTABLE_CAMERA          2
@@ -1955,22 +1990,28 @@ typedef struct vt_ILxImageProcessingService {
 #define LXfRENDEROPT_NO_IMAGE           0x0002
 #define LXfRENDEROPT_NO_CLEANUP         0x0004
 #define LXfRENDEROPT_IC_ONLY            0x0008
+#define LXu_RENDERPROGRESSLISTENER                      "db045a41-0ed0-4372-a51a-09b21387c4ae"
+// [local]  ILxRenderProgressListener
+// [export] ILxRenderProgressListener rndprog
 #define LXa_RENDERSTATS                 "renderstats"
 #define LXu_RENDERSTATS                 "091C8EB2-5DC1-4d01-AF9B-3C735F2FFB1D"
+// [local]  ILxRenderStats
 #define LXa_BUFFER      "renderBuffer"
 #define LXu_BUFFER      "088D0A6B-7A83-4774-AA56-473F6C241F40"
-//[local] ILxBuffer
+//[local]  ILxBuffer
 //[export] ILxBuffer buff
-//[const] ILxBuffer:GetSize
-//[const] ILxBuffer:Pixel
-//[const] ILxBuffer:Line
-//[const] ILxBuffer:Name
-//[const] ILxBuffer:UserName
-//[const] ILxBuffer:DataType
-//[const] ILxBuffer:Flags
-//[const] ILxBuffer:VectorType
-//[const] ILxBuffer:GetImageTileTree
-//[const] ILxBuffer:GetImageTileTreeSize
+//[const]  ILxBuffer:GetSize
+//[const]  ILxBuffer:Pixel
+//[const]  ILxBuffer:Line
+//[const]  ILxBuffer:Name
+//[const]  ILxBuffer:UserName
+//[const]  ILxBuffer:DataType
+//[const]  ILxBuffer:Flags
+//[const]  ILxBuffer:VectorType
+//[const]  ILxBuffer:GetImageTileTree
+//[const]  ILxBuffer:GetImageTileTreeSize
+//[python] ILxBuffer:VectorType         obj VectorTypeID
+//[python] type LXtTileTreeID id
 #define LXf_RBF_NO_AA            0x01   // render buffer is not anti-aliased
 #define LXf_RBF_DITHER           0x02   // render buffer can be dithered
 #define LXf_RBF_IS_FACTORY_NAME  0x08   // render buffer is factory named
@@ -1988,16 +2029,28 @@ typedef struct vt_ILxImageProcessingService {
 //[const] ILxFrameBuffer:Count
 //[const] ILxFrameBuffer:ByIndex
 //[const] ILxFrameBuffer:Alpha
+
+//[python] ILxFrameBuffer:Lookup                obj Buffer
+//[python] ILxFrameBuffer:LookupByIdentity      obj Buffer
+//[python] ILxFrameBuffer:ByIndex               obj Buffer
+//[python] ILxFrameBuffer:Alpha                 obj Buffer
+
+//[python] type LXtPixelFormat                  unsigned
+//[python] type LXtStereoEye                    unsigned
+//[python] type LXtStereoComposite              unsigned
+//[python] type LXtImageProcessingOperators     unsigned
 #define LXa_IMAGEPROCESSING             "imageprocessing"
 #define LXu_IMAGEPROCESSING             "1a89cc09-5326-44d6-9605-3b66bf9c03f5"
-//[local]  ILxImageProcessing
-//[const]  ILxImageProcessing:GetIdentifier
-//[const]  ILxImageProcessing:GetBloomEnabled
+// [local]  ILxImageProcessing
+// [const]  ILxImageProcessing:GetIdentifier
+// [const]  ILxImageProcessing:GetBloomEnabled
+// [python] ILxImageProcessing:GetAsReadOnly    obj ImageProcessing
 #define LXa_IMAGEPROCESSINGLISTENER     "imageprocessinglistener"
 #define LXu_IMAGEPROCESSINGLISTENER     "4a4ca8b2-df07-4156-b1c3-a5fc63318ea8"
+//[export] ILxImageProcessingListener improl
 //[local]  ILxImageProcessingListener
-#define LXfIMAGEPROC_EVENT_CHANGED                                       0x10000000     // One of the image processing Set...() methods was called
-#define LXfIMAGEPROC_EVENT_MAINTENANCE                                   0x20000000     // A mantenance method like Reset() was called
+#define LXfIMAGEPROC_EVENT_CHANGED                                       0x40000000     // One of the image processing Set...() methods was called
+#define LXfIMAGEPROC_EVENT_MAINTENANCE                                   0x80000000     // A maintenance method like Reset() was called
 
 #define LXmIMAGEPROC_EVENT_RESERVED                                      0x0000000F     // Reserved for internal use (see above)
 
@@ -2008,6 +2061,8 @@ typedef struct vt_ILxImageProcessingService {
 #define LXiIMAGEPROC_EVENT_CHANGED_BLOOM_ENABLED                        (0x00000080 | LXfIMAGEPROC_EVENT_CHANGED)
 #define LXiIMAGEPROC_EVENT_CHANGED_BLOOM_THRESHOLD                      (0x00000100 | LXfIMAGEPROC_EVENT_CHANGED)
 #define LXiIMAGEPROC_EVENT_CHANGED_BLOOM_RADIUS                         (0x00000200 | LXfIMAGEPROC_EVENT_CHANGED)
+
+#define LXiIMAGEPROC_EVENT_CHANGED_VIGNETTE_AMOUNT                      (0x10000000 | LXfIMAGEPROC_EVENT_CHANGED)
 
 #define LXiIMAGEPROC_EVENT_CHANGED_LEVEL_OFFSET                         (0x00000400 | LXfIMAGEPROC_EVENT_CHANGED)
 
@@ -2043,7 +2098,7 @@ typedef struct vt_ILxImageProcessingService {
 //[const]  ILxImageProcessingRead:CopySettingsToFrameBuffer
 #define LXa_IMAGEPROCESSINGSERVICE      "imageprocessingservice"
 #define LXu_IMAGEPROCESSINGSERVICE      "2f403a5c-a6aa-4d5a-88f6-a2dff23da523"
-//[local]  ILxImageProcessingService
+// [python] ILxImageProcessingService:Create    obj ImageProcessing
 
  #ifdef __cplusplus
   }

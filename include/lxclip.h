@@ -1,7 +1,7 @@
 /*
  * LX clip module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -60,6 +60,7 @@ typedef struct vt_ILxVideoClipItem {
 #define LXu_VIDEOCLIPITEM       "340FD1AD-B576-4BC3-8B6F-7DF1F5C312FB"
 // [export] ILxVideoClipItem vclip
 // [local]  ILxVideoClipItem
+// [python] ILxVideoClipItem:AllocFilter        obj ImageFilter (image)
 
  #ifdef __cplusplus
   }

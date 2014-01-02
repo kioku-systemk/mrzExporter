@@ -1,7 +1,7 @@
 /*
  * Plug-in SDK Header: C++ Wrapper Classes
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -98,15 +98,11 @@ class CLxBinaryFormat : public CLxFileFormat
         virtual bool		 ff_HasError   ()		LXx_OVERRIDE;
         virtual void		 ff_Cleanup    ()		LXx_OVERRIDE;
 
-        virtual void		 lf_Output     (const char *str);
-        virtual void		 lf_Output     (const char *str, int offset);
+        virtual void		 lf_Output     (const char *str, int offset = 0);
         virtual void		 lf_Output     (float value);
         virtual void		 lf_Output     (double value);
         virtual void		 lf_Output     (int value);
         virtual void		 lf_Output     (unsigned value);
-		virtual void		 lf_Output     (short value);
-		virtual void		 lf_Output     (unsigned short value);
-        virtual void		 lf_Output     (unsigned char value);
 
     private:
         class pv_BinaryFormat	*pv;

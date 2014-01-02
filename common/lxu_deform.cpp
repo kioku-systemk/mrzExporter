@@ -1,7 +1,7 @@
 /*
  * Plug-in SDK Source: Deformation Wrappers
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -73,8 +73,9 @@ class CLxPriv_MeshInfluence :
                                                                         LXx_OVERRIDE;
         LxResult	 dinf_OffsetRun (unsigned, const LXtDeformElt *elt, const float **pos, const float *weight, float **offset, unsigned num)
                                                                         LXx_OVERRIDE;
-        float		 dinf_Weight (LXtDeformElt elt, LXtFVector pos)	LXx_OVERRIDE;
-        void		 dinf_Offset (LXtDeformElt elt, float weight, LXtFVector pos, LXtFVector offset)
+        float		 dinf_Weight (LXtDeformElt elt, const LXtFVector pos)
+                                                                        LXx_OVERRIDE;
+        void		 dinf_Offset (LXtDeformElt elt, float weight, const LXtFVector pos, LXtFVector offset)
                                                                         LXx_OVERRIDE;
 
         LxResult	 minf_SetTransform (unsigned, LXtMatrix4 xfrm)	LXx_OVERRIDE;
@@ -320,7 +321,7 @@ CLxPriv_MeshInfluence::dinf_WeightRun (
 {
         CLxUser_Point		 point;
         LXtFVector		 tPos;
-        int			 i;
+        unsigned		 i;
 
         point.fromMesh (elt->pv->mesh);
         for (i = 0; i < num; i++) {
@@ -342,7 +343,7 @@ CLxPriv_MeshInfluence::dinf_OffsetRun (
 {
         CLxUser_Point		 point;
         LXtFVector		 tPos, tOff;
-        int			 i;
+        unsigned		 i;
 
         point.fromMesh (elt->pv->mesh);
         if (weight) {
@@ -368,7 +369,7 @@ CLxPriv_MeshInfluence::dinf_OffsetRun (
         float
 CLxPriv_MeshInfluence::dinf_Weight (
         LXtDeformElt		 elt,
-        LXtFVector		 pos)
+        const LXtFVector	 pos)
 {
         const float		*vf[3];
         float			 wt;
@@ -384,12 +385,11 @@ CLxPriv_MeshInfluence::dinf_Weight (
 CLxPriv_MeshInfluence::dinf_Offset (
         LXtDeformElt		 elt,
         float			 weight,
-        LXtFVector		 pos,
+        const LXtFVector	 pos,
         LXtFVector		 offset)
 {
         const float		*vp[3];
         float			*vo[3];
-        float			 wt;
 
         vp[0] = &pos[0];
         vp[1] = &pos[1];

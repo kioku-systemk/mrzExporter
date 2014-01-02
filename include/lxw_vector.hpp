@@ -1,7 +1,7 @@
 /*
  * C++ wrapper for lxvector.h
  *
- *	Copyright (c) 2008-2012 Luxology LLC
+ *	Copyright (c) 2008-2013 Luxology LLC
  *	
  *	Permission is hereby granted, free of charge, to any person obtaining a
  *	copy of this software and associated documentation files (the "Software"),
@@ -30,6 +30,7 @@
 
 #include <lxvector.h>
 #include <lx_wrap.hpp>
+#include <string>
 
 namespace lx {
     static const LXtGUID guid_VectorType = {0x791B288F,0xDD69,0x11D7,0x85,0x7A,0x00,0x0A,0x95,0x93,0xD7,0x16};
@@ -57,6 +58,14 @@ class CLxImpl_VectorType {
       vtyp_ByIndex (unsigned int type, unsigned int index, unsigned int *flags)
         = 0;
 };
+#define LXxD_VectorType_Category const char * vtyp_Category (void)
+#define LXxO_VectorType_Category LXxD_VectorType_Category LXx_OVERRIDE
+#define LXxD_VectorType_Test unsigned int vtyp_Test (unsigned int offset)
+#define LXxO_VectorType_Test LXxD_VectorType_Test LXx_OVERRIDE
+#define LXxD_VectorType_Count unsigned int vtyp_Count (unsigned int type)
+#define LXxO_VectorType_Count LXxD_VectorType_Count LXx_OVERRIDE
+#define LXxD_VectorType_ByIndex unsigned int vtyp_ByIndex (unsigned int type, unsigned int index, unsigned int *flags)
+#define LXxO_VectorType_ByIndex LXxD_VectorType_ByIndex LXx_OVERRIDE
 template <class T>
 class CLxIfc_VectorType : public CLxInterface
 {
@@ -163,6 +172,28 @@ class CLxImpl_VectorPacket {
       vpkt_Invert (void *packet)
         { return LXe_NOTIMPL; }
 };
+#define LXxD_VectorPacket_Size unsigned int vpkt_Size (void)
+#define LXxO_VectorPacket_Size LXxD_VectorPacket_Size LXx_OVERRIDE
+#define LXxD_VectorPacket_Interface const LXtGUID * vpkt_Interface (void)
+#define LXxO_VectorPacket_Interface LXxD_VectorPacket_Interface LXx_OVERRIDE
+#define LXxD_VectorPacket_Initialize LxResult vpkt_Initialize (void *packet)
+#define LXxO_VectorPacket_Initialize LXxD_VectorPacket_Initialize LXx_OVERRIDE
+#define LXxD_VectorPacket_Reset void vpkt_Reset (void *packet)
+#define LXxO_VectorPacket_Reset LXxD_VectorPacket_Reset LXx_OVERRIDE
+#define LXxD_VectorPacket_Copy LxResult vpkt_Copy (void *packet, void *from)
+#define LXxO_VectorPacket_Copy LXxD_VectorPacket_Copy LXx_OVERRIDE
+#define LXxD_VectorPacket_Cleanup void vpkt_Cleanup (void *packet)
+#define LXxO_VectorPacket_Cleanup LXxD_VectorPacket_Cleanup LXx_OVERRIDE
+#define LXxD_VectorPacket_Save LxResult vpkt_Save (void *packet, unsigned int n, ILxUnknownID writestream)
+#define LXxO_VectorPacket_Save LXxD_VectorPacket_Save LXx_OVERRIDE
+#define LXxD_VectorPacket_Load LxResult vpkt_Load (void *packet, unsigned int n, ILxUnknownID readstream)
+#define LXxO_VectorPacket_Load LXxD_VectorPacket_Load LXx_OVERRIDE
+#define LXxD_VectorPacket_Interpolate LxResult vpkt_Interpolate (void *packet, void *p0, void *p1, float t)
+#define LXxO_VectorPacket_Interpolate LXxD_VectorPacket_Interpolate LXx_OVERRIDE
+#define LXxD_VectorPacket_Blend LxResult vpkt_Blend (void *packet, void *p0, void *p1, float t, int mode)
+#define LXxO_VectorPacket_Blend LXxD_VectorPacket_Blend LXx_OVERRIDE
+#define LXxD_VectorPacket_Invert LxResult vpkt_Invert (void *packet)
+#define LXxO_VectorPacket_Invert LXxD_VectorPacket_Invert LXx_OVERRIDE
 template <class T>
 class CLxIfc_VectorPacket : public CLxInterface
 {
@@ -285,6 +316,16 @@ class CLxImpl_PacketEffect {
       pfx_Set (int index, void *packet, const float *val, void *item)
         { return LXe_NOTIMPL; }
 };
+#define LXxD_PacketEffect_Packet LxResult pfx_Packet (const char **packet)
+#define LXxO_PacketEffect_Packet LXxD_PacketEffect_Packet LXx_OVERRIDE
+#define LXxD_PacketEffect_Count unsigned int pfx_Count (void)
+#define LXxO_PacketEffect_Count LXxD_PacketEffect_Count LXx_OVERRIDE
+#define LXxD_PacketEffect_ByIndex LxResult pfx_ByIndex (int index, const char **name, const char **typeName, int *type)
+#define LXxO_PacketEffect_ByIndex LXxD_PacketEffect_ByIndex LXx_OVERRIDE
+#define LXxD_PacketEffect_Get LxResult pfx_Get (int index, void *packet, float *val, void *item)
+#define LXxO_PacketEffect_Get LXxD_PacketEffect_Get LXx_OVERRIDE
+#define LXxD_PacketEffect_Set LxResult pfx_Set (int index, void *packet, const float *val, void *item)
+#define LXxO_PacketEffect_Set LXxD_PacketEffect_Set LXx_OVERRIDE
 template <class T>
 class CLxIfc_PacketEffect : public CLxInterface
 {
@@ -390,6 +431,14 @@ class CLxImpl_TextureEffect {
       tfx_Set (ILxUnknownID sv, const float *val, void *item)
         { return LXe_NOTIMPL; }
 };
+#define LXxD_TextureEffect_Type unsigned int tfx_Type (void)
+#define LXxO_TextureEffect_Type LXxD_TextureEffect_Type LXx_OVERRIDE
+#define LXxD_TextureEffect_TypeName const char * tfx_TypeName (void)
+#define LXxO_TextureEffect_TypeName LXxD_TextureEffect_TypeName LXx_OVERRIDE
+#define LXxD_TextureEffect_Get LxResult tfx_Get (ILxUnknownID sv, float *val, void *item)
+#define LXxO_TextureEffect_Get LXxD_TextureEffect_Get LXx_OVERRIDE
+#define LXxD_TextureEffect_Set LxResult tfx_Set (ILxUnknownID sv, const float *val, void *item)
+#define LXxO_TextureEffect_Set LXxD_TextureEffect_Set LXx_OVERRIDE
 template <class T>
 class CLxIfc_TextureEffect : public CLxInterface
 {
@@ -565,7 +614,7 @@ public:
   void _init() {m_loc=0;}
   CLxLoc_PacketService() {_init();set();}
  ~CLxLoc_PacketService() {}
-  void set() {m_loc=reinterpret_cast<ILxPacketServiceID>(lx::GetGlobal(&lx::guid_PacketService));}
+  void set() {if(!m_loc)m_loc=reinterpret_cast<ILxPacketServiceID>(lx::GetGlobal(&lx::guid_PacketService));}
     LxResult
   ScriptQuery (void **ppvObj)
   {
@@ -590,6 +639,13 @@ public:
   CreateVectorType (const char *category, void **ppvObj)
   {
     return m_loc[0]->CreateVectorType (m_loc,category,ppvObj);
+  }
+    bool
+  CreateVectorType (const char *category, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->CreateVectorType (m_loc,category,&obj)) && dest.take(obj);
   }
     LxResult
   AddPacket (ILxUnknownID vtype, const char *name, unsigned int flags)

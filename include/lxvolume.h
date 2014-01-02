@@ -1,7 +1,7 @@
 /*
  * LX volume module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -80,6 +80,8 @@ typedef struct vt_ILxRaymarch {
                 float                   *offset);
 } ILxRaymarch;
 
+#define LXfVOLUME_RAY_COLOR             (1<<0) // color ray
+#define LXfVOLUME_RAY_OPACITY           (1<<1) // shadow ray
 #define LXu_RAYMARCH            "1E84C5A8-C002-4120-BAB0-9EEB1722688B"
 #define LXa_RAYMARCH            "raymarch"
 #define LXsP_RAYMARCH           "raymarch"

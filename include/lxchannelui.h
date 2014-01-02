@@ -1,7 +1,7 @@
 /*
  * LX channelui module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -32,6 +32,7 @@
 
 
 typedef struct vt_ILxChannelUI ** ILxChannelUIID;
+typedef struct vt_ILxChannelUI1 ** ILxChannelUI1ID;
 typedef struct vt_ILxChannelUIService ** ILxChannelUIServiceID;
 #include <lxitem.h>
 
@@ -59,10 +60,22 @@ typedef struct vt_ILxChannelUI {
                 LXtItemType              *depItemType,
                 const char              **depChannelName);
                 LXxMETHOD(  LxResult,
+        DependencyByIndexName) (
+                LXtObjectID               self,
+                const char               *channelName,
+                unsigned                  index,
+                const char              **depItemTypeName,
+                const char              **depChannelName);
+                LXxMETHOD(  LxResult,
         ItemEnabled) (
                 LXtObjectID              self,
                 LXtObjectID              msg,
                 LXtObjectID              item);
+                LXxMETHOD(  LxResult,
+        ItemIcon) (
+                LXtObjectID               self,
+                LXtObjectID               item,
+                const char              **icon);
                 LXxMETHOD(  LxResult,
         UIHints) (
                 LXtObjectID               self,
@@ -80,6 +93,55 @@ typedef struct vt_ILxChannelUI {
                 const char               *requestedFor,
                 const char              **cookie);
 } ILxChannelUI;
+typedef struct vt_ILxChannelUI1 {
+        ILxUnknown       iunk;
+                LXxMETHOD(  LxResult,
+        Enabled) (
+                LXtObjectID              self,
+                const char              *channelName,
+                LXtObjectID              msg,
+                LXtObjectID              item,
+                LXtObjectID              chanRead);
+
+                LXxMETHOD(  LxResult,
+        DependencyCount) (
+                LXtObjectID               self,
+                const char               *channelName,
+                unsigned                 *count);
+
+                LXxMETHOD(  LxResult,
+        DependencyByIndex) (
+                LXtObjectID               self,
+                const char               *channelName,
+                unsigned                  index,
+                LXtItemType              *depItemType,
+                const char              **depChannelName);
+
+                LXxMETHOD(  LxResult,
+        ItemEnabled) (
+                LXtObjectID              self,
+                LXtObjectID              msg,
+                LXtObjectID              item);
+
+                LXxMETHOD(  LxResult,
+        UIHints) (
+                LXtObjectID               self,
+                const char               *channelName,
+                LXtObjectID               hints);
+
+                LXxMETHOD(  LxResult,
+        UIValueHints) (
+                LXtObjectID               self,
+                const char               *channelName,
+                void                    **ppvObj);
+
+                LXxMETHOD(  LxResult,
+        Cookie) (
+                LXtObjectID               self,
+                const char               *channelName,
+                const char               *requestedFor,
+                const char              **cookie);
+} ILxChannelUI1;
 typedef struct vt_ILxChannelUIService {
         ILxUnknown       iunk;
                 LXxMETHOD(  LxResult,
@@ -117,10 +179,15 @@ typedef struct vt_ILxChannelUIService {
                 unsigned                 len);
 } ILxChannelUIService;
 
-#define LXu_CHANNELUI   "BF1BFE3B-F0F5-490b-8961-721795DA57B4"
+#define LXu_CHANNELUI   "d04810aa-d88a-44ef-92c2-797374b42365"
 #define LXa_CHANNELUI   "channelui"
-// [local]  ILxChannelUI
 // [export] ILxChannelUI cui
+// [local]  ILxChannelUI
+// [python] ILxChannelUI:UIValueHints   obj UIValueHints (command)
+#define LXu_CHANNELUI1  "BF1BFE3B-F0F5-490b-8961-721795DA57B4"
+#define LXa_CHANNELUI1  "channelui1"
+// [export] ILxUIChannelUI1 cui1
+// [local]  ILxUIChannelUI1
 #define LXu_CHANNELUISERVICE    "3C3A2D98-7EF1-43F4-845C-39EF2D8F6D52"
 #define LXa_CHANNELUISERVICE    "channelUIservice"
 

@@ -1,7 +1,7 @@
 /*
  * LX vmodel module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -41,7 +41,17 @@ typedef struct vt_ILxAdjustTool ** ILxAdjustToolID;
 #include <lxdraw.h>
 #include <lxvalue.h>
 
-
+#define LXfTRACK_ENTER          0x00
+#define LXfTRACK_MOVE           0x01
+#define LXfTRACK_EXIT           0x02
+#define LXfTRACK_LAZY           0x0040
+#define LXfTRACK_VERX           0x0100
+#define LXfTRACK_EDGE           0x0200
+#define LXfTRACK_POLY           0x0400
+#define LXfTRACK_LOOP1          0x0800
+#define LXfTRACK_LOOP2          0x1000
+#define LXfTRACK_RAYCAST        0x2000
+#define LXfTRACK_BK_RAYCAST     0x4000
 
 typedef struct vt_ILxViewItem3D {
         ILxUnknown       iunk;
@@ -73,7 +83,7 @@ typedef struct vt_ILxViewItem3D {
         HandleMotion) (
                 LXtObjectID              self,
                 int                      handleIndex,
-                int                     *motionType,
+                int                     *handleFlags,
                 double                  *min,
                 double                  *max,
                 LXtVector                plane,
@@ -89,7 +99,7 @@ typedef struct vt_ILxViewItem3D {
         HandleValueToPosition) (
                 LXtObjectID              self,
                 int                      handleIndex,
-                double                   chanValue,
+                double                  *chanValue,
                 LXtVector                position);
 
                 LXxMETHOD(  LxResult,
@@ -160,6 +170,19 @@ typedef struct vt_ILxToolModel {
                 LXxMETHOD( LxResult,
         Drop) (
                 LXtObjectID              self);
+                LXxMETHOD( LxResult,
+        Track) (
+                LXtObjectID              self,
+                LXtObjectID              vts,
+                unsigned int             eventType);
+                LXxMETHOD( LxResult,
+        TrackFlags) (
+                LXtObjectID              self,
+                unsigned int            *flags);
+                LXxMETHOD( LxResult,
+        Post) (
+                LXtObjectID              self,
+                LXtObjectID              vts);
 } ILxToolModel;
 typedef struct vt_ILxAdjustTool {
         ILxUnknown       iunk;
@@ -207,9 +230,30 @@ typedef struct vt_ILxAdjustTool {
 #define LXiSELECTION_SELECTED           1
 #define LXiSELECTION_ROLLOVER           2
 
-#define LXiMOTION_1D                    1
-#define LXiMOTION_ANGULAR               2
-#define LXiMOTION_RADIAL                3
+#define LXiMOTION_1D                    1 // obsolete
+#define LXiMOTION_ANGULAR               2 // obsolete
+#define LXiMOTION_RADIAL                3 // obsolete
+
+#define LXiVHANDLE_BASE_PART            400
+
+#define LXmVHANDLE_CONSTRAINT           7 // mask off bottom 3 bits for 8 constraint types
+#define LXfVHANDLE_CON_LINEAR           1
+#define LXfVHANDLE_CON_PLANAR           2
+
+#define LXmVHANDLE_DRAW_SHAPE           (15<<3) // mask off next 4 bits for 16 draw shapes
+#define LXfVHANDLE_DRAW_BOX             (0)
+#define LXfVHANDLE_DRAW_LINE            (1<<3)
+#define LXfVHANDLE_DRAW_POINT           (2<<3)
+#define LXfVHANDLE_DRAW_PLUS            (3<<3)
+#define LXfVHANDLE_DRAW_X               (4<<3)
+#define LXxVHANDLE_DRAW_SHAPE(f)        ((f)&LXmVHANDLE_DRAW_SHAPE)
+
+#define LXmVHANDLE_DRAW_AXIS            (3<<16) // mask off bottom 2 bits of next word for 4 axis values
+#define LXxVHANDLE_DRAW_AXIS(f)         (((f)>>16)&3)
+
+#define LXfVHANDLE_VAL_VECTOR           (1<<8)
+#define LXfVHANDLE_RESERVED             (1<<31) // PRIVATE! HANDS OFF
+
 #define LXu_TOOLMODEL   "EECE6570-AD5F-4190-AFA7-15067500454F"
 // [local]   ILxToolModel
 // [export]  ILxToolModel tmod
@@ -236,23 +280,16 @@ typedef struct vt_ILxAdjustTool {
         #define LXfTMOD_I_CURVE          0x00400
         #define LXfTMOD_I_BRUSH          0x00800
 #endif
-#ifdef NEW_TOOL_INPUT
-        #define LXfTMOD_BRUSHRESET       0x02000
-        #define LXfTMOD_INITAGAIN        0x04000
-        #define LXfTMOD_NEEDSHAUL        0x08000
-        #define LXfTMOD_ROLLOVERS        0x10000
-        #define LXfTMOD_AUTORESET        0x20000
-        #define LXfTMOD_HANDLERESET      0x40000
-#else
-        #define LXfTMOD_BRUSHRESET       0x01000
-        #define LXfTMOD_INITAGAIN        0x02000
-        #define LXfTMOD_NEEDSHAUL        0x04000
-        #define LXfTMOD_ROLLOVERS        0x08000
-        #define LXfTMOD_AUTORESET        0x10000
-        #define LXfTMOD_HANDLERESET      0x20000
-#endif
-        #define LXfTMOD_I0_NOSELECT      0x40000
-        #define LXfTMOD_I1_NOSELECT      0x80000
+#define LXfTMOD_BRUSHRESET       0x02000
+#define LXfTMOD_INITAGAIN        0x04000
+#define LXfTMOD_NEEDSHAUL        0x08000
+#define LXfTMOD_ROLLOVERS        0x10000
+#define LXfTMOD_AUTORESET        0x20000
+#define LXfTMOD_HANDLERESET      0x40000
+#define LXfTMOD_DRAW_INACTIVE    0x80000
+
+#define LXfTMOD_I0_NOSELECT      0x100000
+#define LXfTMOD_I1_NOSELECT      0x200000
 #define LXu_ADJUSTTOOL  "26E85301-8165-4FF3-AF26-392A03C9E1E7"
 // [local]  ILxAdjustTool
 

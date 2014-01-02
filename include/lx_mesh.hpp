@@ -1,7 +1,7 @@
 /*
  * Plug-in SDK Header: C++ User Classes
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -79,52 +79,28 @@ class CLxUser_Mesh : public CLxLoc_Mesh
         GetPoints (
                 CLxLoc_Point            &acc)
         {
-                LXtObjectID              obj;
-
-                acc.clear ();
-                if (LXx_FAIL (PointAccessor (&obj)))
-                        return false;
-
-                return acc.take (obj);
+                return PointAccessor (acc);
         }
 
                 bool
         GetPolygons (
                 CLxLoc_Polygon          &acc)
         {
-                LXtObjectID              obj;
-
-                acc.clear ();
-                if (LXx_FAIL (PolygonAccessor (&obj)))
-                        return false;
-
-                return acc.take (obj);
+                return PolygonAccessor (acc);
         }
 
                 bool
         GetEdges (
                 CLxLoc_Edge             &acc)
         {
-                LXtObjectID              obj;
-
-                acc.clear ();
-                if (LXx_FAIL (EdgeAccessor (&obj)))
-                        return false;
-
-                return acc.take (obj);
+                return EdgeAccessor (acc);
         }
 
                 bool
         GetMaps (
                 CLxLoc_MeshMap          &acc)
         {
-                LXtObjectID              obj;
-
-                acc.clear ();
-                if (LXx_FAIL (MeshMapAccessor (&obj)))
-                        return false;
-
-                return acc.take (obj);
+                return MeshMapAccessor (acc);
         }
                 bool
         IsSame (
@@ -450,12 +426,7 @@ class CLxUser_MeshFilter : public CLxLoc_MeshFilter
         GetMesh (
                 CLxLoc_Mesh             &mesh)
         {
-                LXtObjectID              obj;
-
-                if (LXx_FAIL (Generate (&obj)))
-                        return false;
-
-                return mesh.take (obj);
+                return Generate (mesh);
         }
 };
 class CLxUser_MeshFilterBBox : public CLxLoc_MeshFilterBBox
@@ -492,13 +463,7 @@ class CLxUser_MeshService : public CLxLoc_MeshService
         NewMesh (
                 CLxLoc_Mesh             &mesh)
         {
-                LXtObjectID              obj;
-
-                mesh.clear ();
-                if (LXx_FAIL (CreateMesh (&obj)))
-                        return false;
-
-                return mesh.take (obj);
+                return CreateMesh (mesh);
         }
 };
 

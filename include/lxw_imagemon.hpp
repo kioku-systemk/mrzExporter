@@ -1,7 +1,7 @@
 /*
  * C++ wrapper for lximagemon.h
  *
- *	Copyright (c) 2008-2012 Luxology LLC
+ *	Copyright (c) 2008-2013 Luxology LLC
  *	
  *	Permission is hereby granted, free of charge, to any person obtaining a
  *	copy of this software and associated documentation files (the "Software"),
@@ -30,6 +30,7 @@
 
 #include <lximagemon.h>
 #include <lx_wrap.hpp>
+#include <string>
 
 namespace lx {
     static const LXtGUID guid_ImageMonitor = {0x5ef021ed,0xa2e3,0x48d3,0xab,0xa1,0x7c,0xbb,0x81,0x5f,0x15,0xb7};
@@ -73,9 +74,33 @@ class CLxImpl_ImageMonitor {
       imon_MouseTrackExit (void)
         { return LXe_NOTIMPL; }
     virtual LxResult
-      imon_ToolTip (int cx, int cy, int w, int h, char *buffer, unsigned len)
+      imon_ToolTip (int cx, int cy, int w, int h, char *buf, unsigned len)
         { return LXe_NOTIMPL; }
 };
+#define LXxD_ImageMonitor_Image LxResult imon_Image (ILxUnknownID imageToAnalyze, ILxUnknownID frameBufferToAnalyze, int bufferIndex, double x1, double y1, double x2, double y2, ILxUnknownID imageProcessingRead, ILxUnknownID processedThumbnail)
+#define LXxO_ImageMonitor_Image LXxD_ImageMonitor_Image LXx_OVERRIDE
+#define LXxD_ImageMonitor_ImageProcChanged LxResult imon_ImageProcChanged (void)
+#define LXxO_ImageMonitor_ImageProcChanged LXxD_ImageMonitor_ImageProcChanged LXx_OVERRIDE
+#define LXxD_ImageMonitor_AspectRange LxResult imon_AspectRange (double *minAspect, double *maxAspect, double *idealAspect)
+#define LXxO_ImageMonitor_AspectRange LXxD_ImageMonitor_AspectRange LXx_OVERRIDE
+#define LXxD_ImageMonitor_Draw LxResult imon_Draw (ILxUnknownID imageForDrawing)
+#define LXxO_ImageMonitor_Draw LXxD_ImageMonitor_Draw LXx_OVERRIDE
+#define LXxD_ImageMonitor_ImageSource LxResult imon_ImageSource (const char *source)
+#define LXxO_ImageMonitor_ImageSource LXxD_ImageMonitor_ImageSource LXx_OVERRIDE
+#define LXxD_ImageMonitor_MouseDown LxResult imon_MouseDown (int startx, int starty, int w, int h)
+#define LXxO_ImageMonitor_MouseDown LXxD_ImageMonitor_MouseDown LXx_OVERRIDE
+#define LXxD_ImageMonitor_MouseMove LxResult imon_MouseMove (int startx, int starty, int cx, int cy, int w, int h)
+#define LXxO_ImageMonitor_MouseMove LXxD_ImageMonitor_MouseMove LXx_OVERRIDE
+#define LXxD_ImageMonitor_MouseUp LxResult imon_MouseUp (int startx, int starty, int cx, int cy, int w, int h)
+#define LXxO_ImageMonitor_MouseUp LXxD_ImageMonitor_MouseUp LXx_OVERRIDE
+#define LXxD_ImageMonitor_MouseTrackEnter LxResult imon_MouseTrackEnter (void)
+#define LXxO_ImageMonitor_MouseTrackEnter LXxD_ImageMonitor_MouseTrackEnter LXx_OVERRIDE
+#define LXxD_ImageMonitor_MouseTrack LxResult imon_MouseTrack (int cx, int cy, int w, int h)
+#define LXxO_ImageMonitor_MouseTrack LXxD_ImageMonitor_MouseTrack LXx_OVERRIDE
+#define LXxD_ImageMonitor_MouseTrackExit LxResult imon_MouseTrackExit (void)
+#define LXxO_ImageMonitor_MouseTrackExit LXxD_ImageMonitor_MouseTrackExit LXx_OVERRIDE
+#define LXxD_ImageMonitor_ToolTip LxResult imon_ToolTip (int cx, int cy, int w, int h, char *buf, unsigned len)
+#define LXxO_ImageMonitor_ToolTip LXxD_ImageMonitor_ToolTip LXx_OVERRIDE
 template <class T>
 class CLxIfc_ImageMonitor : public CLxInterface
 {
@@ -168,11 +193,11 @@ class CLxIfc_ImageMonitor : public CLxInterface
     } catch (LxResult rc) { return rc; }
   }
     static LxResult
-  ToolTip (LXtObjectID wcom, int cx, int cy, int w, int h, char *buffer, unsigned len)
+  ToolTip (LXtObjectID wcom, int cx, int cy, int w, int h, char *buf, unsigned len)
   {
     LXCWxINST (CLxImpl_ImageMonitor, loc);
     try {
-      return loc->imon_ToolTip (cx,cy,w,h,buffer,len);
+      return loc->imon_ToolTip (cx,cy,w,h,buf,len);
     } catch (LxResult rc) { return rc; }
   }
   ILxImageMonitor vt;
@@ -259,9 +284,16 @@ public:
     return m_loc[0]->MouseTrackExit (m_loc);
   }
     LxResult
-  ToolTip (int cx, int cy, int w, int h, char *buffer, unsigned len)
+  ToolTip (int cx, int cy, int w, int h, char *buf, unsigned len)
   {
-    return m_loc[0]->ToolTip (m_loc,cx,cy,w,h,buffer,len);
+    return m_loc[0]->ToolTip (m_loc,cx,cy,w,h,buf,len);
+  }
+    LxResult
+  ToolTip (int cx, int cy, int w, int h, std::string &result)
+  {
+    LXWx_SBUF1
+    rc = m_loc[0]->ToolTip (m_loc,cx,cy,w,h,buf,len);
+    LXWx_SBUF2
   }
 };
 
@@ -272,7 +304,7 @@ public:
   void _init() {m_loc=0;}
   CLxLoc_ImageMonitorService() {_init();set();}
  ~CLxLoc_ImageMonitorService() {}
-  void set() {m_loc=reinterpret_cast<ILxImageMonitorServiceID>(lx::GetGlobal(&lx::guid_ImageMonitorService));}
+  void set() {if(!m_loc)m_loc=reinterpret_cast<ILxImageMonitorServiceID>(lx::GetGlobal(&lx::guid_ImageMonitorService));}
     LxResult
   ScriptQuery (void **ppvObj)
   {
@@ -288,10 +320,24 @@ public:
   {
     return m_loc[0]->ServerByIndex (m_loc,index,ppvObj);
   }
+    bool
+  ServerByIndex (int index, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->ServerByIndex (m_loc,index,&obj)) && dest.take(obj);
+  }
     LxResult
   ServerLookup (const char *name, void **ppvObj)
   {
     return m_loc[0]->ServerLookup (m_loc,name,ppvObj);
+  }
+    bool
+  ServerLookup (const char *name, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->ServerLookup (m_loc,name,&obj)) && dest.take(obj);
   }
     LxResult
   ServerNameByIndex (int index, const char **name)
@@ -314,9 +360,9 @@ public:
     return m_loc[0]->SourceNameByIndex (m_loc,index,name);
   }
     LxResult
-  SourceUserNameByIndex (const char *name, const char **username)
+  SourceUserNameByIndex (int index, const char **username)
   {
-    return m_loc[0]->SourceUserNameByIndex (m_loc,name,username);
+    return m_loc[0]->SourceUserNameByIndex (m_loc,index,username);
   }
     LxResult
   SetImage (const char *imageSource, ILxUnknownID image, ILxUnknownID frameBuffer, int bufferIndex, double x1, double y1, double x2, double y2, ILxUnknownID imageProc, ILxUnknownID processedThumbnail)

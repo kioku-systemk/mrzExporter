@@ -1,7 +1,7 @@
 /*
  * LX shade module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -38,7 +38,9 @@ typedef struct vt_ILxTextureMask ** ILxTextureMaskID;
 typedef struct vt_ILxTextureGL ** ILxTextureGLID;
 typedef struct vt_ILxValueTexture ** ILxValueTextureID;
 typedef struct vt_ILxValueTextureCustom ** ILxValueTextureCustomID;
+typedef struct vt_ILxCompShader1 ** ILxCompShader1ID;
 typedef struct vt_ILxCompShader ** ILxCompShaderID;
+typedef struct vt_ILxCustomMaterial1 ** ILxCustomMaterial1ID;
 typedef struct vt_ILxCustomMaterial ** ILxCustomMaterialID;
 typedef struct vt_ILxTexture ** ILxTextureID;
 #include <lxcom.h>
@@ -283,6 +285,60 @@ typedef struct vt_ILxValueTextureCustom {
                 LXtObjectID              self,
                 const char              *name);
 } ILxValueTextureCustom;
+typedef struct vt_ILxCompShader1 {
+        ILxUnknown       iunk;
+                LXxMETHOD( LxResult,
+        SetupChannels) (
+                LXtObjectID              self,
+                LXtObjectID              addChan);
+
+                LXxMETHOD( LxResult,
+        LinkChannels) (
+                LXtObjectID              self,
+                LXtObjectID              eval,
+                LXtObjectID              item);
+
+                LXxMETHOD( LxResult,
+        ReadChannels) (
+                LXtObjectID              self,
+                LXtObjectID              attr,
+                void                   **ppvData);
+
+                LXxMETHOD( LxResult,
+        Customize) (
+                LXtObjectID              self,
+                LXtObjectID              custom,
+                void                   **ppvData);
+
+                LXxMETHOD( void,
+        Evaluate) (
+                LXtObjectID              self,
+                LXtObjectID              vector,
+                LXtObjectID              rayObj,
+                LXpShadeComponents      *sCmp,
+                LXpShadeOutput          *sOut,
+                void                    *data);
+
+                LXxMETHOD( LxResult,
+        SetShadeFlags) (
+                LXtObjectID              self,
+                LXpShadeFlags           *sFlg);
+
+                LXxMETHOD( LxResult,
+        SetOpaque) (
+                LXtObjectID              self,
+                int                     *opaque);
+
+                LXxMETHOD( LxResult,
+        CustomPacket) (
+                LXtObjectID              self,
+                const char              **packet);      
+
+                LXxMETHOD( void,
+        Cleanup) (
+                LXtObjectID              self,
+                void                    *data);
+} ILxCompShader1;
 typedef struct vt_ILxCompShader {
         ILxUnknown       iunk;
                 LXxMETHOD( LxResult,
@@ -336,7 +392,94 @@ typedef struct vt_ILxCompShader {
         Cleanup) (
                 LXtObjectID              self,
                 void                    *data);
+
+                LXxMETHOD( int,
+        Flags) (
+                LXtObjectID              self); 
 } ILxCompShader;
+typedef struct vt_ILxCustomMaterial1 {
+        ILxUnknown       iunk;
+                LXxMETHOD( LxResult,
+        SetupChannels) (
+                LXtObjectID              self,
+                LXtObjectID              addChan);
+
+                LXxMETHOD( LxResult,
+        LinkChannels) (
+                LXtObjectID              self,
+                LXtObjectID              eval,
+                LXtObjectID              item);
+
+                LXxMETHOD( LxResult,
+        ReadChannels) (
+                LXtObjectID              self,
+                LXtObjectID              attr,
+                void                   **ppvData);
+
+                LXxMETHOD( LxResult,
+        Customize) (
+                LXtObjectID              self,
+                LXtObjectID              custom,
+                void                   **ppvData);
+
+                LXxMETHOD( void,
+        MaterialEvaluate) (
+                LXtObjectID              self,
+                LXtObjectID              vector,
+                void                    *data);
+
+                LXxMETHOD( void,
+        ShaderEvaluate) (
+                LXtObjectID              self,
+                LXtObjectID              vector,
+                LXtObjectID              rayObj,
+                LXpShadeComponents      *sCmp,
+                LXpShadeOutput          *sOut,
+                void                    *data);
+
+                LXxMETHOD( LxResult,
+        SetShadeFlags) (
+                LXtObjectID              self,
+                LXpShadeFlags           *sFlg);
+
+                LXxMETHOD( LxResult,
+        SetBump) (
+                LXtObjectID              self,
+                float                   *bumpAmplitude,
+                int                     *clearBump);
+
+                LXxMETHOD( LxResult,
+        SetDisplacement) (
+                LXtObjectID              self,
+                float                   *dispDist);
+
+                LXxMETHOD( LxResult,
+        SetOpaque) (
+                LXtObjectID              self,
+                int                     *opaque);
+
+                LXxMETHOD( LxResult,
+        SetSmoothing) (
+                LXtObjectID              self,
+                double                  *smooth,
+                double                  *angle);
+
+                LXxMETHOD( LxResult,
+        CustomPacket) (
+                LXtObjectID              self,
+                const char              **packet);
+
+                LXxMETHOD( void,
+        Cleanup) (
+                LXtObjectID              self,
+                void                    *data);
+
+                LXxMETHOD( LxResult,
+        UpdatePreview) (
+                LXtObjectID              self,
+                int                      chanIdx,
+                int                     *flags);
+} ILxCustomMaterial1;
 typedef struct vt_ILxCustomMaterial {
         ILxUnknown       iunk;
                 LXxMETHOD( LxResult,
@@ -419,6 +562,10 @@ typedef struct vt_ILxCustomMaterial {
                 LXtObjectID              self,
                 int                      chanIdx,
                 int                     *flags);
+
+                LXxMETHOD( int,
+        Flags) (
+                LXtObjectID              self);
 } ILxCustomMaterial;
 typedef struct vt_ILxTexture {
         ILxUnknown       iunk;
@@ -475,26 +622,27 @@ typedef struct vt_ILxTexture {
 #define LXi_SURF_ALL                    0
 #define LXi_SURF_TRIANGLE               1
 #define LXi_SURF_FUR                    2
+#define LXi_SURF_CURVE_TRIANGLE         3       
+#define         LXfSHADERFLAGS_USE_LOCATOR      0x0001  
+#define         LXfSHADERFLAGS_USE_CLIP         0x0002  
+#define         LXfSHADERFLAGS_USE_LIGHT        0x0004  
+#define         LXfSHADERFLAGS_USE_GROUP        0x0008  
+#define         LXfSHADERFLAGS_NEED_UVS         0x0800  
 #define LXfPREV_EVENT_MESH              0x01
 #define LXfPREV_EVENT_ITEM              0x02
 #define LXfPREV_EVENT_IMAGE             0x04
 #define LXfPREV_EVENT_CINE              0x08
 #define LXfPREV_EVENT_MESH_FEATURE      0x10
 #define LXfPREV_EVENT_MESH_BIN          0x20
-#define LXfPREV_UPDATE_GEOMETRY         0x01 // geometry change on an entire item
-#define LXfPREV_UPDATE_SHADING          0x02 // surface shader change
-#define LXfPREV_UPDATE_BACKDROP         0x04 // environment change
-#define LXfPREV_UPDATE_IMAGE            0x08 // image edit
-#define LXfPREV_UPDATE_CAMERA           0x10 // camera change (liek during camera navigtion)
-#define LXfPREV_UPDATE_CLIP             0x20 // clip change
-#define LXfPREV_UPDATE_LIGHT            0x40 // light item change
-#define LXfPREV_UPDATE_LIGHT_SHADER     0x80 // light shader change
-#define LXfPREV_UPDATE_VERTEX_FEATURE   0x100 // vertex feature change in the tableau
-#define LXfPREV_UPDATE_IRRCACHE         0x200 // irradiance cache change
-#define LXfPREV_UPDATE_SURFACE          0x400 // geometry change limited to a surface
-#define LXfPREV_UPDATE_VOLUME           0x8000 // volume item change
+#define LXfPREV_UPDATE_GEOMETRY         0x01    // geometry change on an entire item
+#define LXfPREV_UPDATE_SHADING          0x02    // surface shader change
+#define LXfPREV_UPDATE_LIGHT            0x04    // light change (usually for shadow maps)
+#define LXfPREV_UPDATE_BACKDROP         0x08    // environment change
+#define LXfPREV_UPDATE_IMAGE            0x10    // image edit
+#define LXfPREV_UPDATE_CAMERA           0x20    // camera change (like during camera navigtion)
+#define LXfPREV_UPDATE_CLIP             0x40    // clip change
 
-#define LXfPREV_UPDATE_FORCE            0XFFFF // All flags
+#define LXfPREV_UPDATE_FORCE            0XFF    // All flags
 #define LXu_TEXTURELAYER        "42369FE7-869E-4c61-8D40-AC62E529DD15"
 #define LXa_TEXTURELAYER        "textureLayer"
 #define LXsTLR_CATEGORY         "textureLayer.category"
@@ -510,16 +658,28 @@ typedef struct vt_ILxTexture {
 #define LXa_VALUETEXTURE        "valueTexture"
 #define LXu_VALUETEXTURECUSTOM  "DE3298A6-1607-4338-B061-185528E6FB51"
 // [export]  ILxValueTexture vtx
+// [local]   ILxValueTexture
 // [local]   ILxValueTextureCustom
-#define LXu_COMPSHADER          "06717e9d-610d-439f-935b-af0805827ede"
-#define LXa_COMPSHADER          "compShader"
+#define LXu_COMPSHADER1         "06717e9d-610d-439f-935b-af0805827ede"
+#define LXa_COMPSHADER1         "compShader"
 // [export]  ILxCompShader csh
-#define LXu_CUSTOMMATERIAL              "d0c4106c-dfd5-4a58-ad48-45b50ae63f59"
-#define LXa_CUSTOMMATERIAL              "customMaterial"
+#define LXu_COMPSHADER          "371e8b57-3a1e-444b-91f8-5e43c75bf1cb"
+#define LXa_COMPSHADER          "compShader2"
+// [export]  ILxCompShader csh
+// [local]   ILxCompShader
+#define LXu_CUSTOMMATERIAL1             "d0c4106c-dfd5-4a58-ad48-45b50ae63f59"
+#define LXa_CUSTOMMATERIAL1             "customMaterial"
 // [export]  ILxCustomMaterial cmt
+#define LXu_CUSTOMMATERIAL              "64e2dd96-ff7f-4c9b-967e-24dec83bfb72"
+#define LXa_CUSTOMMATERIAL              "customMaterial2"
+// [export]  ILxCustomMaterial cmt
+// [local]   ILxCustomMaterial
 #define LXa_TEXTURE     "texture"
 #define LXu_TEXTURE     "6376D941-9437-4cf8-B6EC-AB50791FE60F"
 // [local]  ILxTexture
+// [python] ILxTexture:EvalImage        obj Image (image)
+// [python] ILxTexture:Image            obj Item
+// [python] ILxTexture:Locator          obj Item
 #define LXi_TEXTURE_PROJ_MODE_NONE              0
 #define LXi_TEXTURE_PROJ_MODE_PLANAR            1
 #define LXi_TEXTURE_PROJ_MODE_CYLINDRICAL       2

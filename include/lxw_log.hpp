@@ -1,7 +1,7 @@
 /*
  * C++ wrapper for lxlog.h
  *
- *	Copyright (c) 2008-2012 Luxology LLC
+ *	Copyright (c) 2008-2013 Luxology LLC
  *	
  *	Permission is hereby granted, free of charge, to any person obtaining a
  *	copy of this software and associated documentation files (the "Software"),
@@ -30,13 +30,16 @@
 
 #include <lxlog.h>
 #include <lx_wrap.hpp>
+#include <string>
 
 namespace lx {
+    static const LXtGUID guid_LogListener = {0xc5fd260b,0xcab7,0x4283,0xb8,0x76,0x23,0x14,0x14,0x4a,0xe8,0x3a};
     static const LXtGUID guid_Log = {0x1890538F,0xD64C,0x478c,0x84,0x72,0x22,0x8B,0x7C,0x9A,0xB1,0xDF};
     static const LXtGUID guid_LogEntry = {0xE83679B2,0xDB4D,0x4D90,0xB8,0x1B,0x5F,0x78,0x6D,0x21,0x2F,0xB3};
     static const LXtGUID guid_LogInfoBlock = {0xB9AEE11A,0x3501,0x4dc2,0x90,0xA6,0x41,0xF2,0x43,0x58,0x56,0xC6};
     static const LXtGUID guid_LogService = {0x0BC355C2,0x5E6B,0x49EF,0xB3,0x68,0x60,0x0D,0x9F,0x26,0xF5,0x43};
 };
+
 
 class CLxLoc_Log : public CLxLocalize<ILxLogID>
 {
@@ -71,15 +74,29 @@ public:
   {
     return m_loc[0]->EntryByIndex (m_loc,index,ppvObj);
   }
-    ILxLogEntryID
+    bool
+  EntryByIndex (unsigned int index, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->EntryByIndex (m_loc,index,&obj)) && dest.take(obj);
+  }
+    ILxUnknownID
   PeekEntryByIndex (unsigned int index)
   {
-    return m_loc[0]->PeekEntryByIndex (m_loc,index);
+    return (ILxUnknownID) m_loc[0]->PeekEntryByIndex (m_loc,index);
   }
     LxResult
   GetCurrentEntry (void **ppvObj)
   {
     return m_loc[0]->GetCurrentEntry (m_loc,ppvObj);
+  }
+    bool
+  GetCurrentEntry (CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->GetCurrentEntry (m_loc,&obj)) && dest.take(obj);
   }
     LxResult
   SetMaxEntries (unsigned int max)
@@ -95,6 +112,13 @@ public:
   GetRolling (void **ppvObj)
   {
     return m_loc[0]->GetRolling (m_loc,ppvObj);
+  }
+    bool
+  GetRolling (CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->GetRolling (m_loc,&obj)) && dest.take(obj);
   }
     LxResult
   ClearAll (void)
@@ -171,10 +195,17 @@ public:
   {
     return m_loc[0]->ChildByIndex (m_loc,index,ppvObj);
   }
-    ILxLogEntryID
+    bool
+  ChildByIndex (unsigned int index, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->ChildByIndex (m_loc,index,&obj)) && dest.take(obj);
+  }
+    ILxUnknownID
   PeekChildByIndex (unsigned int index)
   {
-    return m_loc[0]->PeekChildByIndex (m_loc,index);
+    return (ILxUnknownID) m_loc[0]->PeekChildByIndex (m_loc,index);
   }
     LxResult
   SubSystemCount (unsigned int *count)
@@ -185,6 +216,13 @@ public:
   SubSystemByIndex (unsigned int index, void **ppvObj)
   {
     return m_loc[0]->SubSystemByIndex (m_loc,index,ppvObj);
+  }
+    bool
+  SubSystemByIndex (unsigned int index, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->SubSystemByIndex (m_loc,index,&obj)) && dest.take(obj);
   }
     LxResult
   Message (const char **message)
@@ -206,10 +244,24 @@ public:
   {
     return m_loc[0]->InfoBlock (m_loc,ppvObj);
   }
+    bool
+  InfoBlock (CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->InfoBlock (m_loc,&obj)) && dest.take(obj);
+  }
     LxResult
   InfoBlockValue (const char *name, unsigned int index, void **ppvObj)
   {
     return m_loc[0]->InfoBlockValue (m_loc,name,index,ppvObj);
+  }
+    bool
+  InfoBlockValue (const char *name, unsigned int index, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->InfoBlockValue (m_loc,name,index,&obj)) && dest.take(obj);
   }
     LxResult
   PairCount (unsigned int *count)
@@ -244,6 +296,14 @@ class CLxImpl_LogInfoBlock {
       lb_FieldType (unsigned int index, const char **type)
         { return LXe_NOTIMPL; }
 };
+#define LXxD_LogInfoBlock_Name LxResult lb_Name (const char **name)
+#define LXxO_LogInfoBlock_Name LXxD_LogInfoBlock_Name LXx_OVERRIDE
+#define LXxD_LogInfoBlock_FieldCount LxResult lb_FieldCount (unsigned int *count)
+#define LXxO_LogInfoBlock_FieldCount LXxD_LogInfoBlock_FieldCount LXx_OVERRIDE
+#define LXxD_LogInfoBlock_FieldName LxResult lb_FieldName (unsigned int index, const char **name)
+#define LXxO_LogInfoBlock_FieldName LXxD_LogInfoBlock_FieldName LXx_OVERRIDE
+#define LXxD_LogInfoBlock_FieldType LxResult lb_FieldType (unsigned int index, const char **type)
+#define LXxO_LogInfoBlock_FieldType LXxD_LogInfoBlock_FieldType LXx_OVERRIDE
 template <class T>
 class CLxIfc_LogInfoBlock : public CLxInterface
 {
@@ -328,7 +388,7 @@ public:
   void _init() {m_loc=0;}
   CLxLoc_LogService() {_init();set();}
  ~CLxLoc_LogService() {}
-  void set() {m_loc=reinterpret_cast<ILxLogServiceID>(lx::GetGlobal(&lx::guid_LogService));}
+  void set() {if(!m_loc)m_loc=reinterpret_cast<ILxLogServiceID>(lx::GetGlobal(&lx::guid_LogService));}
     LxResult
   ScriptQuery (void **ppvObj)
   {
@@ -344,15 +404,36 @@ public:
   {
     return m_loc[0]->SubSystemByIndex (m_loc,index,ppvObj);
   }
+    bool
+  SubSystemByIndex (unsigned int index, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->SubSystemByIndex (m_loc,index,&obj)) && dest.take(obj);
+  }
     LxResult
   SubSystemLookup (const char *name, void **ppvObj)
   {
     return m_loc[0]->SubSystemLookup (m_loc,name,ppvObj);
   }
+    bool
+  SubSystemLookup (const char *name, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->SubSystemLookup (m_loc,name,&obj)) && dest.take(obj);
+  }
     LxResult
   MasterSubSystem (void **ppvObj)
   {
     return m_loc[0]->MasterSubSystem (m_loc,ppvObj);
+  }
+    bool
+  MasterSubSystem (CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->MasterSubSystem (m_loc,&obj)) && dest.take(obj);
   }
     LxResult
   InfoBlockCount (unsigned int *count)
@@ -364,10 +445,24 @@ public:
   {
     return m_loc[0]->InfoBlockByIndex (m_loc,index,ppvObj);
   }
+    bool
+  InfoBlockByIndex (unsigned int index, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->InfoBlockByIndex (m_loc,index,&obj)) && dest.take(obj);
+  }
     LxResult
   InfoBlockLookup (const char *name, void **ppvObj)
   {
     return m_loc[0]->InfoBlockLookup (m_loc,name,ppvObj);
+  }
+    bool
+  InfoBlockLookup (const char *name, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->InfoBlockLookup (m_loc,name,&obj)) && dest.take(obj);
   }
     LxResult
   InfoBlockFieldsAreSameGroup (const char *name1, const char *name2)
@@ -384,15 +479,36 @@ public:
   {
     return m_loc[0]->CreateEntryMessage (m_loc,type,message,ppvObj);
   }
+    bool
+  CreateEntryMessage (LxResult type, const char *message, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->CreateEntryMessage (m_loc,type,message,&obj)) && dest.take(obj);
+  }
     LxResult
   CreateEntryInfoBlock (LxResult type, const char *blockName, void **ppvObj)
   {
     return m_loc[0]->CreateEntryInfoBlock (m_loc,type,blockName,ppvObj);
   }
+    bool
+  CreateEntryInfoBlock (LxResult type, const char *blockName, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->CreateEntryInfoBlock (m_loc,type,blockName,&obj)) && dest.take(obj);
+  }
     LxResult
   CreateEntryPaired (LxResult type, void **ppvObj)
   {
     return m_loc[0]->CreateEntryPaired (m_loc,type,ppvObj);
+  }
+    bool
+  CreateEntryPaired (LxResult type, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->CreateEntryPaired (m_loc,type,&obj)) && dest.take(obj);
   }
     LxResult
   SetMonitor (ILxUnknownID monitor)
@@ -418,6 +534,13 @@ public:
   CreateEntryMessageFromMsgObj (ILxUnknownID msgObj, void **ppvObj)
   {
     return m_loc[0]->CreateEntryMessageFromMsgObj (m_loc,(ILxUnknownID)msgObj,ppvObj);
+  }
+    bool
+  CreateEntryMessageFromMsgObj (ILxUnknownID msgObj, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->CreateEntryMessageFromMsgObj (m_loc,(ILxUnknownID)msgObj,&obj)) && dest.take(obj);
   }
     LxResult
   DebugLogOutput (unsigned int level, const char *line)

@@ -1,7 +1,7 @@
 /*
  * LX cmds2 module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -38,6 +38,7 @@ typedef struct vt_ILxUIValueHints ** ILxUIValueHintsID;
 typedef struct vt_ILxUIValueHints1 ** ILxUIValueHints1ID;
 typedef struct vt_ILxAttributesUI ** ILxAttributesUIID;
 typedef struct vt_ILxCommandEvent ** ILxCommandEventID;
+typedef struct vt_ILxCommand1 ** ILxCommand1ID;
 typedef struct vt_ILxCommandBlock ** ILxCommandBlockID;
 typedef struct vt_ILxCommandService ** ILxCommandServiceID;
 typedef struct vt_ILxCommandPostEnd ** ILxCommandPostEndID;
@@ -108,7 +109,7 @@ typedef struct vt_ILxCommand {
                 LXxMETHOD(  LxResult,
         SandboxGUID) (
                 LXtObjectID               self,
-                LXtGUID                 **guid);
+                const LXtGUID           **guid);
                 LXxMETHOD(  LxResult,
         Message) (
                 LXtObjectID               self,
@@ -135,7 +136,7 @@ typedef struct vt_ILxCommand {
         ToggleArg) (
                 LXtObjectID               self,
                 unsigned int             *index,
-                void                    **value,
+                void                    **ppvObj,
                 unsigned int             *typeID,
                 const char              **typeName);
                 LXxMETHOD(  LxResult,
@@ -234,6 +235,10 @@ typedef struct vt_ILxCommand {
         NotifyRemoveClient) (
                 LXtObjectID               self,
                 LXtObjectID               object);
+                LXxMETHOD(  LxResult,
+        DialogFormatting) (
+                LXtObjectID               self,
+                const char              **formatting);
 } ILxCommand;
 typedef struct vt_ILxCommandDBHelp {
         ILxUnknown       iunk;
@@ -311,6 +316,10 @@ typedef struct vt_ILxUIHints {
         BooleanStyle) (
                 LXtObjectID               self,
                 unsigned int              style);
+                LXxMETHOD(  LxResult,
+        ChannelFlags) (
+                LXtObjectID               self,
+                unsigned int              flags);
 } ILxUIHints;
 typedef struct vt_ILxUIValueHints {
         ILxUnknown       iunk;
@@ -482,6 +491,225 @@ typedef struct vt_ILxCommandEvent {
                 LXtObjectID              self,
                 unsigned int             flags);
 } ILxCommandEvent;
+typedef struct vt_ILxCommand1 {
+        ILxUnknown       iunk;
+                LXxMETHOD(  LxResult,
+        Tag) (
+                LXtObjectID              self,
+                LXtCommandTag           *tag);
+
+                LXxMETHOD(  LxResult,
+        Name) (
+                LXtObjectID              self,
+                const char             **name);
+
+                LXxMETHOD(  LxResult,
+        UserName) (
+                LXtObjectID              self,
+                const char             **userName);
+
+                LXxMETHOD(  LxResult,
+        ButtonName) (
+                LXtObjectID              self,
+                const char             **buttonName);
+
+                LXxMETHOD(  LxResult,
+        Desc) (
+                LXtObjectID              self,
+                const char             **desc);
+
+                LXxMETHOD(  LxResult,
+        Tooltip) (
+                LXtObjectID              self,
+                const char             **tooltip);
+
+                LXxMETHOD(  LxResult,
+        Help) (
+                LXtObjectID              self,
+                const char             **help);
+
+                LXxMETHOD(  LxResult,
+        Example) (
+                LXtObjectID              self,
+                const char             **example);
+
+                LXxMETHOD(  LxResult,
+        Icon) (
+                LXtObjectID              self,
+                const char             **iconNames);
+
+                LXxMETHOD(  LxResult,
+        Flags) (
+                LXtObjectID              self,
+                unsigned int            *flags);
+
+                LXxMETHOD(  LxResult,
+        PostExecFlags) (
+                LXtObjectID              self,
+                unsigned int            *flags);
+
+                LXxMETHOD(  LxResult,
+        PostExecBehaviorFlags) (
+                LXtObjectID              self,
+                unsigned int            *flags);
+
+                LXxMETHOD(  LxResult,
+        PostExecHints) (
+                LXtObjectID              self,
+                unsigned int            *hints);
+
+                LXxMETHOD(  LxResult,
+        SandboxGUID) (
+                LXtObjectID               self,
+                const LXtGUID           **guid);
+
+                LXxMETHOD(  LxResult,
+        Message) (
+                LXtObjectID               self,
+                void                    **ppvObj);
+
+                LXxMETHOD(  LxResult,
+        Enable) (
+                LXtObjectID               self,
+                LXtObjectID               msg);
+
+                LXxMETHOD(  LxResult,
+        ContainedEnable) (
+                LXtObjectID               self,
+                LXtID4                   *types);
+
+                LXxMETHOD( void,
+        Interact) (
+                LXtObjectID               self);
+
+                LXxMETHOD( void,
+        PreExecute) (
+                LXtObjectID               self);
+
+                LXxMETHOD(  void,
+        Execute) (
+                LXtObjectID              self,
+                unsigned int             flags);
+
+                LXxMETHOD(  LxResult,
+        ToggleArg) (
+                LXtObjectID               self,
+                unsigned int             *index,
+                void                    **ppvObj,
+                unsigned int             *typeID,
+                const char              **typeName);
+
+                LXxMETHOD(  LxResult,
+        ArgFlags) (
+                LXtObjectID               self,
+                unsigned int              index,
+                unsigned int             *flags);
+
+                LXxMETHOD(  LxResult,
+        ArgClear) (
+                LXtObjectID               self,
+                unsigned int              index );
+
+                LXxMETHOD(  LxResult,
+        ArgResetAll) (
+                LXtObjectID               self );
+
+                LXxMETHOD(  LxResult,
+        ArgSetDatatypes) (
+                LXtObjectID               self );
+
+                LXxMETHOD(  LxResult,
+        ArgUserName) (
+                LXtObjectID              self,
+                unsigned int             index,
+                const char             **userName);
+
+                LXxMETHOD(  LxResult,
+        ArgDesc) (
+                LXtObjectID              self,
+                unsigned int             index,
+                const char             **desc);
+
+                LXxMETHOD(  LxResult,
+        ArgExample) (
+                LXtObjectID              self,
+                unsigned int             index,
+                const char             **example);
+
+                LXxMETHOD(  LxResult,
+        ArgType) (
+                LXtObjectID              self,
+                unsigned int             index,
+                const char             **type);
+
+                LXxMETHOD(  LxResult,
+        ArgTypeUserName) (
+                LXtObjectID              self,
+                unsigned int             index,
+                const char             **userName);
+
+                LXxMETHOD(  LxResult,
+        ArgTypeDesc) (
+                LXtObjectID              self,
+                unsigned int             index,
+                const char             **desc);
+
+                LXxMETHOD(  LxResult,
+        ArgOptionUserName) (
+                LXtObjectID              self,
+                unsigned int             index,
+                unsigned int             optIndex,
+                const char             **userName);
+
+                LXxMETHOD(  LxResult,
+        ArgOptionDesc) (
+                LXtObjectID              self,
+                unsigned int             index,
+                unsigned int             optIndex,
+                const char             **desc);
+
+                LXxMETHOD(  LxResult,
+        DialogInit) (
+                LXtObjectID               self);
+
+                LXxMETHOD(  LxResult,
+        DialogArgChange) (
+                LXtObjectID               self,
+                unsigned int              arg);
+
+                LXxMETHOD(  LxResult,
+        ArgEnable) (
+                LXtObjectID               self,
+                unsigned int              arg);
+
+                LXxMETHOD(  LxResult,
+        ArgParseString) (
+                LXtObjectID               self,
+                unsigned int              argIndex,
+                const char               *argString);
+
+                LXxMETHOD(  LxResult,
+        Copy) (
+                LXtObjectID               self,
+                LXtObjectID               sourceCommand );
+
+                LXxMETHOD(  LxResult,
+        Query) (
+                LXtObjectID               self,
+                unsigned int              index,
+                LXtObjectID               vaQuery );
+
+                LXxMETHOD(  LxResult,
+        NotifyAddClient) (
+                LXtObjectID               self,
+                int                       argument,
+                LXtObjectID               object);
+
+                LXxMETHOD(  LxResult,
+        NotifyRemoveClient) (
+                LXtObjectID               self,
+                LXtObjectID               object);
+} ILxCommand1;
 typedef struct vt_ILxCommandBlock {
         ILxUnknown       iunk;
                 LXxMETHOD(  LxResult,
@@ -541,19 +769,19 @@ typedef struct vt_ILxCommandService {
                 LXtObjectID               self,
                 LXtCommandTag             tag,
                 const char               *name,
-                void                    **cmd);
+                void                    **ppvObj);
                 LXxMETHOD(  LxResult,
         SpawnFromCommand) (
                 LXtObjectID               self,
                 LXtObjectID               cmd,
-                void                    **spawn);
+                void                    **ppvObj);
                 LXxMETHOD(  LxResult,
         SpawnFromString) (
                 LXtObjectID               self,
                 const char               *args,
                 unsigned int             *execFlags,
                 int                      *queryArgIndex,
-                void                    **spawn);
+                void                    **ppvObj);
                 LXxMETHOD(  LxResult,
         ExecuteArgString) (
                 LXtObjectID              self,
@@ -600,12 +828,12 @@ typedef struct vt_ILxCommandService {
                 unsigned int              flags,
                 const char               *string,
                 unsigned int             *newFlags,
-                char                    **afterFlags);
+                const char              **afterFlags);
                 LXxMETHOD(  LxResult,
         ExecFlagsAsPrefixString) (
                 LXtObjectID               self,
                 unsigned int              flags,
-                char                     *buffer,
+                char                     *buf,
                 unsigned int              len);
                 LXxMETHOD(  LxResult,
         SetToggleArgState) (
@@ -645,7 +873,7 @@ typedef struct vt_ILxCommandService {
                 LXxMETHOD(  LxResult,
         RefireCmd) (
                 LXtObjectID               self,
-                void                    **cmd);
+                void                    **ppvObj);
                 LXxMETHOD(  LxResult,
         RefireBlock) (
                 LXtObjectID              self,
@@ -704,7 +932,7 @@ typedef struct vt_ILxCommandService {
                 LXxMETHOD(  LxResult,
         SandboxObjectLookup) (
                 LXtObjectID               self,
-                LXtGUID                  *guid,
+                const LXtGUID            *guid,
                 void                    **ppvObj);
                 LXxMETHOD(  LxResult,
         SandboxObjectByCommand) (
@@ -737,13 +965,13 @@ typedef struct vt_ILxCommandService {
         Usage) (
                 LXtObjectID              self,
                 LXtObjectID              cmd,
-                char                   **buffer);
+                const char             **buffer);
                 LXxMETHOD(  LxResult,
         ArgsAsString) (
                 LXtObjectID              self,
                 LXtObjectID              cmd,
-                char                    *buffer,
-                unsigned int             bufLen,
+                char                    *buf,
+                unsigned int             len,
                 unsigned int             includeCmd);
                 LXxMETHOD(  LxResult,
         Query) (
@@ -757,14 +985,14 @@ typedef struct vt_ILxCommandService {
                 LXtObjectID               cmd,
                 unsigned int              alertFlags,
                 const char               *args,
-                void                    **vaQuery,
+                void                    **ppvObj,
                 unsigned int             *queryIndex,
                 unsigned int              includesCmdName);
                 LXxMETHOD(  LxResult,
         CreateQueryObject) (
                 LXtObjectID               self,
                 const char               *typeName,
-                void                    **vaQuery);
+                void                    **ppvObj);
                 LXxMETHOD(  LxResult,
         AliasCreate) (
                 LXtObjectID              self,
@@ -797,7 +1025,7 @@ typedef struct vt_ILxCommandService {
         CommandByIndex) (
                 LXtObjectID               self,
                 unsigned int              index,
-                void                    **cmd);
+                void                    **ppvObj);
                 LXxMETHOD(  LxResult,
         ExecEntryType ) (
                 LXtObjectID              self,
@@ -817,7 +1045,7 @@ typedef struct vt_ILxCommandService {
         ExecEntryAsArgString ) (
                 LXtObjectID              self,
                 int                      index,
-                char                    *buffer,
+                char                    *buf,
                 int                      len);
                 LXxMETHOD(  LxResult,
         IsGlobalInteractionOK) (
@@ -826,9 +1054,19 @@ typedef struct vt_ILxCommandService {
         ArgsAsStringLen) (
                 LXtObjectID              self,
                 LXtObjectID              cmd,
-                char                    *buffer,
-                unsigned int             bufLen,
+                char                    *buf,
+                unsigned int             len,
                 unsigned int             includeCmd);
+                LXxMETHOD(  LxResult,
+        SpawnUnaliased) (
+                LXtObjectID               self,
+                LXtCommandTag             tag,
+                const char               *name,
+                void                    **ppvObj);
+                LXxMETHOD(  LxResult,
+        SetIsGlobalInteractionOK) (
+                LXtObjectID              self,
+                int                      isOK);
 } ILxCommandService;
 typedef struct vt_ILxCommandPostEnd {
         ILxUnknown       iunk;
@@ -837,10 +1075,12 @@ typedef struct vt_ILxCommandPostEnd {
                 LXtObjectID              self);
 } ILxCommandPostEnd;
 
-#define LXu_COMMAND             "4F540BF1-F97E-4D46-8A5F-6B2750A6CEB9"
+#define LXu_COMMAND             "5e981e16-94b7-4364-92f0-d7679236f3d1"
 #define LXa_COMMAND             "command"
 // [export] ILxCommand cmd
 // [local]  ILxCommand
+// [python] ILxCommand:Message          obj Message
+// [python] ILxCommand:ToggleArg        obj Value
 
 #define LXe_CMD_ALREADY_EXISTS                  LXxFAILCODE( LXeSYS_CMDS,   1)
 #define LXe_CMD_MISSING_ARGS                    LXxFAILCODE( LXeSYS_CMDS,   2)
@@ -871,6 +1111,9 @@ typedef struct vt_ILxCommandPostEnd {
 #define LXe_CMD_REQUIRES_USER_INTERACTION       LXxFAILCODE( LXeSYS_CMDS,  27)
 #define LXe_CMD_HAS_NO_ARGUMENTS                LXxFAILCODE( LXeSYS_CMDS,  28)
 #define LXe_CMD_QUERY_MISMATCHED_DATATYPES      LXxFAILCODE( LXeSYS_CMDS,  29)
+#define LXe_CMD_ALL_ARGUMENTS_HIDDEN            LXxFAILCODE( LXeSYS_CMDS,  30)
+#define LXe_CMD_BAD_DIALOG_FORMAT               LXxFAILCODE( LXeSYS_CMDS,  32)
+#define LXe_CMD_UNDOS_LOCKED_OUT                LXxFAILCODE( LXeSYS_CMDS,  33)
 
 #define LXe_CMD_SANDBOX_GLOBAL                  LXxGOODCODE( LXeSYS_CMDS,   1)  // Good, not Fail
 #define LXe_CMD_SANDBOXED                       LXxGOODCODE( LXeSYS_CMDS,   2)  // Good, not Fail
@@ -926,6 +1169,8 @@ typedef struct vt_ILxCommandPostEnd {
 
 #define LXfCMD_EXEC_ALWAYSGETARGS                0x0800
 
+#define LXfCMD_EXEC_TOGGLED                      0x1000
+
 #define LXfCMD_EXEC_MASK                         0xFF00
 
 #define LXxCMD_EXEC_MASK( flags )                ((flags) & LXfCMD_EXEC_MASK)
@@ -947,7 +1192,7 @@ typedef struct vt_ILxCommandPostEnd {
 #define         LXfCMDARG_DYNAMIC_DEFAULTS               0x00080
 #define         LXfCMDARG_DIALOG_ALWAYS_SETS             0x00100
 #define         LXfCMDARG_CAN_QUERY_WHEN_DISABLED        0x00200
-#define         LXfCMDARG_DIALOG_DIVIDER_AFTER_ARG       0x00400
+#define         LXfCMDARG_DIALOG_DIVIDER_AFTER_ARG       0x00400                // Obsolete; use DialogFormatting() instead
 
 #define         LXfCMDARG_STATE_ONLY                     0xF0000
 #define         LXfCMDARG_VALUE_SET                      0x10000
@@ -970,10 +1215,15 @@ typedef struct vt_ILxCommandPostEnd {
 #define LXiBOOLEANSTYLE_DEFAULT         0
 #define LXiBOOLEANSTYLE_CHECKMARK       1
 #define LXiBOOLEANSTYLE_BUTTON          2
+#define LXfUIHINTCHAN_OUTPUT_ONLY               0x00000001
+#define LXfUIHINTCHAN_INPUT_ONLY                0x00000002
+#define LXfUIHINTCHAN_SUGGESTED                 0x00000004
 #define LXu_UIVALUEHINTS        "f37bb385-7214-42d5-9bed-552ff4738908"
 #define LXa_UIVALUEHINTS        "uivaluehints"
 // [local]  ILxUIValueHints
 // [export] ILxUIValueHints
+// [python] ILxUIValueHints:PopIconImage        obj Image
+// [python] ILxUIValueHints:ItemTest            bool
 #define LXfVALHINT_POPUPS               0x001
 #define LXfVALHINT_POPUP_DIRECT         0x002
 #define LXfVALHINT_POPUP_ALPHA_SORT     0x004
@@ -987,12 +1237,14 @@ typedef struct vt_ILxCommandPostEnd {
 #define LXfPOPFLAGS_MIXED               0x030
 #define LXfPOPFLAGS_DISABLED            0x080
 #define LXu_UIVALUEHINTS1       "7BB10C3F-1FFB-4104-8FBE-CB1C334EE3C1"
-// [local]  ILxUIValueHints
-// [export] ILxUIValueHints
+// [local]  ILxUIValueHints1
+// [export] ILxUIValueHints1
 #define LXu_ATTRIBUTESUI        "44D9C65E-AE2E-4012-AB57-E2839734F7FF"
 #define LXa_ATTRIBUTESUI        "attributesui"
 // [local]  ILxAttributesUI
 // [export] ILxAttributesUI atrui
+// [python] ILxAttributesUI:UIValueHints        obj UIValueHints
+#define LXiATTRUI_ANY           0xFFFFFFFF
 #define LXfCMDNOTIFY_VALUE      0x01
 #define LXfCMDNOTIFY_LABEL      0x02
 #define LXfCMDNOTIFY_DISABLE    0x04
@@ -1003,10 +1255,37 @@ typedef struct vt_ILxCommandPostEnd {
 #define LXa_COMMANDEVENT        "commandevent"
 // [local]  ILxCommandEvent
 // [export] ILxCommandEvent cevt
+#define LXu_COMMAND1            "4F540BF1-F97E-4D46-8A5F-6B2750A6CEB9"
+// [export] ILxCommand1 cmd1
+// [local]  ILxCommand1
 #define LXu_COMMANDBLOCK        "65AEBD9F-D518-47b2-8CC6-E453F8C43CB6"
 #define LXa_COMMANDBLOCK        "commandblock"
 #define LXu_COMMANDSERVICE      "9DB8BA65-8C36-45A7-B403-DF7BA59BA6C2"
 #define LXa_COMMANDSERVICE      "commandservice"
+// [python] ILxCommandService:CommandByIndex    obj Command
+// [python] ILxCommandService:Proto             obj Command
+// [python] ILxCommandService:ProtoFromCommand  obj Command
+// [python] ILxCommandService:Spawn             obj Command
+// [python] ILxCommandService:SpawnFromCommand  obj Command
+// [python] ILxCommandService:SpawnFromString   obj Command
+// [python] ILxCommandService:SpawnUnaliased    obj Command
+// [python] ILxCommandService:RefireCmd         obj Command
+// [python] ILxCommandService:SpawnImplicitScript       obj Command
+
+// [python] ILxCommandService:GetToggleArgState obj Value
+// [python] ILxCommandService:Query             obj ValueArray
+// [python] ILxCommandService:CreateQueryObject obj ValueArray
+// [python] ILxCommandService:QueryArgString    obj ValueArray
+
+// [python] ILxCommandService:SandboxObjectByCommand    obj Unknown
+// [python] ILxCommandService:SandboxObjectByIndex      obj Unknown
+
+// [python] ILxCommandService:IsAliased                 bool
+// [python] ILxCommandService:IsBooleanArgString        bool
+// [python] ILxCommandService:IsContainer               bool
+// [python] ILxCommandService:IsGlobalInteractionOK     bool
+// [python] ILxCommandService:IsImplicitScript          bool
+// [python] ILxCommandService:IsToggleArgString         bool
 #define LXiCMDSTATUS_INITIALIZING                       0
 #define LXiCMDSTATUS_NORMAL                             1
 #define LXiCMDSTATUS_EXECUTING_STARTUP_COMMANDS         2
@@ -1032,6 +1311,8 @@ typedef struct vt_ILxCommandPostEnd {
 
 #define LXfCMDBLOCK_POSTMODE            0x100000
 #define LXfCMDBLOCK_STEPUNDO            0x200000
+
+#define LXfCMDBLOCK_TOP_OF_CYCLE_SAFE   0x400000
 #define LXfCMDSANDBOX_ALLOW_UI  1
 #define LXiCMDENTRYTYPE_INVALID         0
 #define LXiCMDENTRYTYPE_COMMAND         1

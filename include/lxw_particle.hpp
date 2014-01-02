@@ -1,7 +1,7 @@
 /*
  * C++ wrapper for lxparticle.h
  *
- *	Copyright (c) 2008-2012 Luxology LLC
+ *	Copyright (c) 2008-2013 Luxology LLC
  *	
  *	Permission is hereby granted, free of charge, to any person obtaining a
  *	copy of this software and associated documentation files (the "Software"),
@@ -30,23 +30,68 @@
 
 #include <lxparticle.h>
 #include <lx_wrap.hpp>
+#include <string>
 
 namespace lx {
+    static const LXtGUID guid_ParticleService = {0x34928BF8,0x3917,0x47EF,0x83,0x50,0xDD,0x3A,0x3D,0xDE,0xD7,0xEE};
     static const LXtGUID guid_ParticleFilter = {0x04A3C0C5,0x1C5C,0x43F5,0x85,0x59,0xAC,0xF3,0xBA,0xE7,0x9C,0x0B};
-    static const LXtGUID guid_ParticleFilterItem = {0xEF31BA82,0x8EC4,0x46C5,0x9A,0x28,0x27,0x85,0xBE,0x78,0xD8,0x61};
+    static const LXtGUID guid_PointCacheItem = {0x10930C44,0x62D3,0x42D1,0xBD,0x6B,0x8F,0xE0,0x15,0xD9,0xC5,0x66};
     static const LXtGUID guid_ParticleEvalFrame = {0x1AC26263,0xA422,0x4B17,0xA9,0x29,0x2F,0x61,0x60,0x37,0x75,0x4F};
     static const LXtGUID guid_ParticleItem = {0xBA13DD5D,0x5093,0x4D0D,0xBE,0xFE,0x11,0x9A,0xD4,0xF1,0xFA,0xCB};
+    static const LXtGUID guid_ParticleCoOperator = {0xDFBCF67B,0xC327,0x496E,0x8A,0x30,0x20,0xB6,0x4C,0x31,0xA9,0xBB};
     static const LXtGUID guid_ReplicatorEnumerator = {0x01EC90A9,0x924F,0x4475,0xBA,0x6A,0xFF,0xF8,0xA2,0x69,0x1C,0xD5};
+};
+
+class CLxLoc_ParticleService : public CLxLocalizedService
+{
+  ILxParticleServiceID m_loc;
+public:
+  void _init() {m_loc=0;}
+  CLxLoc_ParticleService() {_init();set();}
+ ~CLxLoc_ParticleService() {}
+  void set() {if(!m_loc)m_loc=reinterpret_cast<ILxParticleServiceID>(lx::GetGlobal(&lx::guid_ParticleService));}
+    LxResult
+  ScriptQuery (void **ppvObj)
+  {
+    return m_loc[0]->ScriptQuery (m_loc,ppvObj);
+  }
+    LxResult
+  GetReplicatorEnumerator (ILxUnknownID replicatorItem, void **ppvObj)
+  {
+    return m_loc[0]->GetReplicatorEnumerator (m_loc,(ILxUnknownID)replicatorItem,ppvObj);
+  }
+    bool
+  GetReplicatorEnumerator (ILxUnknownID replicatorItem, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->GetReplicatorEnumerator (m_loc,(ILxUnknownID)replicatorItem,&obj)) && dest.take(obj);
+  }
+    LxResult
+  EnumParticleFeatures (ILxUnknownID item, ILxUnknownID visitor)
+  {
+    return m_loc[0]->EnumParticleFeatures (m_loc,(ILxUnknownID)item,(ILxUnknownID)visitor);
+  }
+    LxResult
+  FeatureIdent (const char **ident)
+  {
+    return m_loc[0]->FeatureIdent (m_loc,ident);
+  }
+    LxResult
+  FeatureOffset (unsigned *offset)
+  {
+    return m_loc[0]->FeatureOffset (m_loc,offset);
+  }
 };
 
 class CLxImpl_ParticleFilter {
   public:
     virtual ~CLxImpl_ParticleFilter() {}
     virtual LXtObjectID
-      pfilt_Vertex (void)
+      pfilt_Vertex (ILxUnknownID full)
         = 0;
     virtual unsigned
-      pfilt_Type (void)
+      pfilt_Flags (void)
         = 0;
     virtual LxResult
       pfilt_Initialize (ILxUnknownID vertex, ILxUnknownID frame, double time)
@@ -58,29 +103,45 @@ class CLxImpl_ParticleFilter {
       pfilt_Cleanup (void)
         { }
     virtual LxResult
-      pfilt_Frame (void)
+      pfilt_Frame (unsigned stage)
         { return LXe_NOTIMPL; }
     virtual LxResult
-      pfilt_Run (float **values, unsigned count)
+      pfilt_Run (unsigned stage, float **values, const unsigned *alive, unsigned base, unsigned count)
         { return LXe_NOTIMPL; }
     virtual LxResult
-      pfilt_Particle (float *vertex)
+      pfilt_Particle (unsigned stage, float *vertex)
         { return LXe_NOTIMPL; }
 };
+#define LXxD_ParticleFilter_Vertex LXtObjectID pfilt_Vertex (ILxUnknownID full)
+#define LXxO_ParticleFilter_Vertex LXxD_ParticleFilter_Vertex LXx_OVERRIDE
+#define LXxD_ParticleFilter_Flags unsigned pfilt_Flags (void)
+#define LXxO_ParticleFilter_Flags LXxD_ParticleFilter_Flags LXx_OVERRIDE
+#define LXxD_ParticleFilter_Initialize LxResult pfilt_Initialize (ILxUnknownID vertex, ILxUnknownID frame, double time)
+#define LXxO_ParticleFilter_Initialize LXxD_ParticleFilter_Initialize LXx_OVERRIDE
+#define LXxD_ParticleFilter_Step LxResult pfilt_Step (ILxUnknownID other, double dt)
+#define LXxO_ParticleFilter_Step LXxD_ParticleFilter_Step LXx_OVERRIDE
+#define LXxD_ParticleFilter_Cleanup void pfilt_Cleanup (void)
+#define LXxO_ParticleFilter_Cleanup LXxD_ParticleFilter_Cleanup LXx_OVERRIDE
+#define LXxD_ParticleFilter_Frame LxResult pfilt_Frame (unsigned stage)
+#define LXxO_ParticleFilter_Frame LXxD_ParticleFilter_Frame LXx_OVERRIDE
+#define LXxD_ParticleFilter_Run LxResult pfilt_Run (unsigned stage, float **values, const unsigned *alive, unsigned base, unsigned count)
+#define LXxO_ParticleFilter_Run LXxD_ParticleFilter_Run LXx_OVERRIDE
+#define LXxD_ParticleFilter_Particle LxResult pfilt_Particle (unsigned stage, float *vertex)
+#define LXxO_ParticleFilter_Particle LXxD_ParticleFilter_Particle LXx_OVERRIDE
 template <class T>
 class CLxIfc_ParticleFilter : public CLxInterface
 {
     static LXtObjectID
-  Vertex (LXtObjectID wcom)
+  Vertex (LXtObjectID wcom, LXtObjectID full)
   {
     LXCWxINST (CLxImpl_ParticleFilter, loc);
-    return loc->pfilt_Vertex ();
+    return loc->pfilt_Vertex ((ILxUnknownID)full);
   }
     static unsigned
-  Type (LXtObjectID wcom)
+  Flags (LXtObjectID wcom)
   {
     LXCWxINST (CLxImpl_ParticleFilter, loc);
-    return loc->pfilt_Type ();
+    return loc->pfilt_Flags ();
   }
     static LxResult
   Initialize (LXtObjectID wcom, LXtObjectID vertex, LXtObjectID frame, double time)
@@ -105,27 +166,27 @@ class CLxIfc_ParticleFilter : public CLxInterface
     loc->pfilt_Cleanup ();
   }
     static LxResult
-  Frame (LXtObjectID wcom)
+  Frame (LXtObjectID wcom, unsigned stage)
   {
     LXCWxINST (CLxImpl_ParticleFilter, loc);
     try {
-      return loc->pfilt_Frame ();
+      return loc->pfilt_Frame (stage);
     } catch (LxResult rc) { return rc; }
   }
     static LxResult
-  Run (LXtObjectID wcom, float **values, unsigned count)
+  Run (LXtObjectID wcom, unsigned stage, float **values, const unsigned *alive, unsigned base, unsigned count)
   {
     LXCWxINST (CLxImpl_ParticleFilter, loc);
     try {
-      return loc->pfilt_Run (values,count);
+      return loc->pfilt_Run (stage,values,alive,base,count);
     } catch (LxResult rc) { return rc; }
   }
     static LxResult
-  Particle (LXtObjectID wcom, float *vertex)
+  Particle (LXtObjectID wcom, unsigned stage, float *vertex)
   {
     LXCWxINST (CLxImpl_ParticleFilter, loc);
     try {
-      return loc->pfilt_Particle (vertex);
+      return loc->pfilt_Particle (stage,vertex);
     } catch (LxResult rc) { return rc; }
   }
   ILxParticleFilter vt;
@@ -133,7 +194,7 @@ public:
   CLxIfc_ParticleFilter ()
   {
     vt.Vertex = Vertex;
-    vt.Type = Type;
+    vt.Flags = Flags;
     vt.Initialize = Initialize;
     vt.Step = Step;
     vt.Cleanup = Cleanup;
@@ -153,14 +214,14 @@ public:
   CLxLoc_ParticleFilter(const CLxLoc_ParticleFilter &other) {_init();set(other.m_loc);}
   const LXtGUID * guid() const {return &lx::guid_ParticleFilter;}
     ILxUnknownID
-  Vertex (void)
+  Vertex (ILxUnknownID full)
   {
-    return (ILxUnknownID) m_loc[0]->Vertex (m_loc);
+    return (ILxUnknownID) m_loc[0]->Vertex (m_loc,(ILxUnknownID)full);
   }
     unsigned
-  Type (void)
+  Flags (void)
   {
-    return m_loc[0]->Type (m_loc);
+    return m_loc[0]->Flags (m_loc);
   }
     LxResult
   Initialize (ILxUnknownID vertex, ILxUnknownID frame, double time)
@@ -178,78 +239,120 @@ public:
     m_loc[0]->Cleanup (m_loc);
   }
     LxResult
-  Frame (void)
+  Frame (unsigned stage)
   {
-    return m_loc[0]->Frame (m_loc);
+    return m_loc[0]->Frame (m_loc,stage);
   }
     LxResult
-  Run (float **values, unsigned count)
+  Run (unsigned stage, float **values, const unsigned *alive, unsigned base, unsigned count)
   {
-    return m_loc[0]->Run (m_loc,values,count);
+    return m_loc[0]->Run (m_loc,stage,values,alive,base,count);
   }
     LxResult
-  Particle (float *vertex)
+  Particle (unsigned stage, float *vertex)
   {
-    return m_loc[0]->Particle (m_loc,vertex);
+    return m_loc[0]->Particle (m_loc,stage,vertex);
   }
 };
 
-class CLxImpl_ParticleFilterItem {
+class CLxImpl_PointCacheItem {
   public:
-    virtual ~CLxImpl_ParticleFilterItem() {}
+    virtual ~CLxImpl_PointCacheItem() {}
     virtual LxResult
-      pfi_Prepare (ILxUnknownID eval, unsigned *index)
+      pcache_Prepare (ILxUnknownID eval, unsigned *index)
         { return LXe_NOTIMPL; }
     virtual LxResult
-      pfi_Evaluate (ILxUnknownID attr, unsigned index, void **ppvObj)
+      pcache_Initialize (ILxUnknownID vdesc, ILxUnknownID attr, unsigned index, double time, double sample)
+        { return LXe_NOTIMPL; }
+    virtual LxResult
+      pcache_SaveFrame (ILxUnknownID pobj, double time)
+        { return LXe_NOTIMPL; }
+    virtual LxResult
+      pcache_Cleanup (void)
         { return LXe_NOTIMPL; }
 };
+#define LXxD_PointCacheItem_Prepare LxResult pcache_Prepare (ILxUnknownID eval, unsigned *index)
+#define LXxO_PointCacheItem_Prepare LXxD_PointCacheItem_Prepare LXx_OVERRIDE
+#define LXxD_PointCacheItem_Initialize LxResult pcache_Initialize (ILxUnknownID vdesc, ILxUnknownID attr, unsigned index, double time, double sample)
+#define LXxO_PointCacheItem_Initialize LXxD_PointCacheItem_Initialize LXx_OVERRIDE
+#define LXxD_PointCacheItem_SaveFrame LxResult pcache_SaveFrame (ILxUnknownID pobj, double time)
+#define LXxO_PointCacheItem_SaveFrame LXxD_PointCacheItem_SaveFrame LXx_OVERRIDE
+#define LXxD_PointCacheItem_Cleanup LxResult pcache_Cleanup (void)
+#define LXxO_PointCacheItem_Cleanup LXxD_PointCacheItem_Cleanup LXx_OVERRIDE
 template <class T>
-class CLxIfc_ParticleFilterItem : public CLxInterface
+class CLxIfc_PointCacheItem : public CLxInterface
 {
     static LxResult
   Prepare (LXtObjectID wcom, LXtObjectID eval, unsigned *index)
   {
-    LXCWxINST (CLxImpl_ParticleFilterItem, loc);
+    LXCWxINST (CLxImpl_PointCacheItem, loc);
     try {
-      return loc->pfi_Prepare ((ILxUnknownID)eval,index);
+      return loc->pcache_Prepare ((ILxUnknownID)eval,index);
     } catch (LxResult rc) { return rc; }
   }
     static LxResult
-  Evaluate (LXtObjectID wcom, LXtObjectID attr, unsigned index, void **ppvObj)
+  Initialize (LXtObjectID wcom, LXtObjectID vdesc, LXtObjectID attr, unsigned index, double time, double sample)
   {
-    LXCWxINST (CLxImpl_ParticleFilterItem, loc);
+    LXCWxINST (CLxImpl_PointCacheItem, loc);
     try {
-      return loc->pfi_Evaluate ((ILxUnknownID)attr,index,ppvObj);
+      return loc->pcache_Initialize ((ILxUnknownID)vdesc,(ILxUnknownID)attr,index,time,sample);
     } catch (LxResult rc) { return rc; }
   }
-  ILxParticleFilterItem vt;
+    static LxResult
+  SaveFrame (LXtObjectID wcom, LXtObjectID pobj, double time)
+  {
+    LXCWxINST (CLxImpl_PointCacheItem, loc);
+    try {
+      return loc->pcache_SaveFrame ((ILxUnknownID)pobj,time);
+    } catch (LxResult rc) { return rc; }
+  }
+    static LxResult
+  Cleanup (LXtObjectID wcom)
+  {
+    LXCWxINST (CLxImpl_PointCacheItem, loc);
+    try {
+      return loc->pcache_Cleanup ();
+    } catch (LxResult rc) { return rc; }
+  }
+  ILxPointCacheItem vt;
 public:
-  CLxIfc_ParticleFilterItem ()
+  CLxIfc_PointCacheItem ()
   {
     vt.Prepare = Prepare;
-    vt.Evaluate = Evaluate;
+    vt.Initialize = Initialize;
+    vt.SaveFrame = SaveFrame;
+    vt.Cleanup = Cleanup;
     vTable = &vt.iunk;
-    iid = &lx::guid_ParticleFilterItem;
+    iid = &lx::guid_PointCacheItem;
   }
 };
-class CLxLoc_ParticleFilterItem : public CLxLocalize<ILxParticleFilterItemID>
+class CLxLoc_PointCacheItem : public CLxLocalize<ILxPointCacheItemID>
 {
 public:
   void _init() {m_loc=0;}
-  CLxLoc_ParticleFilterItem() {_init();}
-  CLxLoc_ParticleFilterItem(ILxUnknownID obj) {_init();set(obj);}
-  CLxLoc_ParticleFilterItem(const CLxLoc_ParticleFilterItem &other) {_init();set(other.m_loc);}
-  const LXtGUID * guid() const {return &lx::guid_ParticleFilterItem;}
+  CLxLoc_PointCacheItem() {_init();}
+  CLxLoc_PointCacheItem(ILxUnknownID obj) {_init();set(obj);}
+  CLxLoc_PointCacheItem(const CLxLoc_PointCacheItem &other) {_init();set(other.m_loc);}
+  const LXtGUID * guid() const {return &lx::guid_PointCacheItem;}
     LxResult
   Prepare (ILxUnknownID eval, unsigned *index)
   {
     return m_loc[0]->Prepare (m_loc,(ILxUnknownID)eval,index);
   }
     LxResult
-  Evaluate (ILxUnknownID attr, unsigned index, void **ppvObj)
+  Initialize (ILxUnknownID vdesc, ILxUnknownID attr, unsigned index, double time, double sample)
   {
-    return m_loc[0]->Evaluate (m_loc,(ILxUnknownID)attr,index,ppvObj);
+    return m_loc[0]->Initialize (m_loc,(ILxUnknownID)vdesc,(ILxUnknownID)attr,index,time,sample);
+  }
+    LxResult
+  SaveFrame (ILxUnknownID pobj, double time)
+  {
+    return m_loc[0]->SaveFrame (m_loc,(ILxUnknownID)pobj,time);
+  }
+    LxResult
+  Cleanup (void)
+  {
+    return m_loc[0]->Cleanup (m_loc);
   }
 };
 
@@ -311,6 +414,11 @@ public:
   {
     return m_loc[0]->VectorRun (m_loc,first,values,count);
   }
+    LxResult
+  Neighbors (LXtFVector pos, double maxDist, int maxCount, unsigned *index, double *dist, unsigned *count)
+  {
+    return m_loc[0]->Neighbors (m_loc,pos,maxDist,maxCount,index,dist,count);
+  }
 };
 
 class CLxImpl_ParticleItem {
@@ -323,6 +431,10 @@ class CLxImpl_ParticleItem {
       prti_Evaluate (ILxUnknownID attr, unsigned index, void **ppvObj)
         { return LXe_NOTIMPL; }
 };
+#define LXxD_ParticleItem_Prepare LxResult prti_Prepare (ILxUnknownID eval, unsigned *index)
+#define LXxO_ParticleItem_Prepare LXxD_ParticleItem_Prepare LXx_OVERRIDE
+#define LXxD_ParticleItem_Evaluate LxResult prti_Evaluate (ILxUnknownID attr, unsigned index, void **ppvObj)
+#define LXxO_ParticleItem_Evaluate LXxD_ParticleItem_Evaluate LXx_OVERRIDE
 template <class T>
 class CLxIfc_ParticleItem : public CLxInterface
 {
@@ -370,6 +482,114 @@ public:
   {
     return m_loc[0]->Evaluate (m_loc,(ILxUnknownID)attr,index,ppvObj);
   }
+    bool
+  Evaluate (ILxUnknownID attr, unsigned index, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Evaluate (m_loc,(ILxUnknownID)attr,index,&obj)) && dest.take(obj);
+  }
+};
+
+class CLxImpl_ParticleCoOperator {
+  public:
+    virtual ~CLxImpl_ParticleCoOperator() {}
+    virtual LxResult
+      pcoi_Initialize (ILxUnknownID eval)
+        { return LXe_NOTIMPL; }
+    virtual LxResult
+      pcoi_Cleanup (void)
+        { return LXe_NOTIMPL; }
+    virtual LxResult
+      pcoi_Step (double dT)
+        { return LXe_NOTIMPL; }
+    virtual LxResult
+      pcoi_Particle (void)
+        { return LXe_NOTIMPL; }
+};
+#define LXxD_ParticleCoOperator_Initialize LxResult pcoi_Initialize (ILxUnknownID eval)
+#define LXxO_ParticleCoOperator_Initialize LXxD_ParticleCoOperator_Initialize LXx_OVERRIDE
+#define LXxD_ParticleCoOperator_Cleanup LxResult pcoi_Cleanup (void)
+#define LXxO_ParticleCoOperator_Cleanup LXxD_ParticleCoOperator_Cleanup LXx_OVERRIDE
+#define LXxD_ParticleCoOperator_Step LxResult pcoi_Step (double dT)
+#define LXxO_ParticleCoOperator_Step LXxD_ParticleCoOperator_Step LXx_OVERRIDE
+#define LXxD_ParticleCoOperator_Particle LxResult pcoi_Particle (void)
+#define LXxO_ParticleCoOperator_Particle LXxD_ParticleCoOperator_Particle LXx_OVERRIDE
+template <class T>
+class CLxIfc_ParticleCoOperator : public CLxInterface
+{
+    static LxResult
+  Initialize (LXtObjectID wcom, LXtObjectID eval)
+  {
+    LXCWxINST (CLxImpl_ParticleCoOperator, loc);
+    try {
+      return loc->pcoi_Initialize ((ILxUnknownID)eval);
+    } catch (LxResult rc) { return rc; }
+  }
+    static LxResult
+  Cleanup (LXtObjectID wcom)
+  {
+    LXCWxINST (CLxImpl_ParticleCoOperator, loc);
+    try {
+      return loc->pcoi_Cleanup ();
+    } catch (LxResult rc) { return rc; }
+  }
+    static LxResult
+  Step (LXtObjectID wcom, double dT)
+  {
+    LXCWxINST (CLxImpl_ParticleCoOperator, loc);
+    try {
+      return loc->pcoi_Step (dT);
+    } catch (LxResult rc) { return rc; }
+  }
+    static LxResult
+  Particle (LXtObjectID wcom)
+  {
+    LXCWxINST (CLxImpl_ParticleCoOperator, loc);
+    try {
+      return loc->pcoi_Particle ();
+    } catch (LxResult rc) { return rc; }
+  }
+  ILxParticleCoOperator vt;
+public:
+  CLxIfc_ParticleCoOperator ()
+  {
+    vt.Initialize = Initialize;
+    vt.Cleanup = Cleanup;
+    vt.Step = Step;
+    vt.Particle = Particle;
+    vTable = &vt.iunk;
+    iid = &lx::guid_ParticleCoOperator;
+  }
+};
+class CLxLoc_ParticleCoOperator : public CLxLocalize<ILxParticleCoOperatorID>
+{
+public:
+  void _init() {m_loc=0;}
+  CLxLoc_ParticleCoOperator() {_init();}
+  CLxLoc_ParticleCoOperator(ILxUnknownID obj) {_init();set(obj);}
+  CLxLoc_ParticleCoOperator(const CLxLoc_ParticleCoOperator &other) {_init();set(other.m_loc);}
+  const LXtGUID * guid() const {return &lx::guid_ParticleCoOperator;}
+    LxResult
+  Initialize (ILxUnknownID eval)
+  {
+    return m_loc[0]->Initialize (m_loc,(ILxUnknownID)eval);
+  }
+    LxResult
+  Cleanup (void)
+  {
+    return m_loc[0]->Cleanup (m_loc);
+  }
+    LxResult
+  Step (double dT)
+  {
+    return m_loc[0]->Step (m_loc,dT);
+  }
+    LxResult
+  Particle (void)
+  {
+    return m_loc[0]->Particle (m_loc);
+  }
 };
 
 class CLxLoc_ReplicatorEnumerator : public CLxLocalize<ILxReplicatorEnumeratorID>
@@ -389,6 +609,13 @@ public:
   Item (void **ppvObj)
   {
     return m_loc[0]->Item (m_loc,ppvObj);
+  }
+    bool
+  Item (CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Item (m_loc,&obj)) && dest.take(obj);
   }
     void
   Position (LXtVector pos)

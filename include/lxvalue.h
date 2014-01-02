@@ -1,7 +1,7 @@
 /*
  * LX value module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -64,7 +64,7 @@ typedef struct vt_ILxValueService {
                 int                      value,
                 const LXtTextValueHint  *hint,
                 char                    *buf,
-                unsigned                 bufLen);
+                unsigned                 len);
                 LXxMETHOD(  LxResult,
         TextHintDecode) (
                 LXtObjectID              self,
@@ -76,6 +76,11 @@ typedef struct vt_ILxValueService {
                 LXtObjectID              self,
                 const char              *type,
                 void                   **ppvObj);
+                LXxMETHOD(  LxResult,
+        ValueType) (
+                LXtObjectID              self,
+                const char              *type,
+                unsigned                *valType);
 } ILxValueService;
 typedef struct vt_ILxValue {
         ILxUnknown       iunk;
@@ -121,8 +126,8 @@ typedef struct vt_ILxValue {
                 LXxMETHOD(  LxResult,
         GetString) (
                 LXtObjectID              self,
-                char                    *val,
-                unsigned int             len);
+                char                    *buf,
+                unsigned                 len);
 
                 LXxMETHOD(  LxResult,
         SetString) (
@@ -138,7 +143,7 @@ typedef struct vt_ILxStringConversion {
         Encode) (
                 LXtObjectID              self,
                 char                    *buf,
-                int                      len);
+                unsigned                 len);
 
                 LXxMETHOD( LxResult,
         Decode) (
@@ -151,7 +156,7 @@ typedef struct vt_ILxStringConversionNice {
         Encode) (
                 LXtObjectID              self,
                 char                    *buf,
-                int                      len);
+                unsigned                 len);
 
                 LXxMETHOD( LxResult,
         Decode) (
@@ -191,7 +196,7 @@ typedef struct vt_ILxValueReference {
         IsSet) (
                 LXtObjectID              self);
 
-                LXxMETHOD( int,
+                LXxMETHOD( LxResult,
         GetObject) (
                 LXtObjectID              self,
                 void                   **ppvObj);
@@ -270,8 +275,8 @@ typedef struct vt_ILxAttributes {
         GetString) (
                 LXtObjectID              self,
                 unsigned int             index,
-                char                    *val,
-                unsigned int             len);
+                char                    *buf,
+                unsigned                 len);
 
                 LXxMETHOD(  LxResult,
         SetString) (
@@ -389,8 +394,8 @@ typedef struct vt_ILxValueArray {
         GetString) (
                 LXtObjectID               self,
                 unsigned int              index,
-                char                     *value,
-                unsigned int              len );
+                char                     *buf,
+                unsigned                  len );
                 LXxMETHOD(  LxResult,
         FirstUnique) (
                 LXtObjectID               self,
@@ -488,12 +493,12 @@ typedef struct vt_ILxMatrix {
                 LXxMETHOD( LxResult,
         Multiply3) (
                 LXtObjectID              self,
-                LXtMatrix                mat3);
+                const LXtMatrix          mat3);
 
                 LXxMETHOD( LxResult,
         Multiply4) (
                 LXtObjectID              self,
-                LXtMatrix4               mat4);
+                const LXtMatrix4         mat4);
 
                 LXxMETHOD( LxResult,
         Invert) (
@@ -513,8 +518,10 @@ typedef struct vt_ILxVisitor {
 #define LXu_VALUESERVICE        "DD2C3059-2CD0-4c7d-860C-CF353CFB2F92"
 #define LXa_VALUESERVICE        "valueservice"
 
-#define LXe_OK_INEXACT_MATCH    LXxGOODCODE( LXeSYS_VALUE,   1) // Good, not Fail
-#define LXe_OK_NO_CHOICES       LXxGOODCODE( LXeSYS_VALUE,   2) // Good, not Fail
+#define LXe_OK_INEXACT_MATCH    LXxGOODCODE (LXeSYS_VALUE, 1)
+#define LXe_OK_NO_CHOICES       LXxGOODCODE (LXeSYS_VALUE, 2)
+
+// [python] ILxValueService:CreateValue obj Value
 #define LXu_VALUE       "62E1DBE9-2FFE-4B5C-B286-E54E79415303"
 #define LXa_VALUE       "value"
 // [export]  ILxValue
@@ -526,6 +533,7 @@ typedef struct vt_ILxVisitor {
 // [const]   ILxValue:GetString
 // [const]   ILxValue:Intrinsic
 // [default] ILxValue:Intrinsic = 0
+// [python]  ILxValue:Clone     obj Value
 #define LXu_STRINGCONVERSION            "5CB3EEDB-E4E0-499E-B0BA-A7FB51BABE3C"
 // [export] ILxStringConversion str
 // [local]  ILxStringConversion
@@ -544,6 +552,9 @@ typedef struct vt_ILxVisitor {
 // [local]  ILxValueReference
 // [const]  ILxValueReference:IsSet
 // [const]  ILxValueReference:GetObject
+
+// [python] ILxValueReference:IsSet     bool
+// [python] ILxValueReference:GetObject obj Unknown
 #define LXu_ATTRIBUTES  "117957D0-5A13-11D7-A18C-000A95765C9E"
 // [export] ILxAttributes attr
 // [local]  ILxAttributes
@@ -556,6 +567,8 @@ typedef struct vt_ILxVisitor {
 // [const]  ILxAttributes:GetInt
 // [const]  ILxAttributes:GetFlt
 // [const]  ILxAttributes:GetString
+
+// [python] ILxAttributes:Value         obj Unknown
 #define LXi_TYPE_OBJECT         0
 #define LXi_TYPE_INTEGER        1
 #define LXi_TYPE_FLOAT          2
@@ -588,6 +601,11 @@ typedef struct vt_ILxVisitor {
 #define LXsTYPE_DATE            "date"
 #define LXsTYPE_OBJREF          "objref"
 #define LXsTYPE_VERTMAPNAME     "vertmapname"
+#define LXsTYPE_FORCE           "force"
+#define LXsTYPE_ACCELERATION    "acceleration"
+#define LXsTYPE_SPEED           "speed"
+#define LXsTYPE_MASS            "mass"
+#define LXsTYPE_NONE            "none"
 // [default] ILxAttributes:Count = 0
 // [default] ILxAttributes:Hints = 0
 #define LXu_MESSAGE             "DDDBF46A-0865-4AB7-9962-72E7B477FD22"
@@ -598,6 +616,9 @@ typedef struct vt_ILxVisitor {
 #define LXa_VALUEARRAY          "valuearray"
 // [export] ILxValueArray va
 // [local]  ILxValueArray
+
+// [python] ILxValueArray:AddEmptyValue obj Value
+// [python] ILxValueArray:GetValue      obj Value
 #define LXu_SCRIPTQUERY         "0434F07E-AD4A-492f-AD43-3249BD16994D"
 #define LXa_SCRIPTQUERY         "scriptquery"
 // [export] ILxScriptQuery sq

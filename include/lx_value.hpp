@@ -1,7 +1,7 @@
 /*
  * Plug-in SDK Header: C++ User Classes
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -36,19 +36,6 @@ class CLxUser_Value : public CLxLoc_Value
         CLxUser_Value () {}
         CLxUser_Value (ILxUnknownID obj) : CLxLoc_Value (obj) {}
 
-                bool
-        Clone (
-                CLxUser_Value           &value)
-        {
-                LXtObjectID              obj;
-
-                value.clear ();
-                if (LXx_FAIL (CLxLoc_Value::Clone (&obj)))
-                        return false;
-
-                return value.take (obj);
-        }
-
                 int
         Compare (
                 ILxUnknownID             other)
@@ -61,7 +48,7 @@ class CLxUser_Value : public CLxLoc_Value
                 return diff;
         }
                 LxResult
-        sgs_GetString (char *buf, unsigned int len)
+        sgs_GetString (char *buf, unsigned len)
         {
                 return GetString (buf, len);
         }
@@ -147,12 +134,18 @@ class CLxUser_ValueReference : public CLxLoc_ValueReference
         Get (
                 CLxLocalizedObject      &loc)
         {
-                LXtObjectID              obj;
+                return GetObject (loc);
+        }
 
-                if (LXx_FAIL (GetObject (&obj)))
+                bool
+        TakeObject (
+                ILxUnknownID             obj)
+        {
+                if (LXx_FAIL (SetObject (obj)))
                         return false;
 
-                return loc.take (obj);
+                lx::UnkRelease (obj);
+                return true;
         }
 };
 class CLxUser_Attributes : public CLxLoc_Attributes

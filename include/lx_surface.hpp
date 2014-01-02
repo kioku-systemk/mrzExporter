@@ -1,7 +1,7 @@
 /*
  * Plug-in SDK Header: C++ User Classes
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -88,6 +88,22 @@ class CLxUser_SurfaceBin : public CLxLoc_SurfaceBin
     public:
         CLxUser_SurfaceBin () {}
         CLxUser_SurfaceBin (ILxUnknownID obj) : CLxLoc_SurfaceBin (obj) {}
+
+
+};
+class CLxUser_CurveGroup : public CLxLoc_CurveGroup
+{
+    public:
+        CLxUser_CurveGroup () {}
+        CLxUser_CurveGroup (ILxUnknownID obj) : CLxLoc_CurveGroup (obj) {}
+
+
+};
+class CLxUser_Curve : public CLxLoc_Curve
+{
+    public:
+        CLxUser_Curve () {}
+        CLxUser_Curve (ILxUnknownID obj) : CLxLoc_Curve (obj) {}
 
 
 };

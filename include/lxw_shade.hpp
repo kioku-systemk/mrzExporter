@@ -1,7 +1,7 @@
 /*
  * C++ wrapper for lxshade.h
  *
- *	Copyright (c) 2008-2012 Luxology LLC
+ *	Copyright (c) 2008-2013 Luxology LLC
  *	
  *	Permission is hereby granted, free of charge, to any person obtaining a
  *	copy of this software and associated documentation files (the "Software"),
@@ -30,15 +30,18 @@
 
 #include <lxshade.h>
 #include <lx_wrap.hpp>
+#include <string>
 
 namespace lx {
-    static const LXtGUID guid_CompShader = {0x06717e9d,0x610d,0x439f,0x93,0x5b,0xaf,0x08,0x05,0x82,0x7e,0xde};
+    static const LXtGUID guid_CompShader = {0x371e8b57,0x3a1e,0x444b,0x91,0xf8,0x5e,0x43,0xc7,0x5b,0xf1,0xcb};
     static const LXtGUID guid_ValueTextureCustom = {0xDE3298A6,0x1607,0x4338,0xB0,0x61,0x18,0x55,0x28,0xE6,0xFB,0x51};
     static const LXtGUID guid_TextureGL = {0x55CE355E,0xC838,0x4222,0xAB,0xED,0xCB,0xDD,0x80,0x82,0x09,0xAF};
+    static const LXtGUID guid_CompShader1 = {0x06717e9d,0x610d,0x439f,0x93,0x5b,0xaf,0x08,0x05,0x82,0x7e,0xde};
     static const LXtGUID guid_TextureLayer = {0x42369FE7,0x869E,0x4c61,0x8D,0x40,0xAC,0x62,0xE5,0x29,0xDD,0x15};
-    static const LXtGUID guid_CustomMaterial = {0xd0c4106c,0xdfd5,0x4a58,0xad,0x48,0x45,0xb5,0x0a,0xe6,0x3f,0x59};
+    static const LXtGUID guid_CustomMaterial = {0x64e2dd96,0xff7f,0x4c9b,0x96,0x7e,0x24,0xde,0xc8,0x3b,0xfb,0x72};
     static const LXtGUID guid_Texture = {0x6376D941,0x9437,0x4cf8,0xB6,0xEC,0xAB,0x50,0x79,0x1F,0xE6,0x0F};
     static const LXtGUID guid_TextureVMap = {0x0C68AC79,0x993C,0x4823,0x97,0xFA,0xEA,0xD5,0xEF,0xF9,0x7B,0x64};
+    static const LXtGUID guid_CustomMaterial1 = {0xd0c4106c,0xdfd5,0x4a58,0xad,0x48,0x45,0xb5,0x0a,0xe6,0x3f,0x59};
     static const LXtGUID guid_TextureEval = {0x847C1567,0x1725,0x4e98,0xBA,0x09,0xEA,0x1F,0x90,0x49,0xD7,0x6A};
     static const LXtGUID guid_ValueTexture = {0xCA0E3524,0x6F82,0x44B8,0xAA,0xC9,0xDC,0x25,0x8F,0x54,0x8C,0x02};
     static const LXtGUID guid_TextureMask = {0x701E81D3,0xFFA6,0x475a,0xA0,0x2D,0xEC,0xE9,0xAB,0x15,0xB4,0xCD};
@@ -74,7 +77,30 @@ class CLxImpl_CompShader {
     virtual void
       csh_Cleanup (void *data)
         { }
+    virtual int
+      csh_Flags (void)
+        = 0;
 };
+#define LXxD_CompShader_SetupChannels LxResult csh_SetupChannels (ILxUnknownID addChan)
+#define LXxO_CompShader_SetupChannels LXxD_CompShader_SetupChannels LXx_OVERRIDE
+#define LXxD_CompShader_LinkChannels LxResult csh_LinkChannels (ILxUnknownID eval, ILxUnknownID item)
+#define LXxO_CompShader_LinkChannels LXxD_CompShader_LinkChannels LXx_OVERRIDE
+#define LXxD_CompShader_ReadChannels LxResult csh_ReadChannels (ILxUnknownID attr, void **ppvData)
+#define LXxO_CompShader_ReadChannels LXxD_CompShader_ReadChannels LXx_OVERRIDE
+#define LXxD_CompShader_Customize LxResult csh_Customize (ILxUnknownID custom, void **ppvData)
+#define LXxO_CompShader_Customize LXxD_CompShader_Customize LXx_OVERRIDE
+#define LXxD_CompShader_Evaluate void csh_Evaluate (ILxUnknownID vector, ILxUnknownID rayObj, LXpShadeComponents *sCmp, LXpShadeOutput *sOut, void *data)
+#define LXxO_CompShader_Evaluate LXxD_CompShader_Evaluate LXx_OVERRIDE
+#define LXxD_CompShader_SetShadeFlags LxResult csh_SetShadeFlags (LXpShadeFlags *sFlg)
+#define LXxO_CompShader_SetShadeFlags LXxD_CompShader_SetShadeFlags LXx_OVERRIDE
+#define LXxD_CompShader_SetOpaque LxResult csh_SetOpaque (int *opaque)
+#define LXxO_CompShader_SetOpaque LXxD_CompShader_SetOpaque LXx_OVERRIDE
+#define LXxD_CompShader_CustomPacket LxResult csh_CustomPacket (const char **packet)
+#define LXxO_CompShader_CustomPacket LXxD_CompShader_CustomPacket LXx_OVERRIDE
+#define LXxD_CompShader_Cleanup void csh_Cleanup (void *data)
+#define LXxO_CompShader_Cleanup LXxD_CompShader_Cleanup LXx_OVERRIDE
+#define LXxD_CompShader_Flags int csh_Flags (void)
+#define LXxO_CompShader_Flags LXxD_CompShader_Flags LXx_OVERRIDE
 template <class T>
 class CLxIfc_CompShader : public CLxInterface
 {
@@ -146,6 +172,12 @@ class CLxIfc_CompShader : public CLxInterface
     LXCWxINST (CLxImpl_CompShader, loc);
     loc->csh_Cleanup (data);
   }
+    static int
+  Flags (LXtObjectID wcom)
+  {
+    LXCWxINST (CLxImpl_CompShader, loc);
+    return loc->csh_Flags ();
+  }
   ILxCompShader vt;
 public:
   CLxIfc_CompShader ()
@@ -159,8 +191,68 @@ public:
     vt.SetOpaque = SetOpaque;
     vt.CustomPacket = CustomPacket;
     vt.Cleanup = Cleanup;
+    vt.Flags = Flags;
     vTable = &vt.iunk;
     iid = &lx::guid_CompShader;
+  }
+};
+class CLxLoc_CompShader : public CLxLocalize<ILxCompShaderID>
+{
+public:
+  void _init() {m_loc=0;}
+  CLxLoc_CompShader() {_init();}
+  CLxLoc_CompShader(ILxUnknownID obj) {_init();set(obj);}
+  CLxLoc_CompShader(const CLxLoc_CompShader &other) {_init();set(other.m_loc);}
+  const LXtGUID * guid() const {return &lx::guid_CompShader;}
+    LxResult
+  SetupChannels (ILxUnknownID addChan)
+  {
+    return m_loc[0]->SetupChannels (m_loc,(ILxUnknownID)addChan);
+  }
+    LxResult
+  LinkChannels (ILxUnknownID eval, ILxUnknownID item)
+  {
+    return m_loc[0]->LinkChannels (m_loc,(ILxUnknownID)eval,(ILxUnknownID)item);
+  }
+    LxResult
+  ReadChannels (ILxUnknownID attr, void **ppvData)
+  {
+    return m_loc[0]->ReadChannels (m_loc,(ILxUnknownID)attr,ppvData);
+  }
+    LxResult
+  Customize (ILxUnknownID custom, void **ppvData)
+  {
+    return m_loc[0]->Customize (m_loc,(ILxUnknownID)custom,ppvData);
+  }
+    void
+  Evaluate (ILxUnknownID vector, ILxUnknownID rayObj, LXpShadeComponents *sCmp, LXpShadeOutput *sOut, void *data)
+  {
+    m_loc[0]->Evaluate (m_loc,(ILxUnknownID)vector,(ILxUnknownID)rayObj,sCmp,sOut,data);
+  }
+    LxResult
+  SetShadeFlags (LXpShadeFlags *sFlg)
+  {
+    return m_loc[0]->SetShadeFlags (m_loc,sFlg);
+  }
+    LxResult
+  SetOpaque (int *opaque)
+  {
+    return m_loc[0]->SetOpaque (m_loc,opaque);
+  }
+    LxResult
+  CustomPacket (const char **packet)
+  {
+    return m_loc[0]->CustomPacket (m_loc,packet);
+  }
+    void
+  Cleanup (void *data)
+  {
+    m_loc[0]->Cleanup (m_loc,data);
+  }
+    int
+  Flags (void)
+  {
+    return m_loc[0]->Flags (m_loc);
   }
 };
 
@@ -183,6 +275,7 @@ public:
     return m_loc[0]->AddPacket (m_loc,name);
   }
 };
+
 
 
 
@@ -231,7 +324,40 @@ class CLxImpl_CustomMaterial {
     virtual LxResult
       cmt_UpdatePreview (int chanIdx, int *flags)
         { return LXe_NOTIMPL; }
+    virtual int
+      cmt_Flags (void)
+        = 0;
 };
+#define LXxD_CustomMaterial_SetupChannels LxResult cmt_SetupChannels (ILxUnknownID addChan)
+#define LXxO_CustomMaterial_SetupChannels LXxD_CustomMaterial_SetupChannels LXx_OVERRIDE
+#define LXxD_CustomMaterial_LinkChannels LxResult cmt_LinkChannels (ILxUnknownID eval, ILxUnknownID item)
+#define LXxO_CustomMaterial_LinkChannels LXxD_CustomMaterial_LinkChannels LXx_OVERRIDE
+#define LXxD_CustomMaterial_ReadChannels LxResult cmt_ReadChannels (ILxUnknownID attr, void **ppvData)
+#define LXxO_CustomMaterial_ReadChannels LXxD_CustomMaterial_ReadChannels LXx_OVERRIDE
+#define LXxD_CustomMaterial_Customize LxResult cmt_Customize (ILxUnknownID custom, void **ppvData)
+#define LXxO_CustomMaterial_Customize LXxD_CustomMaterial_Customize LXx_OVERRIDE
+#define LXxD_CustomMaterial_MaterialEvaluate void cmt_MaterialEvaluate (ILxUnknownID vector, void *data)
+#define LXxO_CustomMaterial_MaterialEvaluate LXxD_CustomMaterial_MaterialEvaluate LXx_OVERRIDE
+#define LXxD_CustomMaterial_ShaderEvaluate void cmt_ShaderEvaluate (ILxUnknownID vector, ILxUnknownID rayObj, LXpShadeComponents *sCmp, LXpShadeOutput *sOut, void *data)
+#define LXxO_CustomMaterial_ShaderEvaluate LXxD_CustomMaterial_ShaderEvaluate LXx_OVERRIDE
+#define LXxD_CustomMaterial_SetShadeFlags LxResult cmt_SetShadeFlags (LXpShadeFlags *sFlg)
+#define LXxO_CustomMaterial_SetShadeFlags LXxD_CustomMaterial_SetShadeFlags LXx_OVERRIDE
+#define LXxD_CustomMaterial_SetBump LxResult cmt_SetBump (float *bumpAmplitude, int *clearBump)
+#define LXxO_CustomMaterial_SetBump LXxD_CustomMaterial_SetBump LXx_OVERRIDE
+#define LXxD_CustomMaterial_SetDisplacement LxResult cmt_SetDisplacement (float *dispDist)
+#define LXxO_CustomMaterial_SetDisplacement LXxD_CustomMaterial_SetDisplacement LXx_OVERRIDE
+#define LXxD_CustomMaterial_SetOpaque LxResult cmt_SetOpaque (int *opaque)
+#define LXxO_CustomMaterial_SetOpaque LXxD_CustomMaterial_SetOpaque LXx_OVERRIDE
+#define LXxD_CustomMaterial_SetSmoothing LxResult cmt_SetSmoothing (double *smooth, double *angle)
+#define LXxO_CustomMaterial_SetSmoothing LXxD_CustomMaterial_SetSmoothing LXx_OVERRIDE
+#define LXxD_CustomMaterial_CustomPacket LxResult cmt_CustomPacket (const char **packet)
+#define LXxO_CustomMaterial_CustomPacket LXxD_CustomMaterial_CustomPacket LXx_OVERRIDE
+#define LXxD_CustomMaterial_Cleanup void cmt_Cleanup (void *data)
+#define LXxO_CustomMaterial_Cleanup LXxD_CustomMaterial_Cleanup LXx_OVERRIDE
+#define LXxD_CustomMaterial_UpdatePreview LxResult cmt_UpdatePreview (int chanIdx, int *flags)
+#define LXxO_CustomMaterial_UpdatePreview LXxD_CustomMaterial_UpdatePreview LXx_OVERRIDE
+#define LXxD_CustomMaterial_Flags int cmt_Flags (void)
+#define LXxO_CustomMaterial_Flags LXxD_CustomMaterial_Flags LXx_OVERRIDE
 template <class T>
 class CLxIfc_CustomMaterial : public CLxInterface
 {
@@ -341,6 +467,12 @@ class CLxIfc_CustomMaterial : public CLxInterface
       return loc->cmt_UpdatePreview (chanIdx,flags);
     } catch (LxResult rc) { return rc; }
   }
+    static int
+  Flags (LXtObjectID wcom)
+  {
+    LXCWxINST (CLxImpl_CustomMaterial, loc);
+    return loc->cmt_Flags ();
+  }
   ILxCustomMaterial vt;
 public:
   CLxIfc_CustomMaterial ()
@@ -359,8 +491,93 @@ public:
     vt.CustomPacket = CustomPacket;
     vt.Cleanup = Cleanup;
     vt.UpdatePreview = UpdatePreview;
+    vt.Flags = Flags;
     vTable = &vt.iunk;
     iid = &lx::guid_CustomMaterial;
+  }
+};
+class CLxLoc_CustomMaterial : public CLxLocalize<ILxCustomMaterialID>
+{
+public:
+  void _init() {m_loc=0;}
+  CLxLoc_CustomMaterial() {_init();}
+  CLxLoc_CustomMaterial(ILxUnknownID obj) {_init();set(obj);}
+  CLxLoc_CustomMaterial(const CLxLoc_CustomMaterial &other) {_init();set(other.m_loc);}
+  const LXtGUID * guid() const {return &lx::guid_CustomMaterial;}
+    LxResult
+  SetupChannels (ILxUnknownID addChan)
+  {
+    return m_loc[0]->SetupChannels (m_loc,(ILxUnknownID)addChan);
+  }
+    LxResult
+  LinkChannels (ILxUnknownID eval, ILxUnknownID item)
+  {
+    return m_loc[0]->LinkChannels (m_loc,(ILxUnknownID)eval,(ILxUnknownID)item);
+  }
+    LxResult
+  ReadChannels (ILxUnknownID attr, void **ppvData)
+  {
+    return m_loc[0]->ReadChannels (m_loc,(ILxUnknownID)attr,ppvData);
+  }
+    LxResult
+  Customize (ILxUnknownID custom, void **ppvData)
+  {
+    return m_loc[0]->Customize (m_loc,(ILxUnknownID)custom,ppvData);
+  }
+    void
+  MaterialEvaluate (ILxUnknownID vector, void *data)
+  {
+    m_loc[0]->MaterialEvaluate (m_loc,(ILxUnknownID)vector,data);
+  }
+    void
+  ShaderEvaluate (ILxUnknownID vector, ILxUnknownID rayObj, LXpShadeComponents *sCmp, LXpShadeOutput *sOut, void *data)
+  {
+    m_loc[0]->ShaderEvaluate (m_loc,(ILxUnknownID)vector,(ILxUnknownID)rayObj,sCmp,sOut,data);
+  }
+    LxResult
+  SetShadeFlags (LXpShadeFlags *sFlg)
+  {
+    return m_loc[0]->SetShadeFlags (m_loc,sFlg);
+  }
+    LxResult
+  SetBump (float *bumpAmplitude, int *clearBump)
+  {
+    return m_loc[0]->SetBump (m_loc,bumpAmplitude,clearBump);
+  }
+    LxResult
+  SetDisplacement (float *dispDist)
+  {
+    return m_loc[0]->SetDisplacement (m_loc,dispDist);
+  }
+    LxResult
+  SetOpaque (int *opaque)
+  {
+    return m_loc[0]->SetOpaque (m_loc,opaque);
+  }
+    LxResult
+  SetSmoothing (double *smooth, double *angle)
+  {
+    return m_loc[0]->SetSmoothing (m_loc,smooth,angle);
+  }
+    LxResult
+  CustomPacket (const char **packet)
+  {
+    return m_loc[0]->CustomPacket (m_loc,packet);
+  }
+    void
+  Cleanup (void *data)
+  {
+    m_loc[0]->Cleanup (m_loc,data);
+  }
+    LxResult
+  UpdatePreview (int chanIdx, int *flags)
+  {
+    return m_loc[0]->UpdatePreview (m_loc,chanIdx,flags);
+  }
+    int
+  Flags (void)
+  {
+    return m_loc[0]->Flags (m_loc);
   }
 };
 
@@ -377,6 +594,13 @@ public:
   {
     return m_loc[0]->Locator (m_loc,ppvObj);
   }
+    bool
+  Locator (CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Locator (m_loc,&obj)) && dest.take(obj);
+  }
     LxResult
   SetLocator (ILxUnknownID tloc)
   {
@@ -386,6 +610,13 @@ public:
   Image (void **ppvObj)
   {
     return m_loc[0]->Image (m_loc,ppvObj);
+  }
+    bool
+  Image (CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Image (m_loc,&obj)) && dest.take(obj);
   }
     LxResult
   SetImage (ILxUnknownID img)
@@ -401,6 +632,13 @@ public:
   EvalImage (ILxUnknownID scene, void **ppvObj)
   {
     return m_loc[0]->EvalImage (m_loc,(ILxUnknownID)scene,ppvObj);
+  }
+    bool
+  EvalImage (ILxUnknownID scene, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->EvalImage (m_loc,(ILxUnknownID)scene,&obj)) && dest.take(obj);
   }
     int
   LocatorProjectionMode (double time)
@@ -426,6 +664,7 @@ public:
 
 
 
+
 class CLxImpl_ValueTexture {
   public:
     virtual ~CLxImpl_ValueTexture() {}
@@ -448,6 +687,18 @@ class CLxImpl_ValueTexture {
       vtx_Cleanup (void *data)
         { }
 };
+#define LXxD_ValueTexture_SetupChannels LxResult vtx_SetupChannels (ILxUnknownID addChan)
+#define LXxO_ValueTexture_SetupChannels LXxD_ValueTexture_SetupChannels LXx_OVERRIDE
+#define LXxD_ValueTexture_LinkChannels LxResult vtx_LinkChannels (ILxUnknownID eval, ILxUnknownID item)
+#define LXxO_ValueTexture_LinkChannels LXxD_ValueTexture_LinkChannels LXx_OVERRIDE
+#define LXxD_ValueTexture_ReadChannels LxResult vtx_ReadChannels (ILxUnknownID attr, void **ppvData)
+#define LXxO_ValueTexture_ReadChannels LXxD_ValueTexture_ReadChannels LXx_OVERRIDE
+#define LXxD_ValueTexture_Customize LxResult vtx_Customize (ILxUnknownID custom, void **ppvData)
+#define LXxO_ValueTexture_Customize LXxD_ValueTexture_Customize LXx_OVERRIDE
+#define LXxD_ValueTexture_Evaluate void vtx_Evaluate (ILxUnknownID vector, LXpTextureOutput *tOut, void *data)
+#define LXxO_ValueTexture_Evaluate LXxD_ValueTexture_Evaluate LXx_OVERRIDE
+#define LXxD_ValueTexture_Cleanup void vtx_Cleanup (void *data)
+#define LXxO_ValueTexture_Cleanup LXxD_ValueTexture_Cleanup LXx_OVERRIDE
 template <class T>
 class CLxIfc_ValueTexture : public CLxInterface
 {
@@ -507,6 +758,45 @@ public:
     vt.Cleanup = Cleanup;
     vTable = &vt.iunk;
     iid = &lx::guid_ValueTexture;
+  }
+};
+class CLxLoc_ValueTexture : public CLxLocalize<ILxValueTextureID>
+{
+public:
+  void _init() {m_loc=0;}
+  CLxLoc_ValueTexture() {_init();}
+  CLxLoc_ValueTexture(ILxUnknownID obj) {_init();set(obj);}
+  CLxLoc_ValueTexture(const CLxLoc_ValueTexture &other) {_init();set(other.m_loc);}
+  const LXtGUID * guid() const {return &lx::guid_ValueTexture;}
+    LxResult
+  SetupChannels (ILxUnknownID addChan)
+  {
+    return m_loc[0]->SetupChannels (m_loc,(ILxUnknownID)addChan);
+  }
+    LxResult
+  LinkChannels (ILxUnknownID eval, ILxUnknownID item)
+  {
+    return m_loc[0]->LinkChannels (m_loc,(ILxUnknownID)eval,(ILxUnknownID)item);
+  }
+    LxResult
+  ReadChannels (ILxUnknownID attr, void **ppvData)
+  {
+    return m_loc[0]->ReadChannels (m_loc,(ILxUnknownID)attr,ppvData);
+  }
+    LxResult
+  Customize (ILxUnknownID custom, void **ppvData)
+  {
+    return m_loc[0]->Customize (m_loc,(ILxUnknownID)custom,ppvData);
+  }
+    void
+  Evaluate (ILxUnknownID vector, LXpTextureOutput *tOut, void *data)
+  {
+    m_loc[0]->Evaluate (m_loc,(ILxUnknownID)vector,tOut,data);
+  }
+    void
+  Cleanup (void *data)
+  {
+    m_loc[0]->Cleanup (m_loc,data);
   }
 };
 

@@ -1,7 +1,7 @@
 /*
  * Plug-in SDK Header: C++ User Classes
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -262,6 +262,43 @@ class CLxUser_Scene : public CLxLoc_Scene
                         return false;
 
                 return item.take (obj);
+        }
+                int
+        NRenderCameras ()
+        {
+                int                      n;
+
+                if (LXx_OK (RenderCameraCount (&n)))
+                        return n;
+                else
+                        return 0;
+        }
+
+                bool
+        GetRenderCameraByIndex (
+                int                      index,
+                CLxLoc_Item             &item)
+        {
+                LXtObjectID              obj;
+
+                if (LXx_FAIL (RenderCameraByIndex (index, &obj)))
+                        return false;
+
+                return item.take (obj);
+        }
+                int
+        GetRenderCameraIndex (
+                CLxLoc_Evaluation        eval)
+        {
+                ILxEvaluationID          ev;
+                int                      i;
+
+                eval.get ((void **)&ev);
+
+                if (LXx_OK (RenderCameraIndex ((ILxUnknownID)ev, &i)))
+                        return i;
+                else
+                        return 0;
         }
 };
 class CLxUser_Item : public CLxLoc_Item

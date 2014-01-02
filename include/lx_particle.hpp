@@ -1,7 +1,7 @@
 /*
  * Plug-in SDK Header: C++ User Classes
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -28,6 +28,7 @@
 #define LXUSER_particle_HPP
 
 #include <lxw_particle.hpp>
+#include <lxw_item.hpp>
 #include <lx_visitor.hpp>
 
 class CLxUser_ParticleItem : public CLxLoc_ParticleItem
@@ -98,15 +99,36 @@ class CLxUser_ParticleFilter : public CLxLoc_ParticleFilter
 
 
 };
-class CLxUser_ParticleFilterItem : public CLxLoc_ParticleFilterItem
+class CLxUser_ParticleCoOperator : public CLxLoc_ParticleCoOperator
 {
     public:
-        CLxUser_ParticleFilterItem () {}
-        CLxUser_ParticleFilterItem (ILxUnknownID obj) : CLxLoc_ParticleFilterItem (obj) {}
+        CLxUser_ParticleCoOperator () {}
+        CLxUser_ParticleCoOperator (ILxUnknownID obj) : CLxLoc_ParticleCoOperator (obj) {}
 
 
 };
+class CLxUser_PointCacheItem : public CLxLoc_PointCacheItem
+{
+    public:
+        CLxUser_PointCacheItem () {}
+        CLxUser_PointCacheItem (ILxUnknownID obj) : CLxLoc_PointCacheItem (obj) {}
 
+
+};
+class CLxUser_ParticleService : public CLxLoc_ParticleService
+{
+    public:
+                LxResult
+        EnumFeatures (
+                ILxUnknownID             item,
+                CLxImpl_AbstractVisitor *visitor)
+        {
+                CLxInst_OneVisitor<CLxGenericVisitor>  gv;
+
+                gv.loc.vis = visitor;
+                return EnumParticleFeatures (item, gv);
+        }
+};
 
 
 

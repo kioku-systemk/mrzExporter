@@ -1,7 +1,7 @@
 /*
  * LX toolui module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -36,10 +36,10 @@ typedef struct vt_ILxPaintBrushPacket ** ILxPaintBrushPacketID;
 typedef struct vt_ILxPaintInkPacket ** ILxPaintInkPacketID;
 typedef struct vt_ILxPaintNozzlePacket ** ILxPaintNozzlePacketID;
 #include <lxcom.h>
-#include <lxresult.h>
 #include <lxvalue.h>
 #include <lxvector.h>
 #include <lximage.h>
+#include <lxmesh.h>
 
 
 typedef struct st_LXpToolViewEvent {
@@ -80,22 +80,22 @@ typedef struct st_LXpToolColor {
         float            bg[4]; 
 } LXpToolColor;
 typedef struct st_LXtHitPolygon {
-        LXtPolID                 pol;
+        LXtPolygonID             pol;
         LXtVector                pos;
         LXtVector                nrm;
         float                    uv[2];
         float                    cosine;
         float                    disp;
-        void                    *surf;
+        LXtObjectID              item;
         void                    *mbin;
 } LXtHitPolygon;
 typedef struct st_LXtHitEdge {
-        LXtOldEdgeID             edge;
+        LXtEdgeID                edge;
         LXtVector                pos;
         float                    t;
 } LXtHitEdge;
 typedef struct st_LXtHitVertex {
-        LXtPntID                 vrt;
+        LXtPointID               vrt;
         LXtVector                pos;
 } LXtHitVertex;
 typedef struct st_LXpToolHitEvent {
@@ -140,10 +140,10 @@ typedef struct st_LXpToolImage {
 } LXpToolImage;
 typedef struct st_LXpToolSnapElement {
         LXtMeshID                mesh;
-        LXtVMapID                vmap;
+        LXtMeshMapID             vmap;
         LXtID4                   type;
-        LXtPolID                 pol;
-        LXtPntID                 vrt0, vrt1;
+        LXtPolygonID             pol;
+        LXtPointID               vrt0, vrt1;
         LXtVector                pos;
         double                   cx, cy;
         double                   dist;
@@ -326,6 +326,7 @@ typedef ILxVectorListID         ILxStrokePacketID;
 #define LXf_PAINT_INK_PERPIXEL          0x01
 #define LXf_PAINT_INK_3D                0x02
 #define LXf_PAINT_INK_STAMP             0x04
+#define LXf_PAINT_INK_REPLACE           0x08
 #define LXu_PAINTINKPACKET              "340EE412-232D-4619-974D-7E59C7B39353"
 #define LXa_PAINTINKPACKET              "PaintInkPacket"
 // [local]  ILxPaintInkPacket

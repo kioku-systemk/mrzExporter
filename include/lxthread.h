@@ -1,7 +1,7 @@
 /*
  * LX mt module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -40,6 +40,7 @@ typedef struct vt_ILxThreadSlot ** ILxThreadSlotID;
 typedef struct vt_ILxThreadSlotClient ** ILxThreadSlotClientID;
 typedef struct vt_ILxSharedWork ** ILxSharedWorkID;
 typedef struct vt_ILxThreadRangeWorker ** ILxThreadRangeWorkerID;
+typedef struct vt_ILxWaterfall ** ILxWaterfallID;
 #include <lxcom.h>
 #include <stdlib.h>
 
@@ -79,42 +80,53 @@ typedef struct vt_ILxThreadService {
         ILxUnknown       iunk;
                 LXxMETHOD ( LxResult,
         CreateMutex) (
-                LXtObjectID              xobj,
+                LXtObjectID              self,
                 void                   **ppvObj);
                 LXxMETHOD ( LxResult,
         CreateCS) (
-                LXtObjectID              xobj,
+                LXtObjectID              self,
                 void                   **ppvObj);
                 LXxMETHOD ( LxResult, 
         CreateGroup) (
-                LXtObjectID              xobj,
-                void                    **ppvObj);
+                LXtObjectID              self,
+                void                   **ppvObj);
                 LXxMETHOD ( unsigned int,
         NumProcs) (
-                LXtObjectID              xobj);
+                LXtObjectID              self);
 
                 LXxMETHOD ( unsigned int,
         IsMainThread) (
-                LXtObjectID              xobj);
+                LXtObjectID              self);
 
                 LXxMETHOD ( LxResult, 
         CreateSlot) (
-                LXtObjectID              xobj,
+                LXtObjectID              self,
                 size_t                   size,
                 LXtObjectID              client,
                 void                    **ppvObj);
                 LXxMETHOD ( LxResult, 
         ProcessShared) (
-                LXtObjectID              xobj,
+                LXtObjectID              self,
                 LXtObjectID              shared);
 
                 LXxMETHOD ( LxResult,
         ProcessRange) (
-                LXtObjectID              xobj,
+                LXtObjectID              self,
                 void                    *data,
                 int                      startIndex,
                 int                      endIndex,
                 LXtObjectID              rangeWorker);
+                LXxMETHOD ( LxResult,
+        InitThread) (
+                LXtObjectID               self);
+                LXxMETHOD ( LxResult,
+        CleanupThread) (
+                LXtObjectID               self);
+                LXxMETHOD ( LxResult,
+        ProcessWaterfall) (
+                LXtObjectID              self,
+                LXtObjectID              waterfall,
+                unsigned                 threads);
 } ILxThreadService;
 typedef struct vt_ILxThreadJob {
         ILxUnknown       iunk;
@@ -206,9 +218,34 @@ typedef struct vt_ILxThreadRangeWorker {
                 int                      index,
                 void                    *sharedData);
 } ILxThreadRangeWorker;
+typedef struct vt_ILxWaterfall {
+        ILxUnknown       iunk;
+                LXxMETHOD ( LxResult,
+        Spawn) (
+                LXtObjectID              self,
+                void                   **ppvObj);
+                LXxMETHOD ( unsigned,
+        State) (
+                LXtObjectID              self);
+                LXxMETHOD ( LxResult,
+        ProcessWork) (
+                LXtObjectID              self);
+                LXxMETHOD ( LxResult,
+        GetWork) (
+                LXtObjectID              self);
+                LXxMETHOD ( LxResult,
+        Advance) (
+                LXtObjectID              self);
+} ILxWaterfall;
 
 #define LXu_THREADSERVICE       "0A9D5B42-1DA6-42A4-8FC4-01FCCE939AC4"
 #define LXa_THREADSERVICE       "threadservice"
+// [python] ILxThreadService:CreateCS           obj ThreadMutex
+// [python] ILxThreadService:CreateMutex        obj ThreadMutex
+// [python] ILxThreadService:CreateGroup        obj ThreadGroup
+// [python] ILxThreadService:CreateSlot         obj ThreadSlot
+// [const]  ILxThreadService:InitThread
+// [const]  ILxThreadService:CleanupThread
 
 #define LXu_THREADMUTEX         "7624F6B7-83FD-424F-A68E-0EDD089167CB"
 #define LXa_THREADMUTEX         "threadmutex"
@@ -216,16 +253,20 @@ typedef struct vt_ILxThreadRangeWorker {
 
 #define LXu_THREADJOB           "DE892B0B-A791-4FA5-B85D-46E8CACB695B"
 #define LXa_THREADJOB           "threadjob"
+// [local]  ILxThreadJob
 // [export] ILxThreadJob job
 
 #define LXu_THREADGROUP         "54A9DD48-3AFC-435F-9F17-2EEB6FB46FBA"
 #define LXa_THREADGROUP         "threadgroup"
 // [local]  ILxThreadGroup
+// [python] ILxThreadGroup:Running      bool
 
 #define LXu_WORKLIST            "74568CA9-92C9-4C73-9851-E9169934629A"
 #define LXa_WORKLIST            "worklist"
 // [local]  ILxWorkList
 // [export] ILxWorkList work
+// [python] ILxWorkList:Split   obj WorkList
+// [python] ILxWorkList:IsEmpty bool
 
 #define LXu_THREADSLOT          "365E4616-0FB9-478E-993D-D35282F4C326"
 // [local]  ILxThreadSlot
@@ -237,6 +278,7 @@ typedef struct vt_ILxThreadRangeWorker {
 #define LXu_SHAREDWORK          "4D414F97-35A4-4B26-84FE-0E740C79722C"
 // [local]  ILxSharedWork
 // [export] ILxSharedWork share
+// [python] ILxSharedWork:Spawn         obj SharedWork
 
 #define LXu_THREADRANGEWORKER   "612153FE-572F-4CD6-8033-B905762C3106"
 #define LXa_THREADRANGEWORKER   "threadrangeworker"
@@ -245,6 +287,16 @@ typedef struct vt_ILxThreadRangeWorker {
 #define LXiWLSPLIT_NONE  0
 #define LXiWLSPLIT_ONE   1
 #define LXiWLSPLIT_HALF  2
+#define LXu_WATERFALL           "2B845B2A-06BE-4C90-8E50-58F7FBEEC25E"
+#define LXa_WATERFALL           "waterfall"
+// [local]  ILxWaterfall
+// [export] ILxWaterfall wfall
+// [python] ILxWaterfall:Spawn          obj Waterfall
+
+#define LXiWFALL_DONE            0
+#define LXiWFALL_HASWORK         1
+#define LXiWFALL_NEXT_WORK       2
+#define LXiWFALL_NEXT_STAGE      3
 
  #ifdef __cplusplus
   }

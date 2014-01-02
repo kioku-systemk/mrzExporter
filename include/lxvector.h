@@ -1,7 +1,7 @@
 /*
  * LX vector module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -40,7 +40,6 @@ typedef struct vt_ILxTextureEffect ** ILxTextureEffectID;
 typedef struct vt_ILxPacketEffect ** ILxPacketEffectID;
 #include <lxcom.h>
 #include <lxvmath.h>
-#include <lxmeshOLD.h>
 
 typedef struct st_GenVector *   LXtGenVectorID;
 typedef struct st_GenVector *    LXtSampleVectorID;
@@ -79,7 +78,7 @@ typedef struct st_LXpSampleRay {
         float            wavelength;    // wavelength in nanometers for monochromatic dispersion rays
         int              bounces;       // number of bounces
         int              thread;        // thread number
-        unsigned int     flags;         // ray evaluation flags (see REf_xxx in rays.qq)
+        unsigned int     flags;         // ray evaluation flags
         int              rayID;         // number of this ray (as a uniqueness identifier)
 } LXpSampleRay;
 typedef struct st_LXpSampleClip {
@@ -156,8 +155,11 @@ typedef struct st_LXpSampleStencil {
 typedef struct st_LXpSampleVolume {
         LXtFVector       scatter;
         LXtFVector       absorb;
+        LXtFVector       ambient;
+        LXtFVector       luminosity;
         float            scatterAmt;
         float            absorbAmt;
+        float            luminosityAmt;
         float            attenuate;
         float            shift;
 } LXpSampleVolume;
@@ -210,6 +212,7 @@ typedef struct st_LXpTextureInput {
         int              particleIdx;   // texture particle index in the particle array
         int              particleEval;  // particle context flag set to true when evaluating particles, this can trigger specialised evaluations modes
         float            particleRadius;// particle radius      
+        void            *particleData;
 } LXpTextureInput;
 typedef struct st_LXpTextureOutput {
         int              direct;
@@ -230,6 +233,8 @@ typedef struct st_LXpTextureLocator {
         LXtMatrix        xfrm;
         LXtMatrix        iXfrm;
         LXtMatrix        irXfrm;
+        LXtFVector       textureOffset;
+        float            textureOffsetAmp;
 } LXpTextureLocator;
 typedef struct st_LXpSampleSurfNormal {
         LXtFVector       gNorm;         // geometric normal (without smoothing)
@@ -309,6 +314,17 @@ typedef struct st_LXpFurParms {
         char            *guideTag;      // guide polygon tag
         LXtID4           guideType;     // guide polygon tag type
         void            *guideItem;     // guide mesh item
+        // gradients
+        void            *taprGrad;
+        void            *flexGrad;
+        void            *jitrGrad;
+        void            *clmpGrad;
+        void            *curlGrad;
+        void            *frizGrad;
+        void            *kinkGrad;
+        // VMaps
+        const char      *densityMap;
+        const char      *lengthMap;     
         // eval data
         LXtFVector       bump;          // fur bump vector
         float            bumpHeight;    // evaluated bump height
@@ -331,6 +347,8 @@ typedef struct st_LXpParticleSample {
         float            size;
         float            dissolve;
         float            age;
+        float            lum;
+        float            rgb[3];
         int              useLen;
         // Particle implicit UVs
         float            uv[2];
@@ -395,7 +413,7 @@ typedef struct st_LXpShadeLuminosity {
 } LXpShadeLuminosity;
 typedef struct st_LXpShadeFlags {
         void            *lightGroup;
-        float            shadeRate, dirMult, indMult, indSat, alphaVal, eta, rndWidth;
+        float            shadeRate, dirMult, indMult, indSat, indSatOut, alphaVal, eta, rndWidth;
         unsigned int     indType, alphaType, lightLink;
         unsigned int     flags;
         char             shadeEffect[32];
@@ -405,6 +423,8 @@ typedef struct st_LXpShadeFog {
         float            fogStart;
         float            fogEnd;
         float            fogDensity;
+        float            fogHeight;
+        float            fogFalloff;
         unsigned int     fogType;
         unsigned int     fogEnv;
 } LXpShadeFog;
@@ -675,6 +695,7 @@ typedef struct vt_ILxPacketEffect {
 #define LXsVPK_CATEGORY         "vpacket.category"
 // [export] ILxVectorPacket vpkt
 #define LXu_PACKETSERVICE       "2B8D8867-4EFC-4A1D-8F6A-B5F103A90A9B"
+// [python] ILxPacketService:CreateVectorType   obj VectorType
 #define LXfVT_SET        (1<<0)
 #define LXfVT_GET        (1<<1)
 #define LXfVT_OPTIONAL   (1<<2)
@@ -686,34 +707,36 @@ typedef struct vt_ILxPacketEffect {
 // [local]  ILxVectorList
 // [local]  ILxVectorStack
 #define LXsCATEGORY_SAMPLE       "sample"
-#define LXfRAY_SCOPE_POLYGONS    0x00000001
-#define LXfRAY_SCOPE_VOLUMETRICS 0x00000002
-#define LXfRAY_SCOPE_ENVIRONMENT 0x00000004
-#define LXfRAY_SCOPE_BACKFACE    0x00000010
-#define LXfRAY_SCOPE_BACKONLY    0x00000020
-#define LXfRAY_SCOPE_SAMESURF    0x00000040
-#define LXfRAY_SCOPE_IMPLICITSURF        0x00000080
+#define LXfRAY_SCOPE_POLYGONS           0x00000001
+#define LXfRAY_SCOPE_VOLUMETRICS        0x00000002
+#define LXfRAY_SCOPE_ENVIRONMENT        0x00000004
+#define LXfRAY_SCOPE_BACKFACE           0x00000008
+#define LXfRAY_SCOPE_BACKONLY           0x00000010
+#define LXfRAY_SCOPE_SAMESURF           0x00000020
+#define LXfRAY_SCOPE_OTHERSURF          0x00000040
+#define LXfRAY_SCOPE_IMPLICITSURF       0x00000080
 
-#define LXfRAY_EVAL_NORMAL       0x00000100
-#define LXfRAY_EVAL_MATERIAL     0x00000200
-#define LXfRAY_EVAL_OPACITY      0x00000400
-#define LXfRAY_EVAL_SHADING      0x00000800
-#define LXfRAY_EVAL_IRRADIANCE   0x00001000
-#define LXfRAY_EVAL_PERSPENV     0x00002000
+#define LXfRAY_EVAL_NORMAL              0x00000100
+#define LXfRAY_EVAL_MATERIAL            0x00000200
+#define LXfRAY_EVAL_OPACITY             0x00000400
+#define LXfRAY_EVAL_SHADING             0x00000800
+#define LXfRAY_EVAL_IRRADIANCE          0x00001000
+#define LXfRAY_EVAL_PERSPENV            0x00002000
+#define LXfRAY_EVAL_NOFOG               0x00004000
 
-#define LXfRAY_TYPE_CAMERA       0x00010000
-#define LXfRAY_TYPE_SHADOW       0x00020000
-#define LXfRAY_TYPE_REFLECT      0x00040000
-#define LXfRAY_TYPE_REFRACT      0x00080000
-#define LXfRAY_TYPE_INDIRECT     0x00100000
-#define LXfRAY_TYPE_CAUSTIC      0x00200000
-#define LXfRAY_TYPE_SUBSURFACE   0x00400000
-#define LXfRAY_TYPE_SHADOWMAP    0x00800000
-#define LXfRAY_TYPE_TEXTURE      0x01000000
-#define LXfRAY_TYPE_OCCLUSION    0x02000000
-#define LXfRAY_TYPE_SHADOWVOL    0x04000000
-#define LXfRAY_TYPE_CLIPPING     0x08000000
-#define LXfRAY_TYPE_SHADOW_INFO  0x10000000
+#define LXfRAY_TYPE_CAMERA              0x00010000
+#define LXfRAY_TYPE_SHADOW              0x00020000
+#define LXfRAY_TYPE_REFLECT             0x00040000
+#define LXfRAY_TYPE_REFRACT             0x00080000
+#define LXfRAY_TYPE_INDIRECT            0x00100000
+#define LXfRAY_TYPE_CAUSTIC             0x00200000
+#define LXfRAY_TYPE_SUBSURFACE          0x00400000
+#define LXfRAY_TYPE_SHADOWMAP           0x00800000
+#define LXfRAY_TYPE_TEXTURE             0x01000000
+#define LXfRAY_TYPE_OCCLUSION           0x02000000
+#define LXfRAY_TYPE_SHADOWVOL           0x04000000
+#define LXfRAY_TYPE_CLIPPING            0x08000000
+#define LXfRAY_TYPE_SHADOW_INFO         0x10000000
 #define LXfFACET_OBJECT_POSITION        0x00000001
 #define LXfFACET_DISPLACED              0x00000002
 #define LXfFACET_NORMALIZED             0x00000004
@@ -786,10 +809,11 @@ typedef struct vt_ILxPacketEffect {
 #define LXfSURF_CMPSHADE         0x00400000
 #define LXfSURF_IMPSHADE         0x00800000
 #define LXfSURF_CLPMATTE         0x01000000
+#define LXfSURF_RNDSAME          0x02000000
 
 #define LXsP_SHADE_FLAGS         "surfFlags"
-#define LXsP_SHADE_FOG   "surfFog"
-#define SVPs_SURF_FOG    LXsP_SHADE_FOG
+#define LXsP_SHADE_FOG   "shadeFog"
+#define SVPs_SHADE_FOG   LXsP_SHADE_FOG
 #define LXs_FX_ANISODIR         "anisoDir"
 #define LXs_FX_BUMP             "bump"
 #define LXs_FX_COATAMOUNT       "coatAmount"
@@ -831,6 +855,7 @@ typedef struct vt_ILxPacketEffect {
 #define LXs_FX_VECDISP          "vectorDisplace"
 #define LXs_FX_RGBA             "RGBA"
 #define LXs_FX_DISSOLVE         "dissolve"
+#define LXs_FX_TXTROFFSET       "textureOffset"
 
 #define LXs_FX_FUR_BEND         "furBend"
 #define LXs_FX_FUR_BUMP         "furBump"
@@ -889,6 +914,8 @@ typedef struct vt_ILxPacketEffect {
 #define LXs_FX_OUTPUT_DPDV_VECTOR                      "geo.dpdv"
 #define LXs_FX_OUTPUT_IC_POSITIONS                     "ic.position"
 #define LXs_FX_OUTPUT_IC_VALUES                        "ic.value"
+#define LXs_FX_OUTPUT_DIFFUSE_AMOUNT                   "mat.diffAmt"
+#define LXs_FX_OUTPUT_DIFFUSE_ENERGY_CONSERVATION      "mat.diffEng"
 #define LXs_FX_OUTPUT_DIFFUSE_COEFFICIENT              "mat.diffuse"
 #define LXs_FX_OUTPUT_SPECULAR_COEFFICIENT             "mat.specular"
 #define LXs_FX_OUTPUT_REFLECTION_COEFFICIENT           "mat.reflection"

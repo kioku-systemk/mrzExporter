@@ -1,7 +1,7 @@
 /*
  * C++ wrapper for lxrndjob.h
  *
- *	Copyright (c) 2008-2012 Luxology LLC
+ *	Copyright (c) 2008-2013 Luxology LLC
  *	
  *	Permission is hereby granted, free of charge, to any person obtaining a
  *	copy of this software and associated documentation files (the "Software"),
@@ -30,6 +30,7 @@
 
 #include <lxrndjob.h>
 #include <lx_wrap.hpp>
+#include <string>
 
 namespace lx {
     static const LXtGUID guid_ImageProcessingRead = {0x154307c9,0x5fa3,0x4749,0x88,0x53,0x08,0x8e,0x2c,0xc1,0xf5,0xed};
@@ -37,9 +38,10 @@ namespace lx {
     static const LXtGUID guid_RenderJob = {0x091C8EB2,0x5DC1,0x4d01,0xAF,0x9B,0x3C,0x73,0x5F,0x2F,0xFB,0x1D};
     static const LXtGUID guid_ImageProcessing = {0x1a89cc09,0x5326,0x44d6,0x96,0x05,0x3b,0x66,0xbf,0x9c,0x03,0xf5};
     static const LXtGUID guid_RenderService = {0x8D1710CE,0x7AF4,0x46cd,0xB6,0xB1,0x22,0x2A,0x7D,0xC4,0xC5,0x3F};
+    static const LXtGUID guid_RenderProgressListener = {0xdb045a41,0x0ed0,0x4372,0xa5,0x1a,0x09,0xb2,0x13,0x87,0xc4,0xae};
     static const LXtGUID guid_FrameBuffer = {0x90B060B4,0x1EC2,0x45F4,0xA6,0xA8,0x9A,0x38,0x22,0xB9,0xB3,0x9C};
-    static const LXtGUID guid_ImageProcessingListener = {0x4a4ca8b2,0xdf07,0x4156,0xb1,0xc3,0xa5,0xfc,0x63,0x31,0x8e,0xa8};
     static const LXtGUID guid_ImageProcessingService = {0x2f403a5c,0xa6aa,0x4d5a,0x88,0xf6,0xa2,0xdf,0xf2,0x3d,0xa5,0x23};
+    static const LXtGUID guid_ImageProcessingListener = {0x4a4ca8b2,0xdf07,0x4156,0xb1,0xc3,0xa5,0xfc,0x63,0x31,0x8e,0xa8};
     static const LXtGUID guid_RenderStats = {0x091C8EB2,0x5DC1,0x4d01,0xAF,0x9B,0x3C,0x73,0x5F,0x2F,0xFB,0x1D};
 };
 
@@ -57,7 +59,7 @@ public:
     return m_loc[0]->GetIdentifier (m_loc,string);
   }
     LxResult
-  CopyToRenderProcess (RenderOutputProcess *rop)
+  CopyToRenderProcess (LXtRenderOutputProcess *rop)
   {
     return m_loc[0]->CopyToRenderProcess (m_loc,rop);
   }
@@ -332,10 +334,10 @@ class CLxImpl_Buffer {
     virtual int
       buff_Flags (void)
         = 0;
-    virtual int
+    virtual unsigned
       buff_DataType (void)
         = 0;
-    virtual ILxVectorTypeID
+    virtual LXtObjectID
       buff_VectorType (void)
         = 0;
     virtual void
@@ -360,13 +362,13 @@ class CLxImpl_Buffer {
       buff_Line (int y)
         = 0;
     virtual LxResult
-      buff_Name (char **name)
+      buff_Name (const char **name)
         { return LXe_NOTIMPL; }
     virtual LxResult
       buff_SetUserName (const char *name)
         { return LXe_NOTIMPL; }
     virtual LxResult
-      buff_UserName (char **name)
+      buff_UserName (const char **name)
         { return LXe_NOTIMPL; }
     virtual LxResult
       buff_CreateImageTileTree (void)
@@ -374,7 +376,7 @@ class CLxImpl_Buffer {
     virtual LxResult
       buff_DestroyImageTileTree (void)
         { return LXe_NOTIMPL; }
-    virtual TileTreeID
+    virtual LXtTileTreeID
       buff_GetImageTileTree (void)
         = 0;
     virtual size_t
@@ -390,6 +392,48 @@ class CLxImpl_Buffer {
       buff_DecrementTileTreeSize (void)
         { return LXe_NOTIMPL; }
 };
+#define LXxD_Buffer_SetFlags void buff_SetFlags (int flags)
+#define LXxO_Buffer_SetFlags LXxD_Buffer_SetFlags LXx_OVERRIDE
+#define LXxD_Buffer_Flags int buff_Flags (void)
+#define LXxO_Buffer_Flags LXxD_Buffer_Flags LXx_OVERRIDE
+#define LXxD_Buffer_DataType unsigned buff_DataType (void)
+#define LXxO_Buffer_DataType LXxD_Buffer_DataType LXx_OVERRIDE
+#define LXxD_Buffer_VectorType LXtObjectID buff_VectorType (void)
+#define LXxO_Buffer_VectorType LXxD_Buffer_VectorType LXx_OVERRIDE
+#define LXxD_Buffer_SetSize void buff_SetSize (int width, int height, int writeBucketsToDisk, int isStereo)
+#define LXxO_Buffer_SetSize LXxD_Buffer_SetSize LXx_OVERRIDE
+#define LXxD_Buffer_GetSize void buff_GetSize (int *width, int *height)
+#define LXxO_Buffer_GetSize LXxD_Buffer_GetSize LXx_OVERRIDE
+#define LXxD_Buffer_SetEyeSide LxResult buff_SetEyeSide (int eyeSide)
+#define LXxO_Buffer_SetEyeSide LXxD_Buffer_SetEyeSide LXx_OVERRIDE
+#define LXxD_Buffer_Clear void buff_Clear (int x, int y)
+#define LXxO_Buffer_Clear LXxD_Buffer_Clear LXx_OVERRIDE
+#define LXxD_Buffer_Convert LxResult buff_Convert (LXtGenVectorID gv, int x, int y, float blend)
+#define LXxO_Buffer_Convert LXxD_Buffer_Convert LXx_OVERRIDE
+#define LXxD_Buffer_Pixel void * buff_Pixel (int x, int y)
+#define LXxO_Buffer_Pixel LXxD_Buffer_Pixel LXx_OVERRIDE
+#define LXxD_Buffer_Line void * buff_Line (int y)
+#define LXxO_Buffer_Line LXxD_Buffer_Line LXx_OVERRIDE
+#define LXxD_Buffer_Name LxResult buff_Name (const char **name)
+#define LXxO_Buffer_Name LXxD_Buffer_Name LXx_OVERRIDE
+#define LXxD_Buffer_SetUserName LxResult buff_SetUserName (const char *name)
+#define LXxO_Buffer_SetUserName LXxD_Buffer_SetUserName LXx_OVERRIDE
+#define LXxD_Buffer_UserName LxResult buff_UserName (const char **name)
+#define LXxO_Buffer_UserName LXxD_Buffer_UserName LXx_OVERRIDE
+#define LXxD_Buffer_CreateImageTileTree LxResult buff_CreateImageTileTree (void)
+#define LXxO_Buffer_CreateImageTileTree LXxD_Buffer_CreateImageTileTree LXx_OVERRIDE
+#define LXxD_Buffer_DestroyImageTileTree LxResult buff_DestroyImageTileTree (void)
+#define LXxO_Buffer_DestroyImageTileTree LXxD_Buffer_DestroyImageTileTree LXx_OVERRIDE
+#define LXxD_Buffer_GetImageTileTree LXtTileTreeID buff_GetImageTileTree (void)
+#define LXxO_Buffer_GetImageTileTree LXxD_Buffer_GetImageTileTree LXx_OVERRIDE
+#define LXxD_Buffer_GetImageTileTreeSize size_t buff_GetImageTileTreeSize (void)
+#define LXxO_Buffer_GetImageTileTreeSize LXxD_Buffer_GetImageTileTreeSize LXx_OVERRIDE
+#define LXxD_Buffer_ResetImageTileTree LxResult buff_ResetImageTileTree (void)
+#define LXxO_Buffer_ResetImageTileTree LXxD_Buffer_ResetImageTileTree LXx_OVERRIDE
+#define LXxD_Buffer_IncrementTileTreeSize LxResult buff_IncrementTileTreeSize (void)
+#define LXxO_Buffer_IncrementTileTreeSize LXxD_Buffer_IncrementTileTreeSize LXx_OVERRIDE
+#define LXxD_Buffer_DecrementTileTreeSize LxResult buff_DecrementTileTreeSize (void)
+#define LXxO_Buffer_DecrementTileTreeSize LXxD_Buffer_DecrementTileTreeSize LXx_OVERRIDE
 template <class T>
 class CLxIfc_Buffer : public CLxInterface
 {
@@ -405,13 +449,13 @@ class CLxIfc_Buffer : public CLxInterface
     LXCWxINST (CLxImpl_Buffer, loc);
     return loc->buff_Flags ();
   }
-    static int
+    static unsigned
   DataType (LXtObjectID wcom)
   {
     LXCWxINST (CLxImpl_Buffer, loc);
     return loc->buff_DataType ();
   }
-    static ILxVectorTypeID
+    static LXtObjectID
   VectorType (LXtObjectID wcom)
   {
     LXCWxINST (CLxImpl_Buffer, loc);
@@ -464,7 +508,7 @@ class CLxIfc_Buffer : public CLxInterface
     return loc->buff_Line (y);
   }
     static LxResult
-  Name (LXtObjectID wcom, char **name)
+  Name (LXtObjectID wcom, const char **name)
   {
     LXCWxINST (CLxImpl_Buffer, loc);
     try {
@@ -480,7 +524,7 @@ class CLxIfc_Buffer : public CLxInterface
     } catch (LxResult rc) { return rc; }
   }
     static LxResult
-  UserName (LXtObjectID wcom, char **name)
+  UserName (LXtObjectID wcom, const char **name)
   {
     LXCWxINST (CLxImpl_Buffer, loc);
     try {
@@ -503,7 +547,7 @@ class CLxIfc_Buffer : public CLxInterface
       return loc->buff_DestroyImageTileTree ();
     } catch (LxResult rc) { return rc; }
   }
-    static TileTreeID
+    static LXtTileTreeID
   GetImageTileTree (LXtObjectID wcom)
   {
     LXCWxINST (CLxImpl_Buffer, loc);
@@ -586,15 +630,15 @@ public:
   {
     return m_loc[0]->Flags (m_loc);
   }
-    int
+    unsigned
   DataType (void) const
   {
     return m_loc[0]->DataType (m_loc);
   }
-    ILxVectorTypeID
+    ILxUnknownID
   VectorType (void) const
   {
-    return m_loc[0]->VectorType (m_loc);
+    return (ILxUnknownID) m_loc[0]->VectorType (m_loc);
   }
     void
   SetSize (int width, int height, int writeBucketsToDisk, int isStereo)
@@ -632,7 +676,7 @@ public:
     return m_loc[0]->Line (m_loc,y);
   }
     LxResult
-  Name (char **name) const
+  Name (const char **name) const
   {
     return m_loc[0]->Name (m_loc,name);
   }
@@ -642,7 +686,7 @@ public:
     return m_loc[0]->SetUserName (m_loc,name);
   }
     LxResult
-  UserName (char **name) const
+  UserName (const char **name) const
   {
     return m_loc[0]->UserName (m_loc,name);
   }
@@ -656,7 +700,7 @@ public:
   {
     return m_loc[0]->DestroyImageTileTree (m_loc);
   }
-    TileTreeID
+    LXtTileTreeID
   GetImageTileTree (void) const
   {
     return m_loc[0]->GetImageTileTree (m_loc);
@@ -792,6 +836,76 @@ class CLxImpl_RenderJob {
       rjob_ProgressTickle (void)
         { return LXe_NOTIMPL; }
 };
+#define LXxD_RenderJob_RenderItem LxResult rjob_RenderItem (void **ppvObj)
+#define LXxO_RenderJob_RenderItem LXxD_RenderJob_RenderItem LXx_OVERRIDE
+#define LXxD_RenderJob_ActionName LxResult rjob_ActionName (const char **action)
+#define LXxO_RenderJob_ActionName LXxD_RenderJob_ActionName LXx_OVERRIDE
+#define LXxD_RenderJob_GroupName LxResult rjob_GroupName (const char **group)
+#define LXxO_RenderJob_GroupName LXxD_RenderJob_GroupName LXx_OVERRIDE
+#define LXxD_RenderJob_RenderAs LxResult rjob_RenderAs (int *mode)
+#define LXxO_RenderJob_RenderAs LXxD_RenderJob_RenderAs LXx_OVERRIDE
+#define LXxD_RenderJob_RenderAtTime LxResult rjob_RenderAtTime (double *time)
+#define LXxO_RenderJob_RenderAtTime LXxD_RenderJob_RenderAtTime LXx_OVERRIDE
+#define LXxD_RenderJob_RenderTurntableNumFrames LxResult rjob_RenderTurntableNumFrames (int *numFrames)
+#define LXxO_RenderJob_RenderTurntableNumFrames LXxD_RenderJob_RenderTurntableNumFrames LXx_OVERRIDE
+#define LXxD_RenderJob_RenderTurntableFPS LxResult rjob_RenderTurntableFPS (int *fps)
+#define LXxO_RenderJob_RenderTurntableFPS LXxD_RenderJob_RenderTurntableFPS LXx_OVERRIDE
+#define LXxD_RenderJob_RenderBakeVMap LxResult rjob_RenderBakeVMap (const char **vmap)
+#define LXxO_RenderJob_RenderBakeVMap LXxD_RenderJob_RenderBakeVMap LXx_OVERRIDE
+#define LXxD_RenderJob_RenderBakeLookDistance LxResult rjob_RenderBakeLookDistance (double *distance)
+#define LXxO_RenderJob_RenderBakeLookDistance LXxD_RenderJob_RenderBakeLookDistance LXx_OVERRIDE
+#define LXxD_RenderJob_RenderBakeItem LxResult rjob_RenderBakeItem (int *include, void **item)
+#define LXxO_RenderJob_RenderBakeItem LXxD_RenderJob_RenderBakeItem LXx_OVERRIDE
+#define LXxD_RenderJob_RenderBakeEffect LxResult rjob_RenderBakeEffect (const char **effect)
+#define LXxO_RenderJob_RenderBakeEffect LXxD_RenderJob_RenderBakeEffect LXx_OVERRIDE
+#define LXxD_RenderJob_RenderBakeImage LxResult rjob_RenderBakeImage (void **ppvObj)
+#define LXxO_RenderJob_RenderBakeImage LXxD_RenderJob_RenderBakeImage LXx_OVERRIDE
+#define LXxD_RenderJob_TestItem LxResult rjob_TestItem (ILxUnknownID item, ILxUnknownID eval)
+#define LXxO_RenderJob_TestItem LXxD_RenderJob_TestItem LXx_OVERRIDE
+#define LXxD_RenderJob_FrameBufferSlot LxResult rjob_FrameBufferSlot (int *index)
+#define LXxO_RenderJob_FrameBufferSlot LXxD_RenderJob_FrameBufferSlot LXx_OVERRIDE
+#define LXxD_RenderJob_FrameBufferRegionBackgroundSlot LxResult rjob_FrameBufferRegionBackgroundSlot (int *slotIndex, int *passIndex)
+#define LXxO_RenderJob_FrameBufferRegionBackgroundSlot LXxD_RenderJob_FrameBufferRegionBackgroundSlot LXx_OVERRIDE
+#define LXxD_RenderJob_OutputFormat LxResult rjob_OutputFormat (const char **format)
+#define LXxO_RenderJob_OutputFormat LXxD_RenderJob_OutputFormat LXx_OVERRIDE
+#define LXxD_RenderJob_OutputFilename LxResult rjob_OutputFilename (const char **filename)
+#define LXxO_RenderJob_OutputFilename LXxD_RenderJob_OutputFilename LXx_OVERRIDE
+#define LXxD_RenderJob_Options LxResult rjob_Options (int *options)
+#define LXxO_RenderJob_Options LXxD_RenderJob_Options LXx_OVERRIDE
+#define LXxD_RenderJob_ProgressAborted LxResult rjob_ProgressAborted (void)
+#define LXxO_RenderJob_ProgressAborted LXxD_RenderJob_ProgressAborted LXx_OVERRIDE
+#define LXxD_RenderJob_ProgressBegin LxResult rjob_ProgressBegin (ILxUnknownID renderStats)
+#define LXxO_RenderJob_ProgressBegin LXxD_RenderJob_ProgressBegin LXx_OVERRIDE
+#define LXxD_RenderJob_ProgressEnd LxResult rjob_ProgressEnd (ILxUnknownID finalFrameBuffer, ILxUnknownID finalStats)
+#define LXxO_RenderJob_ProgressEnd LXxD_RenderJob_ProgressEnd LXx_OVERRIDE
+#define LXxD_RenderJob_ProgressPercentDone LxResult rjob_ProgressPercentDone (double progressScene, double progressFrame, double progressRenderPass)
+#define LXxO_RenderJob_ProgressPercentDone LXxD_RenderJob_ProgressPercentDone LXx_OVERRIDE
+#define LXxD_RenderJob_ProgressImageMetrics LxResult rjob_ProgressImageMetrics (int resX, int resH, int *w, int *h, double *zoom, int *panX, int *panY, int *output)
+#define LXxO_RenderJob_ProgressImageMetrics LXxD_RenderJob_ProgressImageMetrics LXx_OVERRIDE
+#define LXxD_RenderJob_ProgressFrameBegin LxResult rjob_ProgressFrameBegin (int frame, int w, int h)
+#define LXxO_RenderJob_ProgressFrameBegin LXxD_RenderJob_ProgressFrameBegin LXx_OVERRIDE
+#define LXxD_RenderJob_ProgressFrameEnd LxResult rjob_ProgressFrameEnd (int frame, ILxUnknownID stats)
+#define LXxO_RenderJob_ProgressFrameEnd LXxD_RenderJob_ProgressFrameEnd LXx_OVERRIDE
+#define LXxD_RenderJob_ProgressRenderPassBegin LxResult rjob_ProgressRenderPassBegin (int frameIndex, int renderPassIndex, const char *renderPassName, int eye)
+#define LXxO_RenderJob_ProgressRenderPassBegin LXxD_RenderJob_ProgressRenderPassBegin LXx_OVERRIDE
+#define LXxD_RenderJob_ProgressRenderPassEnd LxResult rjob_ProgressRenderPassEnd (int frame, int renderPassIndex, const char *renderPassName, int eye, ILxUnknownID frameBuffer, ILxUnknownID stats)
+#define LXxO_RenderJob_ProgressRenderPassEnd LXxD_RenderJob_ProgressRenderPassEnd LXx_OVERRIDE
+#define LXxD_RenderJob_ProgressFramePassBegin LxResult rjob_ProgressFramePassBegin (int frame, int renderPass, int eye, int pass)
+#define LXxO_RenderJob_ProgressFramePassBegin LXxD_RenderJob_ProgressFramePassBegin LXx_OVERRIDE
+#define LXxD_RenderJob_ProgressFramePassEnd LxResult rjob_ProgressFramePassEnd (int frame, int renderPass, int eye, int pass)
+#define LXxO_RenderJob_ProgressFramePassEnd LXxD_RenderJob_ProgressFramePassEnd LXx_OVERRIDE
+#define LXxD_RenderJob_ProgressBucketBegin LxResult rjob_ProgressBucketBegin (int row, int col)
+#define LXxO_RenderJob_ProgressBucketBegin LXxD_RenderJob_ProgressBucketBegin LXx_OVERRIDE
+#define LXxD_RenderJob_ProgressBucketEnd LxResult rjob_ProgressBucketEnd (int row, int col, LxResult code)
+#define LXxO_RenderJob_ProgressBucketEnd LXxD_RenderJob_ProgressBucketEnd LXx_OVERRIDE
+#define LXxD_RenderJob_ProgressString LxResult rjob_ProgressString (const char *infoString, const char *userString)
+#define LXxO_RenderJob_ProgressString LXxD_RenderJob_ProgressString LXx_OVERRIDE
+#define LXxD_RenderJob_ProgressImage LxResult rjob_ProgressImage (ILxUnknownID img)
+#define LXxO_RenderJob_ProgressImage LXxD_RenderJob_ProgressImage LXx_OVERRIDE
+#define LXxD_RenderJob_ProgressImageUpdated LxResult rjob_ProgressImageUpdated (void)
+#define LXxO_RenderJob_ProgressImageUpdated LXxD_RenderJob_ProgressImageUpdated LXx_OVERRIDE
+#define LXxD_RenderJob_ProgressTickle LxResult rjob_ProgressTickle (void)
+#define LXxO_RenderJob_ProgressTickle LXxD_RenderJob_ProgressTickle LXx_OVERRIDE
 template <class T>
 class CLxIfc_RenderJob : public CLxInterface
 {
@@ -1131,6 +1245,13 @@ public:
   {
     return m_loc[0]->RenderItem (m_loc,ppvObj);
   }
+    bool
+  RenderItem (CLxLocalizedObject &dest) const
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->RenderItem (m_loc,&obj)) && dest.take(obj);
+  }
     LxResult
   ActionName (const char **action) const
   {
@@ -1185,6 +1306,13 @@ public:
   RenderBakeImage (void **ppvObj) const
   {
     return m_loc[0]->RenderBakeImage (m_loc,ppvObj);
+  }
+    bool
+  RenderBakeImage (CLxLocalizedObject &dest) const
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->RenderBakeImage (m_loc,&obj)) && dest.take(obj);
   }
     LxResult
   TestItem (ILxUnknownID item, ILxUnknownID eval)
@@ -1316,6 +1444,13 @@ public:
   {
     return m_loc[0]->GetAsReadOnly (m_loc,ppvObj);
   }
+    bool
+  GetAsReadOnly (CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->GetAsReadOnly (m_loc,&obj)) && dest.take(obj);
+  }
     LxResult
   SetIdentifier (const char *string)
   {
@@ -1332,12 +1467,12 @@ public:
     return m_loc[0]->Reset (m_loc);
   }
     LxResult
-  CopyToRenderProcess (RenderOutputProcess *rop)
+  CopyToRenderProcess (LXtRenderOutputProcess *rop)
   {
     return m_loc[0]->CopyToRenderProcess (m_loc,rop);
   }
     LxResult
-  CopyFromRenderProcess (const RenderOutputProcess *rop)
+  CopyFromRenderProcess (const LXtRenderOutputProcess *rop)
   {
     return m_loc[0]->CopyFromRenderProcess (m_loc,rop);
   }
@@ -1475,6 +1610,16 @@ public:
   SetBloomRadius (double radius)
   {
     return m_loc[0]->SetBloomRadius (m_loc,radius);
+  }
+    LxResult
+  GetVignetteAmount (double *amount)
+  {
+    return m_loc[0]->GetVignetteAmount (m_loc,amount);
+  }
+    LxResult
+  SetVignetteAmount (double amount)
+  {
+    return m_loc[0]->SetVignetteAmount (m_loc,amount);
   }
     LxResult
   GetLevelOffset (double *offset)
@@ -1810,7 +1955,7 @@ public:
   void _init() {m_loc=0;}
   CLxLoc_RenderService() {_init();set();}
  ~CLxLoc_RenderService() {}
-  void set() {m_loc=reinterpret_cast<ILxRenderServiceID>(lx::GetGlobal(&lx::guid_RenderService));}
+  void set() {if(!m_loc)m_loc=reinterpret_cast<ILxRenderServiceID>(lx::GetGlobal(&lx::guid_RenderService));}
     LxResult
   ScriptQuery (void **ppvObj)
   {
@@ -1825,6 +1970,13 @@ public:
   JobCurrent (void **ppvObj) const
   {
     return m_loc[0]->JobCurrent (m_loc,ppvObj);
+  }
+    bool
+  JobCurrent (CLxLocalizedObject &dest) const
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->JobCurrent (m_loc,&obj)) && dest.take(obj);
   }
     LxResult
   JobStart (void)
@@ -1891,6 +2043,13 @@ public:
   {
     return m_loc[0]->FrameRecall (m_loc,slotIndex,passIndex,(ILxUnknownID)monitor,ppvObj);
   }
+    bool
+  FrameRecall (int slotIndex, int passIndex, ILxUnknownID monitor, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->FrameRecall (m_loc,slotIndex,passIndex,(ILxUnknownID)monitor,&obj)) && dest.take(obj);
+  }
     LxResult
   FrameTestRecall (int slotIndex, int passIndex)
   {
@@ -1907,7 +2066,7 @@ public:
     return m_loc[0]->FrameRenderPassInfo (m_loc,slotIndex,passIndex,name,width,height,outputCount,isStereo,eyeDisplay,stereoComposite);
   }
     LxResult
-  FrameRenderPassOutputInfo (int slotIndex, int passIndex, char *renderPassName, unsigned *width, unsigned *height, RenderOutputProcessList *outputs)
+  FrameRenderPassOutputInfo (int slotIndex, int passIndex, char *renderPassName, unsigned *width, unsigned *height, LXtRenderOutputProcessList *outputs)
   {
     return m_loc[0]->FrameRenderPassOutputInfo (m_loc,slotIndex,passIndex,renderPassName,width,height,outputs);
   }
@@ -1946,6 +2105,13 @@ public:
   {
     return m_loc[0]->FrameRecallStats (m_loc,slotIndex,ppvObj);
   }
+    bool
+  FrameRecallStats (int slotIndex, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->FrameRecallStats (m_loc,slotIndex,&obj)) && dest.take(obj);
+  }
     LxResult
   FrameStoreThumbnail (int slotIndex, ILxUnknownID image)
   {
@@ -1956,10 +2122,76 @@ public:
   {
     return m_loc[0]->FrameRecallThumbnail (m_loc,slotIndex,ppvObj);
   }
+    bool
+  FrameRecallThumbnail (int slotIndex, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->FrameRecallThumbnail (m_loc,slotIndex,&obj)) && dest.take(obj);
+  }
     LxResult
   FrameDelete (int slotIndex)
   {
     return m_loc[0]->FrameDelete (m_loc,slotIndex);
+  }
+};
+
+class CLxImpl_RenderProgressListener {
+  public:
+    virtual ~CLxImpl_RenderProgressListener() {}
+    virtual void
+      rndprog_Begin (void)
+        { }
+    virtual void
+      rndprog_End (ILxUnknownID stats)
+        { }
+};
+#define LXxD_RenderProgressListener_Begin void rndprog_Begin (void)
+#define LXxO_RenderProgressListener_Begin LXxD_RenderProgressListener_Begin LXx_OVERRIDE
+#define LXxD_RenderProgressListener_End void rndprog_End (ILxUnknownID stats)
+#define LXxO_RenderProgressListener_End LXxD_RenderProgressListener_End LXx_OVERRIDE
+template <class T>
+class CLxIfc_RenderProgressListener : public CLxInterface
+{
+    static void
+  Begin (LXtObjectID wcom)
+  {
+    LXCWxINST (CLxImpl_RenderProgressListener, loc);
+    loc->rndprog_Begin ();
+  }
+    static void
+  End (LXtObjectID wcom, LXtObjectID stats)
+  {
+    LXCWxINST (CLxImpl_RenderProgressListener, loc);
+    loc->rndprog_End ((ILxUnknownID)stats);
+  }
+  ILxRenderProgressListener vt;
+public:
+  CLxIfc_RenderProgressListener ()
+  {
+    vt.Begin = Begin;
+    vt.End = End;
+    vTable = &vt.iunk;
+    iid = &lx::guid_RenderProgressListener;
+  }
+};
+class CLxLoc_RenderProgressListener : public CLxLocalize<ILxRenderProgressListenerID>
+{
+public:
+  void _init() {m_loc=0;}
+  CLxLoc_RenderProgressListener() {_init();}
+  CLxLoc_RenderProgressListener(ILxUnknownID obj) {_init();set(obj);}
+  CLxLoc_RenderProgressListener(const CLxLoc_RenderProgressListener &other) {_init();set(other.m_loc);}
+  const LXtGUID * guid() const {return &lx::guid_RenderProgressListener;}
+    void
+  Begin (void)
+  {
+    m_loc[0]->Begin (m_loc);
+  }
+    void
+  End (ILxUnknownID stats)
+  {
+    m_loc[0]->End (m_loc,(ILxUnknownID)stats);
   }
 };
 
@@ -2002,19 +2234,19 @@ class CLxImpl_FrameBuffer {
     virtual unsigned int
       fbuf_BucketsOnDisk (int index)
         = 0;
-    virtual ILxBufferID
+    virtual LXtObjectID
       fbuf_Lookup (const char *name, ILxUnknownID item)
         = 0;
-    virtual ILxBufferID
+    virtual LXtObjectID
       fbuf_LookupByIdentity (const char *identity)
         = 0;
     virtual unsigned int
       fbuf_Count (void)
         = 0;
-    virtual ILxBufferID
+    virtual LXtObjectID
       fbuf_ByIndex (int index)
         = 0;
-    virtual ILxBufferID
+    virtual LXtObjectID
       fbuf_Alpha (int index)
         = 0;
     virtual int
@@ -2049,6 +2281,12 @@ class CLxImpl_FrameBuffer {
         = 0;
     virtual LxResult
       fbuf_SetBloomRadius (int bufferIndex, double radius)
+        { return LXe_NOTIMPL; }
+    virtual double
+      fbuf_GetVignetteAmount (int bufferIndex)
+        = 0;
+    virtual LxResult
+      fbuf_SetVignetteAmount (int bufferIndex, double radius)
         { return LXe_NOTIMPL; }
     virtual double
       fbuf_GetLevelOffset (int bufferIndex)
@@ -2249,6 +2487,198 @@ class CLxImpl_FrameBuffer {
       fbuf_AddAttribute (const char *name, const char *type, unsigned *index)
         { return LXe_NOTIMPL; }
 };
+#define LXxD_FrameBuffer_Allocate ILxBufferID fbuf_Allocate (const char *name, ILxUnknownID item, const char *identity, const char *userName, int isFactoryName, int writeBucketsToDisk)
+#define LXxO_FrameBuffer_Allocate LXxD_FrameBuffer_Allocate LXx_OVERRIDE
+#define LXxD_FrameBuffer_IsStereo LxResult fbuf_IsStereo (int *isStereo)
+#define LXxO_FrameBuffer_IsStereo LXxD_FrameBuffer_IsStereo LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetStereoEyeDisplay LxResult fbuf_GetStereoEyeDisplay (LXtStereoEye *eyeDisplay)
+#define LXxO_FrameBuffer_GetStereoEyeDisplay LXxD_FrameBuffer_GetStereoEyeDisplay LXx_OVERRIDE
+#define LXxD_FrameBuffer_SetStereoEyeDisplay LxResult fbuf_SetStereoEyeDisplay (LXtStereoEye eyeDisplay)
+#define LXxO_FrameBuffer_SetStereoEyeDisplay LXxD_FrameBuffer_SetStereoEyeDisplay LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetStereoComposite LxResult fbuf_GetStereoComposite (LXtStereoComposite *composite)
+#define LXxO_FrameBuffer_GetStereoComposite LXxD_FrameBuffer_GetStereoComposite LXx_OVERRIDE
+#define LXxD_FrameBuffer_SetStereoComposite LxResult fbuf_SetStereoComposite (LXtStereoComposite composite)
+#define LXxO_FrameBuffer_SetStereoComposite LXxD_FrameBuffer_SetStereoComposite LXx_OVERRIDE
+#define LXxD_FrameBuffer_SetEyeSide LxResult fbuf_SetEyeSide (int eyeSide)
+#define LXxO_FrameBuffer_SetEyeSide LXxD_FrameBuffer_SetEyeSide LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetLineBuffer LxResult fbuf_GetLineBuffer (float **buf)
+#define LXxO_FrameBuffer_GetLineBuffer LXxD_FrameBuffer_GetLineBuffer LXx_OVERRIDE
+#define LXxD_FrameBuffer_CreateFrameBufferTargetImage LxResult fbuf_CreateFrameBufferTargetImage (LXtPixelFormat type, int w, int h, void **ppvObj)
+#define LXxO_FrameBuffer_CreateFrameBufferTargetImage LXxD_FrameBuffer_CreateFrameBufferTargetImage LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetRenderPassName LxResult fbuf_GetRenderPassName (char *name)
+#define LXxO_FrameBuffer_GetRenderPassName LXxD_FrameBuffer_GetRenderPassName LXx_OVERRIDE
+#define LXxD_FrameBuffer_SetRenderPassName LxResult fbuf_SetRenderPassName (const char *name)
+#define LXxO_FrameBuffer_SetRenderPassName LXxD_FrameBuffer_SetRenderPassName LXx_OVERRIDE
+#define LXxD_FrameBuffer_BucketsOnDisk unsigned int fbuf_BucketsOnDisk (int index)
+#define LXxO_FrameBuffer_BucketsOnDisk LXxD_FrameBuffer_BucketsOnDisk LXx_OVERRIDE
+#define LXxD_FrameBuffer_Lookup LXtObjectID fbuf_Lookup (const char *name, ILxUnknownID item)
+#define LXxO_FrameBuffer_Lookup LXxD_FrameBuffer_Lookup LXx_OVERRIDE
+#define LXxD_FrameBuffer_LookupByIdentity LXtObjectID fbuf_LookupByIdentity (const char *identity)
+#define LXxO_FrameBuffer_LookupByIdentity LXxD_FrameBuffer_LookupByIdentity LXx_OVERRIDE
+#define LXxD_FrameBuffer_Count unsigned int fbuf_Count (void)
+#define LXxO_FrameBuffer_Count LXxD_FrameBuffer_Count LXx_OVERRIDE
+#define LXxD_FrameBuffer_ByIndex LXtObjectID fbuf_ByIndex (int index)
+#define LXxO_FrameBuffer_ByIndex LXxD_FrameBuffer_ByIndex LXx_OVERRIDE
+#define LXxD_FrameBuffer_Alpha LXtObjectID fbuf_Alpha (int index)
+#define LXxO_FrameBuffer_Alpha LXxD_FrameBuffer_Alpha LXx_OVERRIDE
+#define LXxD_FrameBuffer_AlphaIndex int fbuf_AlphaIndex (int index)
+#define LXxO_FrameBuffer_AlphaIndex LXxD_FrameBuffer_AlphaIndex LXx_OVERRIDE
+#define LXxD_FrameBuffer_Size LxResult fbuf_Size (int index, int *width, int *height)
+#define LXxO_FrameBuffer_Size LXxD_FrameBuffer_Size LXx_OVERRIDE
+#define LXxD_FrameBuffer_AreaProcessingActive LxResult fbuf_AreaProcessingActive (int bufferIndex, int *active)
+#define LXxO_FrameBuffer_AreaProcessingActive LXxD_FrameBuffer_AreaProcessingActive LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetSaveProcessed int fbuf_GetSaveProcessed (int bufferIndex)
+#define LXxO_FrameBuffer_GetSaveProcessed LXxD_FrameBuffer_GetSaveProcessed LXx_OVERRIDE
+#define LXxD_FrameBuffer_SetSaveProcessed LxResult fbuf_SetSaveProcessed (int bufferIndex, int enabled)
+#define LXxO_FrameBuffer_SetSaveProcessed LXxD_FrameBuffer_SetSaveProcessed LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetBloomEnabled int fbuf_GetBloomEnabled (int bufferIndex)
+#define LXxO_FrameBuffer_GetBloomEnabled LXxD_FrameBuffer_GetBloomEnabled LXx_OVERRIDE
+#define LXxD_FrameBuffer_SetBloomEnabled LxResult fbuf_SetBloomEnabled (int bufferIndex, int enabled)
+#define LXxO_FrameBuffer_SetBloomEnabled LXxD_FrameBuffer_SetBloomEnabled LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetBloomThreshold double fbuf_GetBloomThreshold (int bufferIndex)
+#define LXxO_FrameBuffer_GetBloomThreshold LXxD_FrameBuffer_GetBloomThreshold LXx_OVERRIDE
+#define LXxD_FrameBuffer_SetBloomThreshold LxResult fbuf_SetBloomThreshold (int bufferIndex, double threshold)
+#define LXxO_FrameBuffer_SetBloomThreshold LXxD_FrameBuffer_SetBloomThreshold LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetBloomRadius double fbuf_GetBloomRadius (int bufferIndex)
+#define LXxO_FrameBuffer_GetBloomRadius LXxD_FrameBuffer_GetBloomRadius LXx_OVERRIDE
+#define LXxD_FrameBuffer_SetBloomRadius LxResult fbuf_SetBloomRadius (int bufferIndex, double radius)
+#define LXxO_FrameBuffer_SetBloomRadius LXxD_FrameBuffer_SetBloomRadius LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetVignetteAmount double fbuf_GetVignetteAmount (int bufferIndex)
+#define LXxO_FrameBuffer_GetVignetteAmount LXxD_FrameBuffer_GetVignetteAmount LXx_OVERRIDE
+#define LXxD_FrameBuffer_SetVignetteAmount LxResult fbuf_SetVignetteAmount (int bufferIndex, double radius)
+#define LXxO_FrameBuffer_SetVignetteAmount LXxD_FrameBuffer_SetVignetteAmount LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetLevelOffset double fbuf_GetLevelOffset (int bufferIndex)
+#define LXxO_FrameBuffer_GetLevelOffset LXxD_FrameBuffer_GetLevelOffset LXx_OVERRIDE
+#define LXxD_FrameBuffer_SetLevelOffset LxResult fbuf_SetLevelOffset (int bufferIndex, double offset)
+#define LXxO_FrameBuffer_SetLevelOffset LXxD_FrameBuffer_SetLevelOffset LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetRedLevelOffset double fbuf_GetRedLevelOffset (int bufferIndex)
+#define LXxO_FrameBuffer_GetRedLevelOffset LXxD_FrameBuffer_GetRedLevelOffset LXx_OVERRIDE
+#define LXxD_FrameBuffer_SetRedLevelOffset LxResult fbuf_SetRedLevelOffset (int bufferIndex, double offset)
+#define LXxO_FrameBuffer_SetRedLevelOffset LXxD_FrameBuffer_SetRedLevelOffset LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetGreenLevelOffset double fbuf_GetGreenLevelOffset (int bufferIndex)
+#define LXxO_FrameBuffer_GetGreenLevelOffset LXxD_FrameBuffer_GetGreenLevelOffset LXx_OVERRIDE
+#define LXxD_FrameBuffer_SetGreenLevelOffset LxResult fbuf_SetGreenLevelOffset (int bufferIndex, double offset)
+#define LXxO_FrameBuffer_SetGreenLevelOffset LXxD_FrameBuffer_SetGreenLevelOffset LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetBlueLevelOffset double fbuf_GetBlueLevelOffset (int bufferIndex)
+#define LXxO_FrameBuffer_GetBlueLevelOffset LXxD_FrameBuffer_GetBlueLevelOffset LXx_OVERRIDE
+#define LXxD_FrameBuffer_SetBlueLevelOffset LxResult fbuf_SetBlueLevelOffset (int bufferIndex, double offset)
+#define LXxO_FrameBuffer_SetBlueLevelOffset LXxD_FrameBuffer_SetBlueLevelOffset LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetInputBlackLevel double fbuf_GetInputBlackLevel (int bufferIndex)
+#define LXxO_FrameBuffer_GetInputBlackLevel LXxD_FrameBuffer_GetInputBlackLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_SetInputBlackLevel LxResult fbuf_SetInputBlackLevel (int bufferIndex, double blackLevel)
+#define LXxO_FrameBuffer_SetInputBlackLevel LXxD_FrameBuffer_SetInputBlackLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetInputGrayLevel double fbuf_GetInputGrayLevel (int bufferIndex)
+#define LXxO_FrameBuffer_GetInputGrayLevel LXxD_FrameBuffer_GetInputGrayLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetInvInputGrayLevel double fbuf_GetInvInputGrayLevel (int bufferIndex)
+#define LXxO_FrameBuffer_GetInvInputGrayLevel LXxD_FrameBuffer_GetInvInputGrayLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_SetInputGrayLevel LxResult fbuf_SetInputGrayLevel (int bufferIndex, double gamma)
+#define LXxO_FrameBuffer_SetInputGrayLevel LXxD_FrameBuffer_SetInputGrayLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetInputWhiteLevel double fbuf_GetInputWhiteLevel (int bufferIndex)
+#define LXxO_FrameBuffer_GetInputWhiteLevel LXxD_FrameBuffer_GetInputWhiteLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_SetInputWhiteLevel LxResult fbuf_SetInputWhiteLevel (int bufferIndex, double whiteLevel)
+#define LXxO_FrameBuffer_SetInputWhiteLevel LXxD_FrameBuffer_SetInputWhiteLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetInputMinRedLevel double fbuf_GetInputMinRedLevel (int bufferIndex)
+#define LXxO_FrameBuffer_GetInputMinRedLevel LXxD_FrameBuffer_GetInputMinRedLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_SetInputMinRedLevel LxResult fbuf_SetInputMinRedLevel (int bufferIndex, double level)
+#define LXxO_FrameBuffer_SetInputMinRedLevel LXxD_FrameBuffer_SetInputMinRedLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetInputRedGrayLevel double fbuf_GetInputRedGrayLevel (int bufferIndex)
+#define LXxO_FrameBuffer_GetInputRedGrayLevel LXxD_FrameBuffer_GetInputRedGrayLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetInvInputRedGrayLevel double fbuf_GetInvInputRedGrayLevel (int bufferIndex)
+#define LXxO_FrameBuffer_GetInvInputRedGrayLevel LXxD_FrameBuffer_GetInvInputRedGrayLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_SetInputRedGrayLevel LxResult fbuf_SetInputRedGrayLevel (int bufferIndex, double gamma)
+#define LXxO_FrameBuffer_SetInputRedGrayLevel LXxD_FrameBuffer_SetInputRedGrayLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetInputMaxRedLevel double fbuf_GetInputMaxRedLevel (int bufferIndex)
+#define LXxO_FrameBuffer_GetInputMaxRedLevel LXxD_FrameBuffer_GetInputMaxRedLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_SetInputMaxRedLevel LxResult fbuf_SetInputMaxRedLevel (int bufferIndex, double level)
+#define LXxO_FrameBuffer_SetInputMaxRedLevel LXxD_FrameBuffer_SetInputMaxRedLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetInputMinGreenLevel double fbuf_GetInputMinGreenLevel (int bufferIndex)
+#define LXxO_FrameBuffer_GetInputMinGreenLevel LXxD_FrameBuffer_GetInputMinGreenLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_SetInputMinGreenLevel LxResult fbuf_SetInputMinGreenLevel (int bufferIndex, double level)
+#define LXxO_FrameBuffer_SetInputMinGreenLevel LXxD_FrameBuffer_SetInputMinGreenLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetInputGreenGrayLevel double fbuf_GetInputGreenGrayLevel (int bufferIndex)
+#define LXxO_FrameBuffer_GetInputGreenGrayLevel LXxD_FrameBuffer_GetInputGreenGrayLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetInvInputGreenGrayLevel double fbuf_GetInvInputGreenGrayLevel (int bufferIndex)
+#define LXxO_FrameBuffer_GetInvInputGreenGrayLevel LXxD_FrameBuffer_GetInvInputGreenGrayLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_SetInputGreenGrayLevel LxResult fbuf_SetInputGreenGrayLevel (int bufferIndex, double gamma)
+#define LXxO_FrameBuffer_SetInputGreenGrayLevel LXxD_FrameBuffer_SetInputGreenGrayLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetInputMaxGreenLevel double fbuf_GetInputMaxGreenLevel (int bufferIndex)
+#define LXxO_FrameBuffer_GetInputMaxGreenLevel LXxD_FrameBuffer_GetInputMaxGreenLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_SetInputMaxGreenLevel LxResult fbuf_SetInputMaxGreenLevel (int bufferIndex, double level)
+#define LXxO_FrameBuffer_SetInputMaxGreenLevel LXxD_FrameBuffer_SetInputMaxGreenLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetInputMinBlueLevel double fbuf_GetInputMinBlueLevel (int bufferIndex)
+#define LXxO_FrameBuffer_GetInputMinBlueLevel LXxD_FrameBuffer_GetInputMinBlueLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_SetInputMinBlueLevel LxResult fbuf_SetInputMinBlueLevel (int bufferIndex, double level)
+#define LXxO_FrameBuffer_SetInputMinBlueLevel LXxD_FrameBuffer_SetInputMinBlueLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetInputBlueGrayLevel double fbuf_GetInputBlueGrayLevel (int bufferIndex)
+#define LXxO_FrameBuffer_GetInputBlueGrayLevel LXxD_FrameBuffer_GetInputBlueGrayLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetInvInputBlueGrayLevel double fbuf_GetInvInputBlueGrayLevel (int bufferIndex)
+#define LXxO_FrameBuffer_GetInvInputBlueGrayLevel LXxD_FrameBuffer_GetInvInputBlueGrayLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_SetInputBlueGrayLevel LxResult fbuf_SetInputBlueGrayLevel (int bufferIndex, double gamma)
+#define LXxO_FrameBuffer_SetInputBlueGrayLevel LXxD_FrameBuffer_SetInputBlueGrayLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetInputMaxBlueLevel double fbuf_GetInputMaxBlueLevel (int bufferIndex)
+#define LXxO_FrameBuffer_GetInputMaxBlueLevel LXxD_FrameBuffer_GetInputMaxBlueLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_SetInputMaxBlueLevel LxResult fbuf_SetInputMaxBlueLevel (int bufferIndex, double level)
+#define LXxO_FrameBuffer_SetInputMaxBlueLevel LXxD_FrameBuffer_SetInputMaxBlueLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetToneMapping double fbuf_GetToneMapping (int bufferIndex)
+#define LXxO_FrameBuffer_GetToneMapping LXxD_FrameBuffer_GetToneMapping LXx_OVERRIDE
+#define LXxD_FrameBuffer_SetToneMapping LxResult fbuf_SetToneMapping (int bufferIndex, double toneMapping)
+#define LXxO_FrameBuffer_SetToneMapping LXxD_FrameBuffer_SetToneMapping LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetHueOffset double fbuf_GetHueOffset (int bufferIndex)
+#define LXxO_FrameBuffer_GetHueOffset LXxD_FrameBuffer_GetHueOffset LXx_OVERRIDE
+#define LXxD_FrameBuffer_SetHueOffset LxResult fbuf_SetHueOffset (int bufferIndex, double hueOffset)
+#define LXxO_FrameBuffer_SetHueOffset LXxD_FrameBuffer_SetHueOffset LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetSaturation double fbuf_GetSaturation (int bufferIndex)
+#define LXxO_FrameBuffer_GetSaturation LXxD_FrameBuffer_GetSaturation LXx_OVERRIDE
+#define LXxD_FrameBuffer_SetSaturation LxResult fbuf_SetSaturation (int bufferIndex, double saturation)
+#define LXxO_FrameBuffer_SetSaturation LXxD_FrameBuffer_SetSaturation LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetColorization double fbuf_GetColorization (int bufferIndex)
+#define LXxO_FrameBuffer_GetColorization LXxD_FrameBuffer_GetColorization LXx_OVERRIDE
+#define LXxD_FrameBuffer_SetColorization LxResult fbuf_SetColorization (int bufferIndex, double colorization)
+#define LXxO_FrameBuffer_SetColorization LXxD_FrameBuffer_SetColorization LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetTargetColor void fbuf_GetTargetColor (int bufferIndex, double *color)
+#define LXxO_FrameBuffer_GetTargetColor LXxD_FrameBuffer_GetTargetColor LXx_OVERRIDE
+#define LXxD_FrameBuffer_SetTargetColor LxResult fbuf_SetTargetColor (int bufferIndex, const double *color)
+#define LXxO_FrameBuffer_SetTargetColor LXxD_FrameBuffer_SetTargetColor LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetOutputBlackLevel double fbuf_GetOutputBlackLevel (int bufferIndex)
+#define LXxO_FrameBuffer_GetOutputBlackLevel LXxD_FrameBuffer_GetOutputBlackLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_SetOutputBlackLevel LxResult fbuf_SetOutputBlackLevel (int bufferIndex, double blackLevel)
+#define LXxO_FrameBuffer_SetOutputBlackLevel LXxD_FrameBuffer_SetOutputBlackLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetOutputWhiteLevel double fbuf_GetOutputWhiteLevel (int bufferIndex)
+#define LXxO_FrameBuffer_GetOutputWhiteLevel LXxD_FrameBuffer_GetOutputWhiteLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_SetOutputWhiteLevel LxResult fbuf_SetOutputWhiteLevel (int bufferIndex, double whiteLevel)
+#define LXxO_FrameBuffer_SetOutputWhiteLevel LXxD_FrameBuffer_SetOutputWhiteLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetOutputMinRedLevel double fbuf_GetOutputMinRedLevel (int bufferIndex)
+#define LXxO_FrameBuffer_GetOutputMinRedLevel LXxD_FrameBuffer_GetOutputMinRedLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_SetOutputMinRedLevel LxResult fbuf_SetOutputMinRedLevel (int bufferIndex, double blackLevel)
+#define LXxO_FrameBuffer_SetOutputMinRedLevel LXxD_FrameBuffer_SetOutputMinRedLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetOutputMaxRedLevel double fbuf_GetOutputMaxRedLevel (int bufferIndex)
+#define LXxO_FrameBuffer_GetOutputMaxRedLevel LXxD_FrameBuffer_GetOutputMaxRedLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_SetOutputMaxRedLevel LxResult fbuf_SetOutputMaxRedLevel (int bufferIndex, double whiteLevel)
+#define LXxO_FrameBuffer_SetOutputMaxRedLevel LXxD_FrameBuffer_SetOutputMaxRedLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetOutputMinGreenLevel double fbuf_GetOutputMinGreenLevel (int bufferIndex)
+#define LXxO_FrameBuffer_GetOutputMinGreenLevel LXxD_FrameBuffer_GetOutputMinGreenLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_SetOutputMinGreenLevel LxResult fbuf_SetOutputMinGreenLevel (int bufferIndex, double blackLevel)
+#define LXxO_FrameBuffer_SetOutputMinGreenLevel LXxD_FrameBuffer_SetOutputMinGreenLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetOutputMaxGreenLevel double fbuf_GetOutputMaxGreenLevel (int bufferIndex)
+#define LXxO_FrameBuffer_GetOutputMaxGreenLevel LXxD_FrameBuffer_GetOutputMaxGreenLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_SetOutputMaxGreenLevel LxResult fbuf_SetOutputMaxGreenLevel (int bufferIndex, double whiteLevel)
+#define LXxO_FrameBuffer_SetOutputMaxGreenLevel LXxD_FrameBuffer_SetOutputMaxGreenLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetOutputMinBlueLevel double fbuf_GetOutputMinBlueLevel (int bufferIndex)
+#define LXxO_FrameBuffer_GetOutputMinBlueLevel LXxD_FrameBuffer_GetOutputMinBlueLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_SetOutputMinBlueLevel LxResult fbuf_SetOutputMinBlueLevel (int bufferIndex, double blackLevel)
+#define LXxO_FrameBuffer_SetOutputMinBlueLevel LXxD_FrameBuffer_SetOutputMinBlueLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetOutputMaxBlueLevel double fbuf_GetOutputMaxBlueLevel (int bufferIndex)
+#define LXxO_FrameBuffer_GetOutputMaxBlueLevel LXxD_FrameBuffer_GetOutputMaxBlueLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_SetOutputMaxBlueLevel LxResult fbuf_SetOutputMaxBlueLevel (int bufferIndex, double whiteLevel)
+#define LXxO_FrameBuffer_SetOutputMaxBlueLevel LXxD_FrameBuffer_SetOutputMaxBlueLevel LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetOutputGamma double fbuf_GetOutputGamma (int bufferIndex)
+#define LXxO_FrameBuffer_GetOutputGamma LXxD_FrameBuffer_GetOutputGamma LXx_OVERRIDE
+#define LXxD_FrameBuffer_GetOutputInvGamma double fbuf_GetOutputInvGamma (int bufferIndex)
+#define LXxO_FrameBuffer_GetOutputInvGamma LXxD_FrameBuffer_GetOutputInvGamma LXx_OVERRIDE
+#define LXxD_FrameBuffer_SetOutputGamma LxResult fbuf_SetOutputGamma (int bufferIndex, double gamma)
+#define LXxO_FrameBuffer_SetOutputGamma LXxD_FrameBuffer_SetOutputGamma LXx_OVERRIDE
+#define LXxD_FrameBuffer_AddAttribute LxResult fbuf_AddAttribute (const char *name, const char *type, unsigned *index)
+#define LXxO_FrameBuffer_AddAttribute LXxD_FrameBuffer_AddAttribute LXx_OVERRIDE
 template <class T>
 class CLxIfc_FrameBuffer : public CLxInterface
 {
@@ -2344,13 +2774,13 @@ class CLxIfc_FrameBuffer : public CLxInterface
     LXCWxINST (CLxImpl_FrameBuffer, loc);
     return loc->fbuf_BucketsOnDisk (index);
   }
-    static ILxBufferID
+    static LXtObjectID
   Lookup (LXtObjectID wcom, const char *name, LXtObjectID item)
   {
     LXCWxINST (CLxImpl_FrameBuffer, loc);
     return loc->fbuf_Lookup (name,(ILxUnknownID)item);
   }
-    static ILxBufferID
+    static LXtObjectID
   LookupByIdentity (LXtObjectID wcom, const char *identity)
   {
     LXCWxINST (CLxImpl_FrameBuffer, loc);
@@ -2362,13 +2792,13 @@ class CLxIfc_FrameBuffer : public CLxInterface
     LXCWxINST (CLxImpl_FrameBuffer, loc);
     return loc->fbuf_Count ();
   }
-    static ILxBufferID
+    static LXtObjectID
   ByIndex (LXtObjectID wcom, int index)
   {
     LXCWxINST (CLxImpl_FrameBuffer, loc);
     return loc->fbuf_ByIndex (index);
   }
-    static ILxBufferID
+    static LXtObjectID
   Alpha (LXtObjectID wcom, int index)
   {
     LXCWxINST (CLxImpl_FrameBuffer, loc);
@@ -2450,6 +2880,20 @@ class CLxIfc_FrameBuffer : public CLxInterface
     LXCWxINST (CLxImpl_FrameBuffer, loc);
     try {
       return loc->fbuf_SetBloomRadius (bufferIndex,radius);
+    } catch (LxResult rc) { return rc; }
+  }
+    static double
+  GetVignetteAmount (LXtObjectID wcom, int bufferIndex)
+  {
+    LXCWxINST (CLxImpl_FrameBuffer, loc);
+    return loc->fbuf_GetVignetteAmount (bufferIndex);
+  }
+    static LxResult
+  SetVignetteAmount (LXtObjectID wcom, int bufferIndex, double radius)
+  {
+    LXCWxINST (CLxImpl_FrameBuffer, loc);
+    try {
+      return loc->fbuf_SetVignetteAmount (bufferIndex,radius);
     } catch (LxResult rc) { return rc; }
   }
     static double
@@ -2942,6 +3386,8 @@ public:
     vt.SetBloomThreshold = SetBloomThreshold;
     vt.GetBloomRadius = GetBloomRadius;
     vt.SetBloomRadius = SetBloomRadius;
+    vt.GetVignetteAmount = GetVignetteAmount;
+    vt.SetVignetteAmount = SetVignetteAmount;
     vt.GetLevelOffset = GetLevelOffset;
     vt.SetLevelOffset = SetLevelOffset;
     vt.GetRedLevelOffset = GetRedLevelOffset;
@@ -3080,30 +3526,30 @@ public:
   {
     return m_loc[0]->BucketsOnDisk (m_loc,index);
   }
-    ILxBufferID
+    ILxUnknownID
   Lookup (const char *name, ILxUnknownID item) const
   {
-    return m_loc[0]->Lookup (m_loc,name,(ILxUnknownID)item);
+    return (ILxUnknownID) m_loc[0]->Lookup (m_loc,name,(ILxUnknownID)item);
   }
-    ILxBufferID
+    ILxUnknownID
   LookupByIdentity (const char *identity)
   {
-    return m_loc[0]->LookupByIdentity (m_loc,identity);
+    return (ILxUnknownID) m_loc[0]->LookupByIdentity (m_loc,identity);
   }
     unsigned int
   Count (void) const
   {
     return m_loc[0]->Count (m_loc);
   }
-    ILxBufferID
+    ILxUnknownID
   ByIndex (int index) const
   {
-    return m_loc[0]->ByIndex (m_loc,index);
+    return (ILxUnknownID) m_loc[0]->ByIndex (m_loc,index);
   }
-    ILxBufferID
+    ILxUnknownID
   Alpha (int index) const
   {
-    return m_loc[0]->Alpha (m_loc,index);
+    return (ILxUnknownID) m_loc[0]->Alpha (m_loc,index);
   }
     int
   AlphaIndex (int index)
@@ -3159,6 +3605,16 @@ public:
   SetBloomRadius (int bufferIndex, double radius)
   {
     return m_loc[0]->SetBloomRadius (m_loc,bufferIndex,radius);
+  }
+    double
+  GetVignetteAmount (int bufferIndex)
+  {
+    return m_loc[0]->GetVignetteAmount (m_loc,bufferIndex);
+  }
+    LxResult
+  SetVignetteAmount (int bufferIndex, double radius)
+  {
+    return m_loc[0]->SetVignetteAmount (m_loc,bufferIndex,radius);
   }
     double
   GetLevelOffset (int bufferIndex)
@@ -3492,6 +3948,76 @@ public:
   }
 };
 
+class CLxLoc_ImageProcessingService : public CLxLocalizedService
+{
+  ILxImageProcessingServiceID m_loc;
+public:
+  void _init() {m_loc=0;}
+  CLxLoc_ImageProcessingService() {_init();set();}
+ ~CLxLoc_ImageProcessingService() {}
+  void set() {if(!m_loc)m_loc=reinterpret_cast<ILxImageProcessingServiceID>(lx::GetGlobal(&lx::guid_ImageProcessingService));}
+    LxResult
+  ScriptQuery (void **ppvObj)
+  {
+    return m_loc[0]->ScriptQuery (m_loc,ppvObj);
+  }
+    LxResult
+  Create (void **ppvObj)
+  {
+    return m_loc[0]->Create (m_loc,ppvObj);
+  }
+    bool
+  Create (CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Create (m_loc,&obj)) && dest.take(obj);
+  }
+};
+
+class CLxImpl_ImageProcessingListener {
+  public:
+    virtual ~CLxImpl_ImageProcessingListener() {}
+    virtual LxResult
+      improl_Changed (const char *identifier, int eventCode)
+        { return LXe_NOTIMPL; }
+    virtual LxResult
+      improl_Reset (const char *identifier)
+        { return LXe_NOTIMPL; }
+};
+#define LXxD_ImageProcessingListener_Changed LxResult improl_Changed (const char *identifier, int eventCode)
+#define LXxO_ImageProcessingListener_Changed LXxD_ImageProcessingListener_Changed LXx_OVERRIDE
+#define LXxD_ImageProcessingListener_Reset LxResult improl_Reset (const char *identifier)
+#define LXxO_ImageProcessingListener_Reset LXxD_ImageProcessingListener_Reset LXx_OVERRIDE
+template <class T>
+class CLxIfc_ImageProcessingListener : public CLxInterface
+{
+    static LxResult
+  Changed (LXtObjectID wcom, const char *identifier, int eventCode)
+  {
+    LXCWxINST (CLxImpl_ImageProcessingListener, loc);
+    try {
+      return loc->improl_Changed (identifier,eventCode);
+    } catch (LxResult rc) { return rc; }
+  }
+    static LxResult
+  Reset (LXtObjectID wcom, const char *identifier)
+  {
+    LXCWxINST (CLxImpl_ImageProcessingListener, loc);
+    try {
+      return loc->improl_Reset (identifier);
+    } catch (LxResult rc) { return rc; }
+  }
+  ILxImageProcessingListener vt;
+public:
+  CLxIfc_ImageProcessingListener ()
+  {
+    vt.Changed = Changed;
+    vt.Reset = Reset;
+    vTable = &vt.iunk;
+    iid = &lx::guid_ImageProcessingListener;
+  }
+};
 class CLxLoc_ImageProcessingListener : public CLxLocalize<ILxImageProcessingListenerID>
 {
 public:
@@ -3512,26 +4038,40 @@ public:
   }
 };
 
-class CLxLoc_ImageProcessingService : public CLxLocalizedService
+class CLxLoc_RenderStats : public CLxLocalize<ILxRenderStatsID>
 {
-  ILxImageProcessingServiceID m_loc;
 public:
   void _init() {m_loc=0;}
-  CLxLoc_ImageProcessingService() {_init();set();}
- ~CLxLoc_ImageProcessingService() {}
-  void set() {m_loc=reinterpret_cast<ILxImageProcessingServiceID>(lx::GetGlobal(&lx::guid_ImageProcessingService));}
+  CLxLoc_RenderStats() {_init();}
+  CLxLoc_RenderStats(ILxUnknownID obj) {_init();set(obj);}
+  CLxLoc_RenderStats(const CLxLoc_RenderStats &other) {_init();set(other.m_loc);}
+  const LXtGUID * guid() const {return &lx::guid_RenderStats;}
     LxResult
-  ScriptQuery (void **ppvObj)
+  NumFrames (int *count)
   {
-    return m_loc[0]->ScriptQuery (m_loc,ppvObj);
+    return m_loc[0]->NumFrames (m_loc,count);
   }
     LxResult
-  Create (void **ppvObj)
+  NumPasses (int frameIndex, int *count)
   {
-    return m_loc[0]->Create (m_loc,ppvObj);
+    return m_loc[0]->NumPasses (m_loc,frameIndex,count);
+  }
+    LxResult
+  GetPassStats (int frameIndex, int passIndex, void **ppvObj)
+  {
+    return m_loc[0]->GetPassStats (m_loc,frameIndex,passIndex,ppvObj);
+  }
+    LxResult
+  GetFrameStats (int frameIndex, void **ppvObj)
+  {
+    return m_loc[0]->GetFrameStats (m_loc,frameIndex,ppvObj);
+  }
+    LxResult
+  GetSceneStats (void **ppvObj)
+  {
+    return m_loc[0]->GetSceneStats (m_loc,ppvObj);
   }
 };
-
 
 #endif
 

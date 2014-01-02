@@ -1,7 +1,7 @@
 /*
  * Plug-in SDK Header: C++ User Classes
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -35,6 +35,14 @@ class CLxUser_ColorModel : public CLxLoc_ColorModel
     public:
         CLxUser_ColorModel () {}
         CLxUser_ColorModel (ILxUnknownID obj) : CLxLoc_ColorModel (obj) {}
+
+
+};
+class CLxUser_Color : public CLxLoc_Color
+{
+    public:
+        CLxUser_Color () {}
+        CLxUser_Color (ILxUnknownID obj) : CLxLoc_Color (obj) {}
 
 
 };

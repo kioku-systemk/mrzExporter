@@ -1,7 +1,7 @@
 /*
  * C++ wrapper for lxtool.h
  *
- *	Copyright (c) 2008-2012 Luxology LLC
+ *	Copyright (c) 2008-2013 Luxology LLC
  *	
  *	Permission is hereby granted, free of charge, to any person obtaining a
  *	copy of this software and associated documentation files (the "Software"),
@@ -30,6 +30,7 @@
 
 #include <lxtool.h>
 #include <lx_wrap.hpp>
+#include <string>
 
 namespace lx {
     static const LXtGUID guid_ElementAxisPacket = {0x292A47BF,0x3CF5,0x492D,0xAA,0xFD,0xAE,0x76,0x10,0x92,0xA7,0x82};
@@ -54,7 +55,7 @@ public:
   CLxLoc_ElementAxisPacket(const CLxLoc_ElementAxisPacket &other) {_init();set(other.m_loc);}
   const LXtGUID * guid() const {return &lx::guid_ElementAxisPacket;}
     LxResult
-  Axis (LXtPntID vrx, LXtFVector axis, LXtMatrix m, LXtMatrix mInv)
+  Axis (LXtPointID vrx, LXtFVector axis, LXtMatrix m, LXtMatrix mInv)
   {
     return m_loc[0]->Axis (m_loc,vrx,axis,m,mInv);
   }
@@ -123,18 +124,18 @@ public:
   {
     return m_loc[0]->Axis (m_loc,axvec,offset);
   }
-    LXtPntID
-  Point (LXtMeshID mesh, LXtPntID vrx)
+    LXtPointID
+  Point (LXtMeshID mesh, LXtPointID vrx)
   {
     return m_loc[0]->Point (m_loc,mesh,vrx);
   }
-    LXtPolID
-  Polygon (LXtMeshID mesh, LXtPolID pol)
+    LXtPolygonID
+  Polygon (LXtMeshID mesh, LXtPolygonID pol)
   {
     return m_loc[0]->Polygon (m_loc,mesh,pol);
   }
-    LXtOldEdgeID
-  Edge (LXtMeshID mesh, LXtOldEdgeID edge)
+    LXtEdgeID
+  Edge (LXtMeshID mesh, LXtEdgeID edge)
   {
     return m_loc[0]->Edge (m_loc,mesh,edge);
   }
@@ -184,7 +185,7 @@ public:
   CLxLoc_FalloffPacket(const CLxLoc_FalloffPacket &other) {_init();set(other.m_loc);}
   const LXtGUID * guid() const {return &lx::guid_FalloffPacket;}
     double
-  Evaluate (LXtFVector pos, LXtPntID vrx)
+  Evaluate (LXtFVector pos, LXtPointID vrx)
   {
     return m_loc[0]->Evaluate (m_loc,pos,vrx);
   }
@@ -204,7 +205,7 @@ public:
   CLxLoc_TexturePacket(const CLxLoc_TexturePacket &other) {_init();set(other.m_loc);}
   const LXtGUID * guid() const {return &lx::guid_TexturePacket;}
     LxResult
-  Evaluate (LXtFVector pos, LXtPntID vrx, LXtPolID pol, int context, double *res)
+  Evaluate (LXtFVector pos, LXtPointID vrx, LXtPolygonID pol, int context, double *res)
   {
     return m_loc[0]->Evaluate (m_loc,pos,vrx,pol,context,res);
   }
@@ -235,6 +236,20 @@ class CLxImpl_Tool {
       tool_ShouldBeAttribute (LXtID4 task)
         { return 0; }
 };
+#define LXxD_Tool_Reset void tool_Reset (void)
+#define LXxO_Tool_Reset LXxD_Tool_Reset LXx_OVERRIDE
+#define LXxD_Tool_Evaluate void tool_Evaluate (ILxUnknownID vts)
+#define LXxO_Tool_Evaluate LXxD_Tool_Evaluate LXx_OVERRIDE
+#define LXxD_Tool_VectorType LXtObjectID tool_VectorType (void)
+#define LXxO_Tool_VectorType LXxD_Tool_VectorType LXx_OVERRIDE
+#define LXxD_Tool_Order const char * tool_Order (void)
+#define LXxO_Tool_Order LXxD_Tool_Order LXx_OVERRIDE
+#define LXxD_Tool_Task LXtID4 tool_Task (void)
+#define LXxO_Tool_Task LXxD_Tool_Task LXx_OVERRIDE
+#define LXxD_Tool_Sequence LxResult tool_Sequence (ILxUnknownID seq)
+#define LXxO_Tool_Sequence LXxD_Tool_Sequence LXx_OVERRIDE
+#define LXxD_Tool_ShouldBeAttribute int tool_ShouldBeAttribute (LXtID4 task)
+#define LXxO_Tool_ShouldBeAttribute LXxD_Tool_ShouldBeAttribute LXx_OVERRIDE
 template <class T>
 class CLxIfc_Tool : public CLxInterface
 {
@@ -297,6 +312,50 @@ public:
     iid = &lx::guid_Tool;
   }
 };
+class CLxLoc_Tool : public CLxLocalize<ILxToolID>
+{
+public:
+  void _init() {m_loc=0;}
+  CLxLoc_Tool() {_init();}
+  CLxLoc_Tool(ILxUnknownID obj) {_init();set(obj);}
+  CLxLoc_Tool(const CLxLoc_Tool &other) {_init();set(other.m_loc);}
+  const LXtGUID * guid() const {return &lx::guid_Tool;}
+    void
+  Reset (void)
+  {
+    m_loc[0]->Reset (m_loc);
+  }
+    void
+  Evaluate (ILxUnknownID vts)
+  {
+    m_loc[0]->Evaluate (m_loc,(ILxUnknownID)vts);
+  }
+    ILxUnknownID
+  VectorType (void)
+  {
+    return (ILxUnknownID) m_loc[0]->VectorType (m_loc);
+  }
+    const char *
+  Order (void)
+  {
+    return m_loc[0]->Order (m_loc);
+  }
+    LXtID4
+  Task (void)
+  {
+    return m_loc[0]->Task (m_loc);
+  }
+    LxResult
+  Sequence (ILxUnknownID seq)
+  {
+    return m_loc[0]->Sequence (m_loc,(ILxUnknownID)seq);
+  }
+    int
+  ShouldBeAttribute (LXtID4 task)
+  {
+    return m_loc[0]->ShouldBeAttribute (m_loc,task);
+  }
+};
 
 class CLxLoc_PathGeneratorPacket : public CLxLocalize<ILxPathGeneratorPacketID>
 {
@@ -321,7 +380,7 @@ public:
   {
     return m_loc[0]->Tangent (m_loc,(ILxUnknownID)vts,t,tan);
   }
-    LXtPolID
+    LXtPolygonID
   Source (ILxUnknownID vts)
   {
     return m_loc[0]->Source (m_loc,(ILxUnknownID)vts);
@@ -367,7 +426,7 @@ public:
   CLxLoc_ElementCenterPacket(const CLxLoc_ElementCenterPacket &other) {_init();set(other.m_loc);}
   const LXtGUID * guid() const {return &lx::guid_ElementCenterPacket;}
     LxResult
-  Center (LXtPntID vrx, LXtFVector center)
+  Center (LXtPointID vrx, LXtFVector center)
   {
     return m_loc[0]->Center (m_loc,vrx,center);
   }

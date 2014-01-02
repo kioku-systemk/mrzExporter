@@ -1,7 +1,7 @@
 /*
  * LX ilxlocator module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -49,7 +49,6 @@ typedef struct vt_ILxLocator {
                 LXtObjectID              chanRead,
                 LXtMatrix                xfrm,
                 LXtVector                pos);
-
                 LXxMETHOD(  LxResult,
         GetTransformItem) (
                 LXtObjectID              self,
@@ -66,13 +65,13 @@ typedef struct vt_ILxLocator {
                 LXtObjectID              self,
                 LXtObjectID              chanWrite,
                 LXtTransformType         type,
-                LXtVector                value);
+                const LXtVector          value);
                 LXxMETHOD(  LxResult,
         AddPreTransformItem) (
                 LXtObjectID              self,
                 LXtObjectID              chanWrite,
                 LXtTransformType         type,
-                LXtVector                value,
+                const LXtVector          value,
                 void                   **ppvObj,
                 unsigned                *index);
                 LXxMETHOD(  LxResult,
@@ -80,7 +79,7 @@ typedef struct vt_ILxLocator {
                 LXtObjectID              self,
                 LXtObjectID              chanWrite,
                 LXtTransformType         type,
-                LXtVector                value,
+                const LXtVector          value,
                 void                   **ppvObj,
                 unsigned                *index);
                 LXxMETHOD(  LxResult,
@@ -93,7 +92,7 @@ typedef struct vt_ILxLocator {
                 LXtObjectID              self,
                 LXtObjectID              chanWrite,
                 LXtTransformType         type,
-                LXtVector                value,
+                const LXtVector          value,
                 void                   **ppvObj,
                 unsigned                *index);
                 LXxMETHOD(  LxResult,
@@ -101,7 +100,7 @@ typedef struct vt_ILxLocator {
                 LXtObjectID              self,
                 LXtObjectID              chanWrite,
                 LXtTransformType         type,
-                LXtVector                value,
+                const LXtVector          value,
                 void                   **ppvObj,
                 unsigned                *index);
                 LXxMETHOD(  LxResult,
@@ -109,7 +108,7 @@ typedef struct vt_ILxLocator {
                 LXtObjectID              self,
                 LXtObjectID              chanRead,
                 LXtObjectID              chanWrite,
-                LXtVector                pos,
+                const LXtVector          pos,
                 unsigned                 type,
                 unsigned                 comp);
                 LXxMETHOD(  LxResult,
@@ -117,7 +116,7 @@ typedef struct vt_ILxLocator {
                 LXtObjectID              self,
                 LXtObjectID              chanRead,
                 LXtObjectID              chanWrite,
-                LXtMatrix                m3,
+                const LXtMatrix          m3,
                 unsigned                 type,
                 unsigned                 comp);
                 LXxMETHOD(  LxResult,
@@ -125,7 +124,7 @@ typedef struct vt_ILxLocator {
                 LXtObjectID              self,
                 LXtObjectID              chanRead,
                 LXtObjectID              chanWrite,
-                LXtMatrix4               m4,
+                const LXtMatrix4         m4,
                 unsigned                 type,
                 unsigned                 comp);
                 LXxMETHOD(  LxResult,
@@ -160,12 +159,20 @@ typedef struct vt_ILxLocator {
 #define LXu_LOCATOR     "50DCCB9D-9856-4A33-9BDA-DAF3A71BBD2D"
 #define LXa_LOCATOR     "locator"
 // [local]  ILxLocator
-// [export] ILxLocator loc
 // [const]  ILxLocator:Visible
 // [const]  ILxLocator:WorldTransform
 // [const]  ILxLocator:WorldTransform4
 // [const]  ILxLocator:GetTransformItem
 // [const]  ILxLocator:GetXfrmItem
+// [python] type LXtTransformType unsigned
+// [python] ILxLocator:AddPostTransformItem     obj Item
+// [python] ILxLocator:AddPreTransformItem      obj Item
+// [python] ILxLocator:AddTransformItem         obj Item
+// [python] ILxLocator:AppendTransformItem      obj Item
+// [python] ILxLocator:GetTransformItem         obj Item
+// [python] ILxLocator:PrependTransformItem     obj Item
+// [python] ILxLocator:SetTarget                obj Item
+// [python] ILxLocator:Visible                  bool
 #define LXiICVAL_LIGHT_SHADTYPE_NONE            0
 #define LXiICVAL_LIGHT_SHADTYPE_RAYTRACE        1
 #define LXiICVAL_LIGHT_SHADTYPE_SHADOWMAP       2

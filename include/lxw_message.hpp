@@ -1,7 +1,7 @@
 /*
  * C++ wrapper for lxmessage.h
  *
- *	Copyright (c) 2008-2012 Luxology LLC
+ *	Copyright (c) 2008-2013 Luxology LLC
  *	
  *	Permission is hereby granted, free of charge, to any person obtaining a
  *	copy of this software and associated documentation files (the "Software"),
@@ -30,6 +30,7 @@
 
 #include <lxmessage.h>
 #include <lx_wrap.hpp>
+#include <string>
 
 namespace lx {
     static const LXtGUID guid_AutoSaveListener = {0x04f41d4e,0x7267,0x430e,0x81,0xf4,0xa8,0x98,0x96,0xbf,0x74,0x6c};
@@ -58,7 +59,7 @@ public:
   void _init() {m_loc=0;}
   CLxLoc_MessageService() {_init();set();}
  ~CLxLoc_MessageService() {}
-  void set() {m_loc=reinterpret_cast<ILxMessageServiceID>(lx::GetGlobal(&lx::guid_MessageService));}
+  void set() {if(!m_loc)m_loc=reinterpret_cast<ILxMessageServiceID>(lx::GetGlobal(&lx::guid_MessageService));}
     LxResult
   ScriptQuery (void **ppvObj)
   {
@@ -69,10 +70,24 @@ public:
   {
     return m_loc[0]->Allocate (m_loc,ppvObj);
   }
+    bool
+  Allocate (CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Allocate (m_loc,&obj)) && dest.take(obj);
+  }
     LxResult
   Duplicate (ILxUnknownID msg, void **ppvObj)
   {
     return m_loc[0]->Duplicate (m_loc,(ILxUnknownID)msg,ppvObj);
+  }
+    bool
+  Duplicate (ILxUnknownID msg, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Duplicate (m_loc,(ILxUnknownID)msg,&obj)) && dest.take(obj);
   }
     LxResult
   MessageText (ILxUnknownID msg, char *buf, unsigned len)
@@ -80,9 +95,64 @@ public:
     return m_loc[0]->MessageText (m_loc,(ILxUnknownID)msg,buf,len);
   }
     LxResult
+  MessageText (ILxUnknownID msg, std::string &result)
+  {
+    LXWx_SBUF1
+    rc = m_loc[0]->MessageText (m_loc,(ILxUnknownID)msg,buf,len);
+    LXWx_SBUF2
+  }
+    LxResult
   RawText (const char *table, const char *msg, const char **text)
   {
     return m_loc[0]->RawText (m_loc,table,msg,text);
+  }
+    LxResult
+  ArgTypeUserName (const char *argType, char *buf, unsigned len)
+  {
+    return m_loc[0]->ArgTypeUserName (m_loc,argType,buf,len);
+  }
+    LxResult
+  ArgTypeUserName (const char *argType, std::string &result)
+  {
+    LXWx_SBUF1
+    rc = m_loc[0]->ArgTypeUserName (m_loc,argType,buf,len);
+    LXWx_SBUF2
+  }
+    LxResult
+  ArgTypeDesc (const char *argType, char *buf, unsigned len)
+  {
+    return m_loc[0]->ArgTypeDesc (m_loc,argType,buf,len);
+  }
+    LxResult
+  ArgTypeDesc (const char *argType, std::string &result)
+  {
+    LXWx_SBUF1
+    rc = m_loc[0]->ArgTypeDesc (m_loc,argType,buf,len);
+    LXWx_SBUF2
+  }
+    LxResult
+  ArgTypeOptionUserName (const char *argType, const char *option, char *buf, unsigned len)
+  {
+    return m_loc[0]->ArgTypeOptionUserName (m_loc,argType,option,buf,len);
+  }
+    LxResult
+  ArgTypeOptionUserName (const char *argType, const char *option, std::string &result)
+  {
+    LXWx_SBUF1
+    rc = m_loc[0]->ArgTypeOptionUserName (m_loc,argType,option,buf,len);
+    LXWx_SBUF2
+  }
+    LxResult
+  ArgTypeOptionDesc (const char *argType, const char *option, char *buf, unsigned len)
+  {
+    return m_loc[0]->ArgTypeOptionDesc (m_loc,argType,option,buf,len);
+  }
+    LxResult
+  ArgTypeOptionDesc (const char *argType, const char *option, std::string &result)
+  {
+    LXWx_SBUF1
+    rc = m_loc[0]->ArgTypeOptionDesc (m_loc,argType,option,buf,len);
+    LXWx_SBUF2
   }
 };
 

@@ -1,7 +1,7 @@
 /*
  * Plug-in SDK Header: Geometry Utilities
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -33,15 +33,18 @@
 #include <lxvmath.h>
 #include <vector>
 
+        namespace lx
+        {
+
 /*
  * Points for standard template containers.
  */
-struct Point
+struct GeoPoint
 {
         LXtVector vec;
 };
 
-struct UV
+struct GeoUV
 {
         LXtFVector2 uv;
 };
@@ -52,20 +55,22 @@ struct UV
  */
         void
 GenerateNormals (
-        std::vector<Point>	&points,
+        std::vector<GeoPoint>	&points,
         std::vector<unsigned>	&triangles,
-        std::vector<Point>	&normals);
+        std::vector<GeoPoint>	&normals);
 
 /*
  * Generate vertex dPdu/dPdv values, with smoothing for shared vertices.
  */
         void
 GenerateDPDUs (
-        std::vector<Point>	&points,
-        std::vector<UV>		&uvs,
+        std::vector<GeoPoint>	&points,
+        std::vector<GeoUV>	&uvs,
         std::vector<unsigned>	&triangles,
-        std::vector<Point>	&dPdus,
-        std::vector<Point>	&dPdvs);
+        std::vector<GeoPoint>	&dPdus,
+        std::vector<GeoPoint>	&dPdvs);
+
+        };	// END lx namespace
 
 #endif // LXU_GEOMETRY_HPP
 

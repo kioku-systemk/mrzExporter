@@ -1,7 +1,7 @@
 /*
  * Plug-in SDK Header: C++ User Classes
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -28,6 +28,8 @@
 #define LXUSER_stddialog_HPP
 
 #include <lxw_stddialog.hpp>
+#include <lxw_value.hpp>
+#include <lxw_io.hpp>
 #include <string>
 
 

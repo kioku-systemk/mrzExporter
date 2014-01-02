@@ -1,7 +1,7 @@
 /*
  * Plug-in SDK Header: C++ Wrapper Classes
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -157,6 +157,8 @@ class CLxDynamicAttributes :
         LxResult	attr_GetBool   (unsigned int index, bool *val);
         LxResult	attr_SetBool   (unsigned int index, bool val);
         LxResult	attr_GetString (unsigned int index, std::string &value);
+
+        virtual void	dyna_Changed   (unsigned int index)			    { }
 
         virtual bool	atrui_Enabled  (unsigned int index, CLxUser_Message &msg)   { return true; }
         virtual void	atrui_UIHints  (unsigned int index, CLxUser_UIHints &hints) { }

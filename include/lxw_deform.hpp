@@ -1,7 +1,7 @@
 /*
  * C++ wrapper for lxdeform.h
  *
- *	Copyright (c) 2008-2012 Luxology LLC
+ *	Copyright (c) 2008-2013 Luxology LLC
  *	
  *	Permission is hereby granted, free of charge, to any person obtaining a
  *	copy of this software and associated documentation files (the "Software"),
@@ -30,6 +30,7 @@
 
 #include <lxdeform.h>
 #include <lx_wrap.hpp>
+#include <string>
 
 namespace lx {
     static const LXtGUID guid_DeformerService = {0x8267068C,0xFDBB,0x430A,0x82,0x30,0xBE,0x64,0xF7,0x2C,0xE3,0xE3};
@@ -49,7 +50,7 @@ public:
   void _init() {m_loc=0;}
   CLxLoc_DeformerService() {_init();set();}
  ~CLxLoc_DeformerService() {}
-  void set() {m_loc=reinterpret_cast<ILxDeformerServiceID>(lx::GetGlobal(&lx::guid_DeformerService));}
+  void set() {if(!m_loc)m_loc=reinterpret_cast<ILxDeformerServiceID>(lx::GetGlobal(&lx::guid_DeformerService));}
     LxResult
   ScriptQuery (void **ppvObj)
   {
@@ -80,15 +81,36 @@ public:
   {
     return m_loc[0]->MeshByIndex (m_loc,(ILxUnknownID)defItem,index,ppvObj);
   }
+    bool
+  MeshByIndex (ILxUnknownID defItem, unsigned index, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->MeshByIndex (m_loc,(ILxUnknownID)defItem,index,&obj)) && dest.take(obj);
+  }
     LxResult
   GroupDeformer (ILxUnknownID dgroup, ILxUnknownID chanRead, void **ppvObj)
   {
     return m_loc[0]->GroupDeformer (m_loc,(ILxUnknownID)dgroup,(ILxUnknownID)chanRead,ppvObj);
   }
+    bool
+  GroupDeformer (ILxUnknownID dgroup, ILxUnknownID chanRead, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->GroupDeformer (m_loc,(ILxUnknownID)dgroup,(ILxUnknownID)chanRead,&obj)) && dest.take(obj);
+  }
     LxResult
   DeformerDeformationItem (ILxUnknownID defItem, void **ppvObj)
   {
     return m_loc[0]->DeformerDeformationItem (m_loc,(ILxUnknownID)defItem,ppvObj);
+  }
+    bool
+  DeformerDeformationItem (ILxUnknownID defItem, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->DeformerDeformationItem (m_loc,(ILxUnknownID)defItem,&obj)) && dest.take(obj);
   }
     void
   InvalidateTargets (ILxUnknownID scene)
@@ -117,6 +139,10 @@ class CLxImpl_WeightMapDeformerItem {
       wmd_GetColor (ILxUnknownID chanRead, LXtVector col)
         { return LXeDEFORM_AUTO_COLOR; }
 };
+#define LXxD_WeightMapDeformerItem_GetMapName LxResult wmd_GetMapName (ILxUnknownID chanRead, char *buf, unsigned len)
+#define LXxO_WeightMapDeformerItem_GetMapName LXxD_WeightMapDeformerItem_GetMapName LXx_OVERRIDE
+#define LXxD_WeightMapDeformerItem_GetColor LxResult wmd_GetColor (ILxUnknownID chanRead, LXtVector col)
+#define LXxO_WeightMapDeformerItem_GetColor LXxD_WeightMapDeformerItem_GetColor LXx_OVERRIDE
 template <class T>
 class CLxIfc_WeightMapDeformerItem : public CLxInterface
 {
@@ -160,6 +186,13 @@ public:
     return m_loc[0]->GetMapName (m_loc,(ILxUnknownID)chanRead,buf,len);
   }
     LxResult
+  GetMapName (ILxUnknownID chanRead, std::string &result)
+  {
+    LXWx_SBUF1
+    rc = m_loc[0]->GetMapName (m_loc,(ILxUnknownID)chanRead,buf,len);
+    LXWx_SBUF2
+  }
+    LxResult
   GetColor (ILxUnknownID chanRead, LXtVector col)
   {
     return m_loc[0]->GetColor (m_loc,(ILxUnknownID)chanRead,col);
@@ -182,6 +215,14 @@ class CLxImpl_ItemInfluence {
       iinf_AllowTransform (unsigned index, unsigned *flags)
         { return LXe_NOTIMPL; }
 };
+#define LXxD_ItemInfluence_HasItems LxResult iinf_HasItems (void)
+#define LXxO_ItemInfluence_HasItems LXxD_ItemInfluence_HasItems LXx_OVERRIDE
+#define LXxD_ItemInfluence_Enumerate LxResult iinf_Enumerate (ILxUnknownID visitor)
+#define LXxO_ItemInfluence_Enumerate LXxD_ItemInfluence_Enumerate LXx_OVERRIDE
+#define LXxD_ItemInfluence_GetItem LxResult iinf_GetItem (void **ppvObj)
+#define LXxO_ItemInfluence_GetItem LXxD_ItemInfluence_GetItem LXx_OVERRIDE
+#define LXxD_ItemInfluence_AllowTransform LxResult iinf_AllowTransform (unsigned index, unsigned *flags)
+#define LXxO_ItemInfluence_AllowTransform LXxD_ItemInfluence_AllowTransform LXx_OVERRIDE
 template <class T>
 class CLxIfc_ItemInfluence : public CLxInterface
 {
@@ -252,6 +293,13 @@ public:
   {
     return m_loc[0]->GetItem (m_loc,ppvObj);
   }
+    bool
+  GetItem (CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->GetItem (m_loc,&obj)) && dest.take(obj);
+  }
     LxResult
   AllowTransform (unsigned index, unsigned *flags)
   {
@@ -272,6 +320,12 @@ class CLxImpl_Falloff {
       fall_WeightRun (const float **pos, float *weight, unsigned num)
         { return LXe_NOTIMPL; }
 };
+#define LXxD_Falloff_Bounds LxResult fall_Bounds (LXtBBox *box)
+#define LXxO_Falloff_Bounds LXxD_Falloff_Bounds LXx_OVERRIDE
+#define LXxD_Falloff_WeightF float fall_WeightF (const LXtFVector position)
+#define LXxO_Falloff_WeightF LXxD_Falloff_WeightF LXx_OVERRIDE
+#define LXxD_Falloff_WeightRun LxResult fall_WeightRun (const float **pos, float *weight, unsigned num)
+#define LXxO_Falloff_WeightRun LXxD_Falloff_WeightRun LXx_OVERRIDE
 template <class T>
 class CLxIfc_Falloff : public CLxInterface
 {
@@ -351,6 +405,13 @@ public:
   {
     return m_loc[0]->DeformerByIndex (m_loc,index,ppvObj);
   }
+    bool
+  DeformerByIndex (unsigned index, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->DeformerByIndex (m_loc,index,&obj)) && dest.take(obj);
+  }
     LxResult
   PointEffect (unsigned meshIndex, LXtPointID point, unsigned *deformer, float *weight, unsigned *count, unsigned max)
   {
@@ -377,6 +438,16 @@ class CLxImpl_Deformation {
       deform_OffsetRun (const float **pos, const float *weight, float **offset, unsigned num)
         { return LXe_NOTIMPL; }
 };
+#define LXxD_Deformation_Flags unsigned deform_Flags (void)
+#define LXxO_Deformation_Flags LXxD_Deformation_Flags LXx_OVERRIDE
+#define LXxD_Deformation_Transform LxResult deform_Transform (LXtMatrix4 xfrm)
+#define LXxO_Deformation_Transform LXxD_Deformation_Transform LXx_OVERRIDE
+#define LXxD_Deformation_OffsetF void deform_OffsetF (const LXtFVector position, float weight, LXtFVector offset)
+#define LXxO_Deformation_OffsetF LXxD_Deformation_OffsetF LXx_OVERRIDE
+#define LXxD_Deformation_OBSOLETE void deform_OBSOLETE (void)
+#define LXxO_Deformation_OBSOLETE LXxD_Deformation_OBSOLETE LXx_OVERRIDE
+#define LXxD_Deformation_OffsetRun LxResult deform_OffsetRun (const float **pos, const float *weight, float **offset, unsigned num)
+#define LXxO_Deformation_OffsetRun LXxD_Deformation_OffsetRun LXx_OVERRIDE
 template <class T>
 class CLxIfc_Deformation : public CLxInterface
 {
@@ -484,6 +555,18 @@ class CLxImpl_MeshInfluence {
       minf_MeshChange (unsigned index, LxResult change)
         { return LXe_NOTIMPL; }
 };
+#define LXxD_MeshInfluence_MeshCount unsigned minf_MeshCount (void)
+#define LXxO_MeshInfluence_MeshCount LXxD_MeshInfluence_MeshCount LXx_OVERRIDE
+#define LXxD_MeshInfluence_MeshByIndex LxResult minf_MeshByIndex (unsigned index, void **ppvObj)
+#define LXxO_MeshInfluence_MeshByIndex LXxD_MeshInfluence_MeshByIndex LXx_OVERRIDE
+#define LXxD_MeshInfluence_PartitionIndex unsigned minf_PartitionIndex (unsigned index)
+#define LXxO_MeshInfluence_PartitionIndex LXxD_MeshInfluence_PartitionIndex LXx_OVERRIDE
+#define LXxD_MeshInfluence_SetMesh LxResult minf_SetMesh (unsigned index, ILxUnknownID mesh, ILxUnknownID item)
+#define LXxO_MeshInfluence_SetMesh LXxD_MeshInfluence_SetMesh LXx_OVERRIDE
+#define LXxD_MeshInfluence_SetTransform LxResult minf_SetTransform (unsigned index, LXtMatrix4 xfrm)
+#define LXxO_MeshInfluence_SetTransform LXxD_MeshInfluence_SetTransform LXx_OVERRIDE
+#define LXxD_MeshInfluence_MeshChange LxResult minf_MeshChange (unsigned index, LxResult change)
+#define LXxO_MeshInfluence_MeshChange LXxD_MeshInfluence_MeshChange LXx_OVERRIDE
 template <class T>
 class CLxIfc_MeshInfluence : public CLxInterface
 {
@@ -563,6 +646,13 @@ public:
   {
     return m_loc[0]->MeshByIndex (m_loc,index,ppvObj);
   }
+    bool
+  MeshByIndex (unsigned index, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->MeshByIndex (m_loc,index,&obj)) && dest.take(obj);
+  }
     unsigned
   PartitionIndex (unsigned index)
   {
@@ -604,10 +694,10 @@ class CLxImpl_Deformer {
       dinf_SetPartition (unsigned part)
         { return LXe_NOTIMPL; }
     virtual float
-      dinf_Weight (LXtDeformElt elt, LXtFVector pos)
+      dinf_Weight (LXtDeformElt elt, const LXtFVector pos)
         { return 1; }
     virtual void
-      dinf_Offset (LXtDeformElt elt, float weight, LXtFVector pos, LXtFVector offset)
+      dinf_Offset (LXtDeformElt elt, float weight, const LXtFVector pos, LXtFVector offset)
         { }
     virtual LxResult
       dinf_WeightRun (unsigned segment, const LXtDeformElt *elt, const float **pos, float *weight, unsigned num)
@@ -616,6 +706,24 @@ class CLxImpl_Deformer {
       dinf_OffsetRun (unsigned segment, const LXtDeformElt *elt, const float **pos, const float *weight, float **offset, unsigned num)
         { return LXe_NOTIMPL; }
 };
+#define LXxD_Deformer_Flags unsigned dinf_Flags (void)
+#define LXxO_Deformer_Flags LXxD_Deformer_Flags LXx_OVERRIDE
+#define LXxD_Deformer_PartitionCount unsigned dinf_PartitionCount (void)
+#define LXxO_Deformer_PartitionCount LXxD_Deformer_PartitionCount LXx_OVERRIDE
+#define LXxD_Deformer_EnumeratePartition LxResult dinf_EnumeratePartition (ILxUnknownID visitor, unsigned part)
+#define LXxO_Deformer_EnumeratePartition LXxD_Deformer_EnumeratePartition LXx_OVERRIDE
+#define LXxD_Deformer_Element LXtDeformElt dinf_Element (unsigned *segment)
+#define LXxO_Deformer_Element LXxD_Deformer_Element LXx_OVERRIDE
+#define LXxD_Deformer_SetPartition LxResult dinf_SetPartition (unsigned part)
+#define LXxO_Deformer_SetPartition LXxD_Deformer_SetPartition LXx_OVERRIDE
+#define LXxD_Deformer_Weight float dinf_Weight (LXtDeformElt elt, const LXtFVector pos)
+#define LXxO_Deformer_Weight LXxD_Deformer_Weight LXx_OVERRIDE
+#define LXxD_Deformer_Offset void dinf_Offset (LXtDeformElt elt, float weight, const LXtFVector pos, LXtFVector offset)
+#define LXxO_Deformer_Offset LXxD_Deformer_Offset LXx_OVERRIDE
+#define LXxD_Deformer_WeightRun LxResult dinf_WeightRun (unsigned segment, const LXtDeformElt *elt, const float **pos, float *weight, unsigned num)
+#define LXxO_Deformer_WeightRun LXxD_Deformer_WeightRun LXx_OVERRIDE
+#define LXxD_Deformer_OffsetRun LxResult dinf_OffsetRun (unsigned segment, const LXtDeformElt *elt, const float **pos, const float *weight, float **offset, unsigned num)
+#define LXxO_Deformer_OffsetRun LXxD_Deformer_OffsetRun LXx_OVERRIDE
 template <class T>
 class CLxIfc_Deformer : public CLxInterface
 {
@@ -654,13 +762,13 @@ class CLxIfc_Deformer : public CLxInterface
     } catch (LxResult rc) { return rc; }
   }
     static float
-  Weight (LXtObjectID wcom, LXtDeformElt elt, LXtFVector pos)
+  Weight (LXtObjectID wcom, LXtDeformElt elt, const LXtFVector pos)
   {
     LXCWxINST (CLxImpl_Deformer, loc);
     return loc->dinf_Weight (elt,pos);
   }
     static void
-  Offset (LXtObjectID wcom, LXtDeformElt elt, float weight, LXtFVector pos, LXtFVector offset)
+  Offset (LXtObjectID wcom, LXtDeformElt elt, float weight, const LXtFVector pos, LXtFVector offset)
   {
     LXCWxINST (CLxImpl_Deformer, loc);
     loc->dinf_Offset (elt,weight,pos,offset);
@@ -732,12 +840,12 @@ public:
     return m_loc[0]->SetPartition (m_loc,part);
   }
     float
-  Weight (LXtDeformElt elt, LXtFVector pos)
+  Weight (LXtDeformElt elt, const LXtFVector pos)
   {
     return m_loc[0]->Weight (m_loc,elt,pos);
   }
     void
-  Offset (LXtDeformElt elt, float weight, LXtFVector pos, LXtFVector offset)
+  Offset (LXtDeformElt elt, float weight, const LXtFVector pos, LXtFVector offset)
   {
     m_loc[0]->Offset (m_loc,elt,weight,pos,offset);
   }

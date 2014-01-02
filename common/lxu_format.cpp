@@ -1,7 +1,7 @@
 /*
  * Plug-in SDK Header: Common Utility
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -36,7 +36,7 @@
 #include <lx_wrap.hpp>
 #include <iostream>
 #include <fstream>
-#include <string>
+#include <string.h>
 
 using namespace std;
 
@@ -285,21 +285,7 @@ CLxBinaryFormat::ff_Cleanup ()
         }
 }
 
-void
-CLxBinaryFormat::lf_Output (
-                            const char		*str)
-{
-    if (pv->do_output) {
-            /*
-             * Binary strings are null-terminated.
-             */
-            pv->out_file->write (
-                     str,
-                     string(str).length () + 1);
-    }
-}
-
-void
+        void
 CLxBinaryFormat::lf_Output (
         const char		*str, int offset)
 {
@@ -346,17 +332,6 @@ CLxBinaryFormat::lf_Output (
         }
 }
 
-void
-CLxBinaryFormat::lf_Output (
-		short			 value)
-{
-	if (pv->do_output) {
-		pv->out_file->write (
-							 reinterpret_cast<char*>(&value),
-							 sizeof(short));
-	}
-}
-
         void
 CLxBinaryFormat::lf_Output (
         unsigned		 value)
@@ -366,27 +341,5 @@ CLxBinaryFormat::lf_Output (
                         reinterpret_cast<char*>(&value),
                         sizeof(unsigned));
         }
-}
-
-void
-CLxBinaryFormat::lf_Output (
-		unsigned short		 value)
-{
-	if (pv->do_output) {
-		pv->out_file->write (
-							 reinterpret_cast<char*>(&value),
-							 sizeof(unsigned short));
-	}
-}
-
-void
-CLxBinaryFormat::lf_Output (
-        unsigned char		 value)
-{
-	if (pv->do_output) {
-		pv->out_file->write (
-							 reinterpret_cast<char*>(&value),
-							 sizeof(unsigned char));
-	}
 }
 

@@ -1,7 +1,7 @@
 /*
  * C++ wrapper for lxundo.h
  *
- *	Copyright (c) 2008-2012 Luxology LLC
+ *	Copyright (c) 2008-2013 Luxology LLC
  *	
  *	Permission is hereby granted, free of charge, to any person obtaining a
  *	copy of this software and associated documentation files (the "Software"),
@@ -30,6 +30,7 @@
 
 #include <lxundo.h>
 #include <lx_wrap.hpp>
+#include <string>
 
 namespace lx {
     static const LXtGUID guid_UndoService = {0xD8CA1EC8,0xF6A0,0x463E,0xAB,0x82,0x94,0x78,0xA2,0x81,0xB2,0xCB};
@@ -43,7 +44,7 @@ public:
   void _init() {m_loc=0;}
   CLxLoc_UndoService() {_init();set();}
  ~CLxLoc_UndoService() {}
-  void set() {m_loc=reinterpret_cast<ILxUndoServiceID>(lx::GetGlobal(&lx::guid_UndoService));}
+  void set() {if(!m_loc)m_loc=reinterpret_cast<ILxUndoServiceID>(lx::GetGlobal(&lx::guid_UndoService));}
     LxResult
   ScriptQuery (void **ppvObj)
   {
@@ -76,6 +77,10 @@ class CLxImpl_Undo {
       undo_Reverse (void)
         { }
 };
+#define LXxD_Undo_Forward void undo_Forward (void)
+#define LXxO_Undo_Forward LXxD_Undo_Forward LXx_OVERRIDE
+#define LXxD_Undo_Reverse void undo_Reverse (void)
+#define LXxO_Undo_Reverse LXxD_Undo_Reverse LXx_OVERRIDE
 template <class T>
 class CLxIfc_Undo : public CLxInterface
 {
@@ -99,6 +104,25 @@ public:
     vt.Reverse = Reverse;
     vTable = &vt.iunk;
     iid = &lx::guid_Undo;
+  }
+};
+class CLxLoc_Undo : public CLxLocalize<ILxUndoID>
+{
+public:
+  void _init() {m_loc=0;}
+  CLxLoc_Undo() {_init();}
+  CLxLoc_Undo(ILxUnknownID obj) {_init();set(obj);}
+  CLxLoc_Undo(const CLxLoc_Undo &other) {_init();set(other.m_loc);}
+  const LXtGUID * guid() const {return &lx::guid_Undo;}
+    void
+  Forward (void)
+  {
+    m_loc[0]->Forward (m_loc);
+  }
+    void
+  Reverse (void)
+  {
+    m_loc[0]->Reverse (m_loc);
   }
 };
 

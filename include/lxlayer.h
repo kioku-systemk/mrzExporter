@@ -1,7 +1,7 @@
 /*
  * LX layer module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -53,7 +53,7 @@ typedef struct vt_ILxLayerService {
                 LXxMETHOD(  LxResult,
         Scene) (
                 LXtObjectID              self,
-                void                   **xcin);
+                void                   **ppvObj);
                 LXxMETHOD(  LxResult,
         Count) (
                 LXtObjectID              self,
@@ -75,13 +75,13 @@ typedef struct vt_ILxLayerService {
         Item) (
                 LXtObjectID              self,
                 unsigned int             index,
-                void                   **item);
+                void                   **ppvObj);
 
                 LXxMETHOD(  LxResult,
         Mesh) (
                 LXtObjectID              self,
                 unsigned int             index,
-                void                   **mesh);
+                void                   **ppvObj);
 
                 LXxMETHOD(  LxResult,
         Flags) (
@@ -105,8 +105,8 @@ typedef struct vt_ILxLayerService {
         Bounds) (
                 LXtObjectID              self,
                 unsigned int             index,
-                double                  *min,
-                double                  *max);
+                LXtVector                min,
+                LXtVector                max);
 
                 LXxMETHOD(  LxResult,
         CurveSmoothAngle) (
@@ -390,6 +390,19 @@ typedef struct vt_ILxScene1Service {
 
 #define LXu_LAYERSERVICE        "F12B06AA-BF92-4585-800E-45AB99D47A20"
 #define LXa_LAYERSERVICE        "layerservice"
+// [python] ILxLayerService:Item                obj Item
+// [python] ILxLayerService:LayerClip           obj Item
+// [python] ILxLayerService:LayerEdge           obj Unknown
+// [python] ILxLayerService:LayerMaterial       obj Item
+// [python] ILxLayerService:LayerPoly           obj Unknown
+// [python] ILxLayerService:LayerTagTexture     obj Item
+// [python] ILxLayerService:LayerTexture        obj Item
+// [python] ILxLayerService:LayerVMap           obj Unknown
+// [python] ILxLayerService:LayerVertex         obj Unknown
+// [python] ILxLayerService:Mesh                obj Mesh
+// [python] ILxLayerService:ScanAllocate        obj LayerScan
+// [python] ILxLayerService:Scene               obj Scene
+// [python] ILxLayerService:XfrmAllocate        obj TransformScan
 #define LXi_LAYER_PRIMARY               0
 #define LXi_LAYER_FOREGROUND            1
 #define LXi_LAYER_BACKGROUND            2
@@ -399,7 +412,12 @@ typedef struct vt_ILxScene1Service {
 #define LXf_LAYER_MAIN                  4
 #define LXu_LAYERSCAN   "097DB669-91C3-11D9-8EA2-000A956C2E10"
 #define LXa_LAYERSCAN   "layerscan"
-// [local] ILxLayerScan
+// [local]  ILxLayerScan
+// [python] ILxLayerScan:MeshAction     obj ChannelRead
+// [python] ILxLayerScan:MeshBase       obj Mesh
+// [python] ILxLayerScan:MeshEdit       obj Mesh
+// [python] ILxLayerScan:MeshInstance   obj Mesh
+// [python] ILxLayerScan:MeshItem       obj Item
 #define LXf_LAYERSCAN_ACTIVE             0x001
 #define LXf_LAYERSCAN_BACKGROUND         0x002
 #define LXf_LAYERSCAN_PRIMARY            0x004

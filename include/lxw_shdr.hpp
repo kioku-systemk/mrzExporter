@@ -1,7 +1,7 @@
 /*
  * C++ wrapper for lxshdr.h
  *
- *	Copyright (c) 2008-2012 Luxology LLC
+ *	Copyright (c) 2008-2013 Luxology LLC
  *	
  *	Permission is hereby granted, free of charge, to any person obtaining a
  *	copy of this software and associated documentation files (the "Software"),
@@ -30,6 +30,7 @@
 
 #include <lxshdr.h>
 #include <lx_wrap.hpp>
+#include <string>
 
 namespace lx {
     static const LXtGUID guid_Shader = {0x051ba6d8,0x46ba,0x4722,0x8b,0x07,0x94,0x39,0x61,0xc3,0xae,0xda};
@@ -54,10 +55,24 @@ public:
   {
     return m_loc[0]->Spawn (m_loc,ppvObj);
   }
+    bool
+  Spawn (CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Spawn (m_loc,&obj)) && dest.take(obj);
+  }
     LxResult
   ShaderItemGet (void **ppvObj)
   {
     return m_loc[0]->ShaderItemGet (m_loc,ppvObj);
+  }
+    bool
+  ShaderItemGet (CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->ShaderItemGet (m_loc,&obj)) && dest.take(obj);
   }
 };
 
@@ -68,9 +83,9 @@ public:
   void _init() {m_loc=0;}
   CLxLoc_ShaderService() {_init();set();}
  ~CLxLoc_ShaderService() {}
-  void set() {m_loc=reinterpret_cast<ILxShaderServiceID>(lx::GetGlobal(&lx::guid_ShaderService));}
+  void set() {if(!m_loc)m_loc=reinterpret_cast<ILxShaderServiceID>(lx::GetGlobal(&lx::guid_ShaderService));}
     float
-  ComputeFresnel (LXtFVector inRay, LXtFVector normalRay, float normReflAmt) const
+  ComputeFresnel (const LXtFVector inRay, const LXtFVector normalRay, float normReflAmt) const
   {
     return m_loc[0]->ComputeFresnel (m_loc,inRay,normalRay,normReflAmt);
   }
@@ -80,7 +95,7 @@ public:
     return m_loc[0]->ScalarBlendValue (m_loc,v1,v2,opa,mode);
   }
     void
-  ColorBlendValue (LXtFVector c, LXtFVector c1, LXtFVector c2, float opa, int mode)
+  ColorBlendValue (LXtFVector c, const LXtFVector c1, const LXtFVector c2, float opa, int mode)
   {
     m_loc[0]->ColorBlendValue (m_loc,c,c1,c2,opa,mode);
   }
@@ -90,14 +105,55 @@ public:
     m_loc[0]->SquareToCircle (m_loc,x,y);
   }
     LxResult
+  SampleCloud (ILxUnknownID sample, void **ppvObj) const
+  {
+    return m_loc[0]->SampleCloud (m_loc,(ILxUnknownID)sample,ppvObj);
+  }
+    bool
+  SampleCloud (ILxUnknownID sample, CLxLocalizedObject &dest) const
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->SampleCloud (m_loc,(ILxUnknownID)sample,&obj)) && dest.take(obj);
+  }
+    LxResult
   MeshShaderAccessor (ILxUnknownID meshItem, void **ppvObj)
   {
     return m_loc[0]->MeshShaderAccessor (m_loc,(ILxUnknownID)meshItem,ppvObj);
+  }
+    bool
+  MeshShaderAccessor (ILxUnknownID meshItem, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->MeshShaderAccessor (m_loc,(ILxUnknownID)meshItem,&obj)) && dest.take(obj);
   }
     LxResult
   PolyShaderAccessor (ILxUnknownID meshItem, LXtPolygonID polyID, void **ppvObj)
   {
     return m_loc[0]->PolyShaderAccessor (m_loc,(ILxUnknownID)meshItem,polyID,ppvObj);
+  }
+    bool
+  PolyShaderAccessor (ILxUnknownID meshItem, LXtPolygonID polyID, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->PolyShaderAccessor (m_loc,(ILxUnknownID)meshItem,polyID,&obj)) && dest.take(obj);
+  }
+    float
+  RussianRoulette (ILxUnknownID vector, float importance) const
+  {
+    return m_loc[0]->RussianRoulette (m_loc,(ILxUnknownID)vector,importance);
+  }
+    float
+  NextRandom (ILxUnknownID vector) const
+  {
+    return m_loc[0]->NextRandom (m_loc,(ILxUnknownID)vector);
+  }
+    LxResult
+  PoissonOffset (ILxUnknownID vector, float *u, float *v) const
+  {
+    return m_loc[0]->PoissonOffset (m_loc,(ILxUnknownID)vector,u,v);
   }
 };
 

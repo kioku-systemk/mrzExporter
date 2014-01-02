@@ -1,7 +1,7 @@
 /*
  * LX sel module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -200,7 +200,7 @@ typedef struct vt_ILxSelectionService {
         SetTime) (
                 LXtObjectID              self,
                 double                   time); 
-                LXxMETHOD(  double,
+                LXxMETHOD(  LxResult,
         Clear) (
                 LXtObjectID              self,
                 LXtID4                   type);
@@ -212,7 +212,7 @@ typedef struct vt_ILxSelectionService {
                 LXxMETHOD(  LXtID4,
         CurrentType) (
                 LXtObjectID              self,
-                LXtID4                  *types);
+                const LXtID4            *types);
 } ILxSelectionService;
 typedef struct vt_ILxSelectionPacket1Service {
         ILxUnknown       iunk;
@@ -246,6 +246,7 @@ typedef struct vt_ILxSelectionPacket1Service {
 #define LXf_SELPACKET_UNDOABLE          0x01
 #define LXu_SELECTIONLISTENER   "32E1B478-F2F6-41A8-9D79-14919B793AFE"
 #define LXa_SELECTIONLISTENER   "selectionListener"
+// [local]  ILxSelectionListener
 // [export] ILxSelectionListener selEvent
 #define LXf_SELECTION_NONE              0x00
 #define LXf_SELECTION_PRIMARY           0x01
@@ -255,6 +256,8 @@ typedef struct vt_ILxSelectionPacket1Service {
 #define LXf_SELECTION_HISTORY           0x10
 #define LXu_SELECTIONSERVICE    "6AEF6F27-046F-4C04-90E0-994D742851E7"
 #define LXa_SELECTIONSERVICE    "selectionservice"
+// [python] ILxSelectionService:Allocate        obj SelectionType
+// [python] ILxSelectionService:Test            bool
 #define LXu_SELECTIONPACKET1SERVICE     "58D8DEAD-3B0C-41FB-AC1E-B17A36521D44"
 
  #ifdef __cplusplus

@@ -1,7 +1,7 @@
 /*
  * LX schematic module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -31,29 +31,70 @@
  #endif
 
 
-typedef struct vt_ILxSchematic ** ILxSchematicID;
+typedef struct vt_ILxSchematicConnection ** ILxSchematicConnectionID;
 #include <lxcom.h>
 #include <lxvalue.h>
 
 
 
-typedef struct vt_ILxSchematic {
+typedef struct vt_ILxSchematicConnection {
         ILxUnknown       iunk;
                 LXxMETHOD(  LxResult,
-        GraphRegister) (
+        ItemFlags) (
                 LXtObjectID              self,
-                char                    *string);
+                LXtObjectID              item,
+                unsigned                *flags);
                 LXxMETHOD(  LxResult,
-        GraphTest) (
+        AllowConnect) (
                 LXtObjectID              self,
                 LXtObjectID              from,
                 LXtObjectID              to);
-} ILxSchematic;
+                LXxMETHOD(  LxResult,
+        GraphName) (
+                LXtObjectID              self,
+                const char             **name);
+                LXxMETHOD(  LxResult,
+        Count) (
+                LXtObjectID              self,
+                LXtObjectID              item,
+                unsigned                *count);
 
-#define LXu_SCHEMATIC   "F656CC26-2580-4B4C-8CBC-8BDD01378BFD"
-#define LXa_SCHEMATIC   "schematic"
-// [local] ILxSchematic
-// [export]  ILxSchematic schm
+                LXxMETHOD(  LxResult,
+        ByIndex) (
+                LXtObjectID              self,
+                LXtObjectID              item,
+                unsigned                 index,
+                void                   **ppvObj);
+                LXxMETHOD(  LxResult,
+        Connect) (
+                LXtObjectID              self,
+                LXtObjectID              from,
+                LXtObjectID              to,
+                int                      toIndex);
+
+                LXxMETHOD(  LxResult,
+        Disconnect) (
+                LXtObjectID              self,
+                LXtObjectID              from,
+                LXtObjectID              to);
+                LXxMETHOD(  int,
+        BaseFlags) (
+                LXtObjectID              self);
+} ILxSchematicConnection;
+
+#define LXfSCON_SINGLE           0x01
+#define LXfSCON_MULTIPLE         0x02
+#define LXfSCON_ORDERED          0x04
+#define LXfSCON_REVERSE          0x08
+
+#define LXfSCON_USESERVER        0x80
+#define LXu_SCHEMATICCONNECTION "5AC0A075-72B7-4935-8DA5-588DF7999069"
+#define LXa_SCHEMATICCONNECTION "schematicConnection"
+// [local]   ILxSchematicConnection
+// [export]  ILxSchematicConnection schm
+// [default] ILxSchematicConnection:BaseFlags = 0
+// [python]  ILxSchematicConnection:ByIndex             obj Item
+// [python]  ILxSchematicConnection:AllowConnect        bool
 
  #ifdef __cplusplus
   }

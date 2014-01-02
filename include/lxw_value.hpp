@@ -1,7 +1,7 @@
 /*
  * C++ wrapper for lxvalue.h
  *
- *	Copyright (c) 2008-2012 Luxology LLC
+ *	Copyright (c) 2008-2013 Luxology LLC
  *	
  *	Permission is hereby granted, free of charge, to any person obtaining a
  *	copy of this software and associated documentation files (the "Software"),
@@ -30,6 +30,7 @@
 
 #include <lxvalue.h>
 #include <lx_wrap.hpp>
+#include <string>
 
 namespace lx {
     static const LXtGUID guid_StringConversion = {0x5CB3EEDB,0xE4E0,0x499E,0xB0,0xBA,0xA7,0xFB,0x51,0xBA,0xBE,0x3C};
@@ -51,17 +52,21 @@ class CLxImpl_StringConversion {
   public:
     virtual ~CLxImpl_StringConversion() {}
     virtual LxResult
-      str_Encode (char *buf, int len)
+      str_Encode (char *buf, unsigned len)
         { return LXe_NOTIMPL; }
     virtual LxResult
       str_Decode (const char *buf)
         { return LXe_NOTIMPL; }
 };
+#define LXxD_StringConversion_Encode LxResult str_Encode (char *buf, unsigned len)
+#define LXxO_StringConversion_Encode LXxD_StringConversion_Encode LXx_OVERRIDE
+#define LXxD_StringConversion_Decode LxResult str_Decode (const char *buf)
+#define LXxO_StringConversion_Decode LXxD_StringConversion_Decode LXx_OVERRIDE
 template <class T>
 class CLxIfc_StringConversion : public CLxInterface
 {
     static LxResult
-  Encode (LXtObjectID wcom, char *buf, int len)
+  Encode (LXtObjectID wcom, char *buf, unsigned len)
   {
     LXCWxINST (CLxImpl_StringConversion, loc);
     try {
@@ -95,9 +100,16 @@ public:
   CLxLoc_StringConversion(const CLxLoc_StringConversion &other) {_init();set(other.m_loc);}
   const LXtGUID * guid() const {return &lx::guid_StringConversion;}
     LxResult
-  Encode (char *buf, int len) const
+  Encode (char *buf, unsigned len) const
   {
     return m_loc[0]->Encode (m_loc,buf,len);
+  }
+    LxResult
+  Encode (std::string &result) const
+  {
+    LXWx_SBUF1
+    rc = m_loc[0]->Encode (m_loc,buf,len);
+    LXWx_SBUF2
   }
     LxResult
   Decode (const char *buf)
@@ -134,7 +146,7 @@ class CLxImpl_Value {
       val_SetFlt (double val)
         { return LXe_NOTIMPL; }
     virtual LxResult
-      val_GetString (char *val, unsigned int len)
+      val_GetString (char *buf, unsigned len)
         { return LXe_NOTIMPL; }
     virtual LxResult
       val_SetString (const char *val)
@@ -143,6 +155,28 @@ class CLxImpl_Value {
       val_Intrinsic (void)
         { return 0; }
 };
+#define LXxD_Value_Clone LxResult val_Clone (void **ppvObj)
+#define LXxO_Value_Clone LXxD_Value_Clone LXx_OVERRIDE
+#define LXxD_Value_Copy LxResult val_Copy (ILxUnknownID from)
+#define LXxO_Value_Copy LXxD_Value_Copy LXx_OVERRIDE
+#define LXxD_Value_Compare LxResult val_Compare (ILxUnknownID other, int *diff)
+#define LXxO_Value_Compare LXxD_Value_Compare LXx_OVERRIDE
+#define LXxD_Value_Type unsigned int val_Type (void)
+#define LXxO_Value_Type LXxD_Value_Type LXx_OVERRIDE
+#define LXxD_Value_GetInt LxResult val_GetInt (int *val)
+#define LXxO_Value_GetInt LXxD_Value_GetInt LXx_OVERRIDE
+#define LXxD_Value_SetInt LxResult val_SetInt (int val)
+#define LXxO_Value_SetInt LXxD_Value_SetInt LXx_OVERRIDE
+#define LXxD_Value_GetFlt LxResult val_GetFlt (double *val)
+#define LXxO_Value_GetFlt LXxD_Value_GetFlt LXx_OVERRIDE
+#define LXxD_Value_SetFlt LxResult val_SetFlt (double val)
+#define LXxO_Value_SetFlt LXxD_Value_SetFlt LXx_OVERRIDE
+#define LXxD_Value_GetString LxResult val_GetString (char *buf, unsigned len)
+#define LXxO_Value_GetString LXxD_Value_GetString LXx_OVERRIDE
+#define LXxD_Value_SetString LxResult val_SetString (const char *val)
+#define LXxO_Value_SetString LXxD_Value_SetString LXx_OVERRIDE
+#define LXxD_Value_Intrinsic void * val_Intrinsic (void)
+#define LXxO_Value_Intrinsic LXxD_Value_Intrinsic LXx_OVERRIDE
 template <class T>
 class CLxIfc_Value : public CLxInterface
 {
@@ -209,11 +243,11 @@ class CLxIfc_Value : public CLxInterface
     } catch (LxResult rc) { return rc; }
   }
     static LxResult
-  GetString (LXtObjectID wcom, char *val, unsigned int len)
+  GetString (LXtObjectID wcom, char *buf, unsigned len)
   {
     LXCWxINST (CLxImpl_Value, loc);
     try {
-      return loc->val_GetString (val,len);
+      return loc->val_GetString (buf,len);
     } catch (LxResult rc) { return rc; }
   }
     static LxResult
@@ -262,6 +296,13 @@ public:
   {
     return m_loc[0]->Clone (m_loc,ppvObj);
   }
+    bool
+  Clone (CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Clone (m_loc,&obj)) && dest.take(obj);
+  }
     LxResult
   Copy (ILxUnknownID from)
   {
@@ -298,9 +339,16 @@ public:
     return m_loc[0]->SetFlt (m_loc,val);
   }
     LxResult
-  GetString (char *val, unsigned int len) const
+  GetString (char *buf, unsigned len) const
   {
-    return m_loc[0]->GetString (m_loc,val,len);
+    return m_loc[0]->GetString (m_loc,buf,len);
+  }
+    LxResult
+  GetString (std::string &result) const
+  {
+    LXWx_SBUF1
+    rc = m_loc[0]->GetString (m_loc,buf,len);
+    LXWx_SBUF2
   }
     LxResult
   SetString (const char *val)
@@ -321,16 +369,23 @@ public:
   void _init() {m_loc=0;}
   CLxLoc_ValueService() {_init();set();}
  ~CLxLoc_ValueService() {}
-  void set() {m_loc=reinterpret_cast<ILxValueServiceID>(lx::GetGlobal(&lx::guid_ValueService));}
+  void set() {if(!m_loc)m_loc=reinterpret_cast<ILxValueServiceID>(lx::GetGlobal(&lx::guid_ValueService));}
     LxResult
   ScriptQuery (void **ppvObj)
   {
     return m_loc[0]->ScriptQuery (m_loc,ppvObj);
   }
     LxResult
-  TextHintEncode (int value, const LXtTextValueHint *hint, char *buf, unsigned bufLen)
+  TextHintEncode (int value, const LXtTextValueHint *hint, char *buf, unsigned len)
   {
-    return m_loc[0]->TextHintEncode (m_loc,value,hint,buf,bufLen);
+    return m_loc[0]->TextHintEncode (m_loc,value,hint,buf,len);
+  }
+    LxResult
+  TextHintEncode (int value, const LXtTextValueHint *hint, std::string &result)
+  {
+    LXWx_SBUF1
+    rc = m_loc[0]->TextHintEncode (m_loc,value,hint,buf,len);
+    LXWx_SBUF2
   }
     LxResult
   TextHintDecode (const char *buf, const LXtTextValueHint *hint, int *value)
@@ -341,6 +396,18 @@ public:
   CreateValue (const char *type, void **ppvObj)
   {
     return m_loc[0]->CreateValue (m_loc,type,ppvObj);
+  }
+    bool
+  CreateValue (const char *type, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->CreateValue (m_loc,type,&obj)) && dest.take(obj);
+  }
+    LxResult
+  ValueType (const char *type, unsigned *valType)
+  {
+    return m_loc[0]->ValueType (m_loc,type,valType);
   }
 };
 
@@ -393,12 +460,12 @@ public:
     return m_loc[0]->SetIdentity (m_loc);
   }
     LxResult
-  Multiply3 (LXtMatrix mat3)
+  Multiply3 (const LXtMatrix mat3)
   {
     return m_loc[0]->Multiply3 (m_loc,mat3);
   }
     LxResult
-  Multiply4 (LXtMatrix4 mat4)
+  Multiply4 (const LXtMatrix4 mat4)
   {
     return m_loc[0]->Multiply4 (m_loc,mat4);
   }
@@ -451,7 +518,7 @@ class CLxImpl_ValueArray {
       va_GetFloat (unsigned int index, double *value)
         { return LXe_NOTIMPL; }
     virtual LxResult
-      va_GetString (unsigned int index, char *value, unsigned int len)
+      va_GetString (unsigned int index, char *buf, unsigned len)
         { return LXe_NOTIMPL; }
     virtual LxResult
       va_FirstUnique (unsigned int *uniqueIndex)
@@ -460,6 +527,34 @@ class CLxImpl_ValueArray {
       va_Reset (void)
         { return LXe_NOTIMPL; }
 };
+#define LXxD_ValueArray_Type LxResult va_Type (unsigned int *type)
+#define LXxO_ValueArray_Type LXxD_ValueArray_Type LXx_OVERRIDE
+#define LXxD_ValueArray_TypeName LxResult va_TypeName (const char **name)
+#define LXxO_ValueArray_TypeName LXxD_ValueArray_TypeName LXx_OVERRIDE
+#define LXxD_ValueArray_Count unsigned int va_Count (void)
+#define LXxO_ValueArray_Count LXxD_ValueArray_Count LXx_OVERRIDE
+#define LXxD_ValueArray_AddEmptyValue LxResult va_AddEmptyValue (void **ppvObj)
+#define LXxO_ValueArray_AddEmptyValue LXxD_ValueArray_AddEmptyValue LXx_OVERRIDE
+#define LXxD_ValueArray_AddValue LxResult va_AddValue (ILxUnknownID value)
+#define LXxO_ValueArray_AddValue LXxD_ValueArray_AddValue LXx_OVERRIDE
+#define LXxD_ValueArray_AddInt LxResult va_AddInt (int value)
+#define LXxO_ValueArray_AddInt LXxD_ValueArray_AddInt LXx_OVERRIDE
+#define LXxD_ValueArray_AddFloat LxResult va_AddFloat (double value)
+#define LXxO_ValueArray_AddFloat LXxD_ValueArray_AddFloat LXx_OVERRIDE
+#define LXxD_ValueArray_AddString LxResult va_AddString (const char *value)
+#define LXxO_ValueArray_AddString LXxD_ValueArray_AddString LXx_OVERRIDE
+#define LXxD_ValueArray_GetValue LxResult va_GetValue (unsigned int index, void **ppvObj)
+#define LXxO_ValueArray_GetValue LXxD_ValueArray_GetValue LXx_OVERRIDE
+#define LXxD_ValueArray_GetInt LxResult va_GetInt (unsigned int index, int *value)
+#define LXxO_ValueArray_GetInt LXxD_ValueArray_GetInt LXx_OVERRIDE
+#define LXxD_ValueArray_GetFloat LxResult va_GetFloat (unsigned int index, double *value)
+#define LXxO_ValueArray_GetFloat LXxD_ValueArray_GetFloat LXx_OVERRIDE
+#define LXxD_ValueArray_GetString LxResult va_GetString (unsigned int index, char *buf, unsigned len)
+#define LXxO_ValueArray_GetString LXxD_ValueArray_GetString LXx_OVERRIDE
+#define LXxD_ValueArray_FirstUnique LxResult va_FirstUnique (unsigned int *uniqueIndex)
+#define LXxO_ValueArray_FirstUnique LXxD_ValueArray_FirstUnique LXx_OVERRIDE
+#define LXxD_ValueArray_Reset LxResult va_Reset (void)
+#define LXxO_ValueArray_Reset LXxD_ValueArray_Reset LXx_OVERRIDE
 template <class T>
 class CLxIfc_ValueArray : public CLxInterface
 {
@@ -550,11 +645,11 @@ class CLxIfc_ValueArray : public CLxInterface
     } catch (LxResult rc) { return rc; }
   }
     static LxResult
-  GetString (LXtObjectID wcom, unsigned int index, char *value, unsigned int len)
+  GetString (LXtObjectID wcom, unsigned int index, char *buf, unsigned len)
   {
     LXCWxINST (CLxImpl_ValueArray, loc);
     try {
-      return loc->va_GetString (index,value,len);
+      return loc->va_GetString (index,buf,len);
     } catch (LxResult rc) { return rc; }
   }
     static LxResult
@@ -623,6 +718,13 @@ public:
   {
     return m_loc[0]->AddEmptyValue (m_loc,ppvObj);
   }
+    bool
+  AddEmptyValue (CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->AddEmptyValue (m_loc,&obj)) && dest.take(obj);
+  }
     LxResult
   AddValue (ILxUnknownID value)
   {
@@ -648,6 +750,13 @@ public:
   {
     return m_loc[0]->GetValue (m_loc,index,ppvObj);
   }
+    bool
+  GetValue (unsigned int index, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->GetValue (m_loc,index,&obj)) && dest.take(obj);
+  }
     LxResult
   GetInt (unsigned int index, int *value)
   {
@@ -659,9 +768,16 @@ public:
     return m_loc[0]->GetFloat (m_loc,index,value);
   }
     LxResult
-  GetString (unsigned int index, char *value, unsigned int len)
+  GetString (unsigned int index, char *buf, unsigned len)
   {
-    return m_loc[0]->GetString (m_loc,index,value,len);
+    return m_loc[0]->GetString (m_loc,index,buf,len);
+  }
+    LxResult
+  GetString (unsigned int index, std::string &result)
+  {
+    LXWx_SBUF1
+    rc = m_loc[0]->GetString (m_loc,index,buf,len);
+    LXWx_SBUF2
   }
     LxResult
   FirstUnique (unsigned int *uniqueIndex)
@@ -691,6 +807,14 @@ class CLxImpl_ScriptQuery {
       sq_TypeName (const char *attribute, const char **type)
         { return LXe_NOTIMPL; }
 };
+#define LXxD_ScriptQuery_Select LxResult sq_Select (const char *attribute, const char *which)
+#define LXxO_ScriptQuery_Select LXxD_ScriptQuery_Select LXx_OVERRIDE
+#define LXxD_ScriptQuery_Query LxResult sq_Query (const char *attribute, ILxUnknownID query)
+#define LXxO_ScriptQuery_Query LXxD_ScriptQuery_Query LXx_OVERRIDE
+#define LXxD_ScriptQuery_Type LxResult sq_Type (const char *attribute, int *type)
+#define LXxO_ScriptQuery_Type LXxD_ScriptQuery_Type LXx_OVERRIDE
+#define LXxD_ScriptQuery_TypeName LxResult sq_TypeName (const char *attribute, const char **type)
+#define LXxO_ScriptQuery_TypeName LXxD_ScriptQuery_TypeName LXx_OVERRIDE
 template <class T>
 class CLxIfc_ScriptQuery : public CLxInterface
 {
@@ -787,6 +911,16 @@ class CLxImpl_ValueMath {
       val_Blend (ILxUnknownID other, double blend)
         { return LXe_NOTIMPL; }
 };
+#define LXxD_ValueMath_Step LxResult val_Step (int direction)
+#define LXxO_ValueMath_Step LXxD_ValueMath_Step LXx_OVERRIDE
+#define LXxD_ValueMath_Detent int val_Detent (void)
+#define LXxO_ValueMath_Detent LXxD_ValueMath_Detent LXx_OVERRIDE
+#define LXxD_ValueMath_Add LxResult val_Add (double delta)
+#define LXxO_ValueMath_Add LXxD_ValueMath_Add LXx_OVERRIDE
+#define LXxD_ValueMath_Multiply LxResult val_Multiply (double factor)
+#define LXxO_ValueMath_Multiply LXxD_ValueMath_Multiply LXx_OVERRIDE
+#define LXxD_ValueMath_Blend LxResult val_Blend (ILxUnknownID other, double blend)
+#define LXxO_ValueMath_Blend LXxD_ValueMath_Blend LXx_OVERRIDE
 template <class T>
 class CLxIfc_ValueMath : public CLxInterface
 {
@@ -880,17 +1014,21 @@ class CLxImpl_StringConversionNice {
   public:
     virtual ~CLxImpl_StringConversionNice() {}
     virtual LxResult
-      nicestr_Encode (char *buf, int len)
+      nicestr_Encode (char *buf, unsigned len)
         { return LXe_NOTIMPL; }
     virtual LxResult
       nicestr_Decode (const char *buf)
         { return LXe_NOTIMPL; }
 };
+#define LXxD_StringConversionNice_Encode LxResult nicestr_Encode (char *buf, unsigned len)
+#define LXxO_StringConversionNice_Encode LXxD_StringConversionNice_Encode LXx_OVERRIDE
+#define LXxD_StringConversionNice_Decode LxResult nicestr_Decode (const char *buf)
+#define LXxO_StringConversionNice_Decode LXxD_StringConversionNice_Decode LXx_OVERRIDE
 template <class T>
 class CLxIfc_StringConversionNice : public CLxInterface
 {
     static LxResult
-  Encode (LXtObjectID wcom, char *buf, int len)
+  Encode (LXtObjectID wcom, char *buf, unsigned len)
   {
     LXCWxINST (CLxImpl_StringConversionNice, loc);
     try {
@@ -924,9 +1062,16 @@ public:
   CLxLoc_StringConversionNice(const CLxLoc_StringConversionNice &other) {_init();set(other.m_loc);}
   const LXtGUID * guid() const {return &lx::guid_StringConversionNice;}
     LxResult
-  Encode (char *buf, int len) const
+  Encode (char *buf, unsigned len) const
   {
     return m_loc[0]->Encode (m_loc,buf,len);
+  }
+    LxResult
+  Encode (std::string &result) const
+  {
+    LXWx_SBUF1
+    rc = m_loc[0]->Encode (m_loc,buf,len);
+    LXWx_SBUF2
   }
     LxResult
   Decode (const char *buf)
@@ -941,13 +1086,19 @@ class CLxImpl_ValueReference {
     virtual LxResult
       val_IsSet (void)
         { return LXe_NOTIMPL; }
-    virtual int
+    virtual LxResult
       val_GetObject (void **ppvObj)
-        = 0;
+        { return LXe_NOTIMPL; }
     virtual LxResult
       val_SetObject (ILxUnknownID obj)
         { return LXe_NOTIMPL; }
 };
+#define LXxD_ValueReference_IsSet LxResult val_IsSet (void)
+#define LXxO_ValueReference_IsSet LXxD_ValueReference_IsSet LXx_OVERRIDE
+#define LXxD_ValueReference_GetObject LxResult val_GetObject (void **ppvObj)
+#define LXxO_ValueReference_GetObject LXxD_ValueReference_GetObject LXx_OVERRIDE
+#define LXxD_ValueReference_SetObject LxResult val_SetObject (ILxUnknownID obj)
+#define LXxO_ValueReference_SetObject LXxD_ValueReference_SetObject LXx_OVERRIDE
 template <class T>
 class CLxIfc_ValueReference : public CLxInterface
 {
@@ -959,11 +1110,13 @@ class CLxIfc_ValueReference : public CLxInterface
       return loc->val_IsSet ();
     } catch (LxResult rc) { return rc; }
   }
-    static int
+    static LxResult
   GetObject (LXtObjectID wcom, void **ppvObj)
   {
     LXCWxINST (CLxImpl_ValueReference, loc);
-    return loc->val_GetObject (ppvObj);
+    try {
+      return loc->val_GetObject (ppvObj);
+    } catch (LxResult rc) { return rc; }
   }
     static LxResult
   SetObject (LXtObjectID wcom, LXtObjectID obj)
@@ -997,10 +1150,17 @@ public:
   {
     return m_loc[0]->IsSet (m_loc);
   }
-    int
+    LxResult
   GetObject (void **ppvObj) const
   {
     return m_loc[0]->GetObject (m_loc,ppvObj);
+  }
+    bool
+  GetObject (CLxLocalizedObject &dest) const
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->GetObject (m_loc,&obj)) && dest.take(obj);
   }
     LxResult
   SetObject (ILxUnknownID obj)
@@ -1046,12 +1206,38 @@ class CLxImpl_Attributes {
       attr_SetFlt (unsigned int index, double val)
         { return LXe_NOTIMPL; }
     virtual LxResult
-      attr_GetString (unsigned int index, char *val, unsigned int len)
+      attr_GetString (unsigned int index, char *buf, unsigned len)
         { return LXe_NOTIMPL; }
     virtual LxResult
       attr_SetString (unsigned int index, const char *val)
         { return LXe_NOTIMPL; }
 };
+#define LXxD_Attributes_Count unsigned int attr_Count (void)
+#define LXxO_Attributes_Count LXxD_Attributes_Count LXx_OVERRIDE
+#define LXxD_Attributes_Name LxResult attr_Name (unsigned int index, const char **name)
+#define LXxO_Attributes_Name LXxD_Attributes_Name LXx_OVERRIDE
+#define LXxD_Attributes_Lookup LxResult attr_Lookup (const char *name, unsigned int *index)
+#define LXxO_Attributes_Lookup LXxD_Attributes_Lookup LXx_OVERRIDE
+#define LXxD_Attributes_Type LxResult attr_Type (unsigned int index, unsigned int *type)
+#define LXxO_Attributes_Type LXxD_Attributes_Type LXx_OVERRIDE
+#define LXxD_Attributes_TypeName LxResult attr_TypeName (unsigned int index, const char **tname)
+#define LXxO_Attributes_TypeName LXxD_Attributes_TypeName LXx_OVERRIDE
+#define LXxD_Attributes_Hints const LXtTextValueHint * attr_Hints (unsigned int index)
+#define LXxO_Attributes_Hints LXxD_Attributes_Hints LXx_OVERRIDE
+#define LXxD_Attributes_Value LxResult attr_Value (unsigned int index, void **ppvObj, int writeOK)
+#define LXxO_Attributes_Value LXxD_Attributes_Value LXx_OVERRIDE
+#define LXxD_Attributes_GetInt LxResult attr_GetInt (unsigned int index, int *val)
+#define LXxO_Attributes_GetInt LXxD_Attributes_GetInt LXx_OVERRIDE
+#define LXxD_Attributes_SetInt LxResult attr_SetInt (unsigned int index, int val)
+#define LXxO_Attributes_SetInt LXxD_Attributes_SetInt LXx_OVERRIDE
+#define LXxD_Attributes_GetFlt LxResult attr_GetFlt (unsigned int index, double *val)
+#define LXxO_Attributes_GetFlt LXxD_Attributes_GetFlt LXx_OVERRIDE
+#define LXxD_Attributes_SetFlt LxResult attr_SetFlt (unsigned int index, double val)
+#define LXxO_Attributes_SetFlt LXxD_Attributes_SetFlt LXx_OVERRIDE
+#define LXxD_Attributes_GetString LxResult attr_GetString (unsigned int index, char *buf, unsigned len)
+#define LXxO_Attributes_GetString LXxD_Attributes_GetString LXx_OVERRIDE
+#define LXxD_Attributes_SetString LxResult attr_SetString (unsigned int index, const char *val)
+#define LXxO_Attributes_SetString LXxD_Attributes_SetString LXx_OVERRIDE
 template <class T>
 class CLxIfc_Attributes : public CLxInterface
 {
@@ -1140,11 +1326,11 @@ class CLxIfc_Attributes : public CLxInterface
     } catch (LxResult rc) { return rc; }
   }
     static LxResult
-  GetString (LXtObjectID wcom, unsigned int index, char *val, unsigned int len)
+  GetString (LXtObjectID wcom, unsigned int index, char *buf, unsigned len)
   {
     LXCWxINST (CLxImpl_Attributes, loc);
     try {
-      return loc->attr_GetString (index,val,len);
+      return loc->attr_GetString (index,buf,len);
     } catch (LxResult rc) { return rc; }
   }
     static LxResult
@@ -1219,6 +1405,13 @@ public:
   {
     return m_loc[0]->Value (m_loc,index,ppvObj,writeOK);
   }
+    bool
+  Value (unsigned int index, CLxLocalizedObject &dest, int writeOK)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Value (m_loc,index,&obj,writeOK)) && dest.take(obj);
+  }
     LxResult
   GetInt (unsigned int index, int *val) const
   {
@@ -1240,9 +1433,16 @@ public:
     return m_loc[0]->SetFlt (m_loc,index,val);
   }
     LxResult
-  GetString (unsigned int index, char *val, unsigned int len) const
+  GetString (unsigned int index, char *buf, unsigned len) const
   {
-    return m_loc[0]->GetString (m_loc,index,val,len);
+    return m_loc[0]->GetString (m_loc,index,buf,len);
+  }
+    LxResult
+  GetString (unsigned int index, std::string &result) const
+  {
+    LXWx_SBUF1
+    rc = m_loc[0]->GetString (m_loc,index,buf,len);
+    LXWx_SBUF2
   }
     LxResult
   SetString (unsigned int index, const char *val)
@@ -1288,6 +1488,28 @@ class CLxImpl_Message {
       msg_SetMessageResult (unsigned id)
         { return LXe_NOTIMPL; }
 };
+#define LXxD_Message_Code LxResult msg_Code (void)
+#define LXxO_Message_Code LXxD_Message_Code LXx_OVERRIDE
+#define LXxD_Message_SetCode LxResult msg_SetCode (LxResult code)
+#define LXxO_Message_SetCode LXxD_Message_SetCode LXx_OVERRIDE
+#define LXxD_Message_SetMessage LxResult msg_SetMessage (const char *table, const char *name, unsigned id)
+#define LXxO_Message_SetMessage LXxD_Message_SetMessage LXx_OVERRIDE
+#define LXxD_Message_SetArgumentInt LxResult msg_SetArgumentInt (unsigned arg, int value)
+#define LXxO_Message_SetArgumentInt LXxD_Message_SetArgumentInt LXx_OVERRIDE
+#define LXxD_Message_SetArgumentFloat LxResult msg_SetArgumentFloat (unsigned arg, double value)
+#define LXxO_Message_SetArgumentFloat LXxD_Message_SetArgumentFloat LXx_OVERRIDE
+#define LXxD_Message_SetArgumentString LxResult msg_SetArgumentString (unsigned arg, const char *string)
+#define LXxO_Message_SetArgumentString LXxD_Message_SetArgumentString LXx_OVERRIDE
+#define LXxD_Message_SetArgumentObject LxResult msg_SetArgumentObject (unsigned arg, ILxUnknownID object)
+#define LXxO_Message_SetArgumentObject LXxD_Message_SetArgumentObject LXx_OVERRIDE
+#define LXxD_Message_Reset LxResult msg_Reset (void)
+#define LXxO_Message_Reset LXxD_Message_Reset LXx_OVERRIDE
+#define LXxD_Message_Table LxResult msg_Table (const char **table)
+#define LXxO_Message_Table LXxD_Message_Table LXx_OVERRIDE
+#define LXxD_Message_Name LxResult msg_Name (const char **name)
+#define LXxO_Message_Name LXxD_Message_Name LXx_OVERRIDE
+#define LXxD_Message_SetMessageResult LxResult msg_SetMessageResult (unsigned id)
+#define LXxO_Message_SetMessageResult LXxD_Message_SetMessageResult LXx_OVERRIDE
 template <class T>
 class CLxIfc_Message : public CLxInterface
 {
@@ -1470,6 +1692,8 @@ class CLxImpl_Visitor {
       vis_Evaluate (void)
         { return LXe_NOTIMPL; }
 };
+#define LXxD_Visitor_Evaluate LxResult vis_Evaluate (void)
+#define LXxO_Visitor_Evaluate LXxD_Visitor_Evaluate LXx_OVERRIDE
 template <class T>
 class CLxIfc_Visitor : public CLxInterface
 {
@@ -1521,6 +1745,14 @@ class CLxImpl_StringTag {
       stag_ByIndex (unsigned int index, LXtID4 *type, const char **tag)
         { return LXe_NOTIMPL; }
 };
+#define LXxD_StringTag_Get LxResult stag_Get (LXtID4 type, const char **tag)
+#define LXxO_StringTag_Get LXxD_StringTag_Get LXx_OVERRIDE
+#define LXxD_StringTag_Set LxResult stag_Set (LXtID4 type, const char *tag)
+#define LXxO_StringTag_Set LXxD_StringTag_Set LXx_OVERRIDE
+#define LXxD_StringTag_Count LxResult stag_Count (unsigned int *count)
+#define LXxO_StringTag_Count LXxD_StringTag_Count LXx_OVERRIDE
+#define LXxD_StringTag_ByIndex LxResult stag_ByIndex (unsigned int index, LXtID4 *type, const char **tag)
+#define LXxO_StringTag_ByIndex LXxD_StringTag_ByIndex LXx_OVERRIDE
 template <class T>
 class CLxIfc_StringTag : public CLxInterface
 {

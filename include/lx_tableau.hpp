@@ -1,7 +1,7 @@
 /*
  * Plug-in SDK Header: C++ User Classes
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -28,7 +28,9 @@
 #define LXUSER_tableau_HPP
 
 #include <lxw_tableau.hpp>
+#include <lxw_vertex.hpp>
 #include <lxw_action.hpp>
+#include <lx_visitor.hpp>
 
 class CLxUser_Tableau : public CLxLoc_Tableau
 {
@@ -86,6 +88,18 @@ class CLxUser_Tableau : public CLxLoc_Tableau
                         return false;
 
                 return chan.take (obj);
+        }
+
+                LxResult
+        VisitorUpdate (
+                CLxImpl_AbstractVisitor         *visitor,
+                int                              immediate)
+        {
+                CLxInst_OneVisitor<CLxGenericVisitor>  gv;
+
+                gv.loc.vis = visitor;
+
+                return Update (gv, immediate);
         }
 };
 class CLxUser_TableauElement : public CLxLoc_TableauElement
@@ -145,27 +159,6 @@ class CLxUser_TableauShader : public CLxLoc_TableauShader
                         return false;
 
                 return slice.take (obj);
-        }
-};
-class CLxUser_TableauVertex : public CLxLoc_TableauVertex
-{
-    public:
-        CLxUser_TableauVertex () {}
-        CLxUser_TableauVertex (ILxUnknownID obj) : CLxLoc_TableauVertex (obj) {}
-
-                int
-        NewFeature (
-                LXtID4                   type,
-                const char              *name)
-        {
-                unsigned                 index;
-                LxResult                 rc;
-
-                rc = AddFeature (type, name, &index);
-                if (LXx_OK (rc))
-                        return index;
-                else
-                        return -1;
         }
 };
 class CLxUser_TableauService : public CLxLoc_TableauService

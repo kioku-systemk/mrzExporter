@@ -1,7 +1,7 @@
 /*
  * C++ wrapper for lxfilter.h
  *
- *	Copyright (c) 2008-2012 Luxology LLC
+ *	Copyright (c) 2008-2013 Luxology LLC
  *	
  *	Permission is hereby granted, free of charge, to any person obtaining a
  *	copy of this software and associated documentation files (the "Software"),
@@ -30,6 +30,7 @@
 
 #include <lxfilter.h>
 #include <lx_wrap.hpp>
+#include <string>
 
 namespace lx {
     static const LXtGUID guid_EvaluationStack = {0x47F3BF05,0xB64A,0x49D9,0xA2,0xC1,0x08,0xB0,0xD3,0x6A,0xB7,0x87};
@@ -54,6 +55,13 @@ public:
   {
     return m_loc[0]->Branch (m_loc,ppvObj);
   }
+    bool
+  Branch (CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Branch (m_loc,&obj)) && dest.take(obj);
+  }
     LxResult
   AddFilter (ILxUnknownID filter)
   {
@@ -74,6 +82,12 @@ class CLxImpl_StackFilter {
       filt_Convert (ILxUnknownID other)
         { return LXe_NOTIMPL; }
 };
+#define LXxD_StackFilter_Type const char * filt_Type (void)
+#define LXxO_StackFilter_Type LXxD_StackFilter_Type LXx_OVERRIDE
+#define LXxD_StackFilter_Compare unsigned filt_Compare (ILxUnknownID other)
+#define LXxO_StackFilter_Compare LXxD_StackFilter_Compare LXx_OVERRIDE
+#define LXxD_StackFilter_Convert LxResult filt_Convert (ILxUnknownID other)
+#define LXxO_StackFilter_Convert LXxD_StackFilter_Convert LXx_OVERRIDE
 template <class T>
 class CLxIfc_StackFilter : public CLxInterface
 {

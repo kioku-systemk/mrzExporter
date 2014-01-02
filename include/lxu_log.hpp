@@ -1,7 +1,7 @@
 /*
  * Plug-in SDK Header: C++ Services
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -65,12 +65,12 @@ class CLxLuxologyLogMessage : public CLxLogMessage
 
         const char *	 GetVersion ()
         {
-                return "601";	// __601__
+                return "701";	// __701__
         }
 
         virtual const char *	 GetCopyright ()
         {
-                return "Copyright 2011, Luxology LLC";
+                return "Copyright 2012, Luxology LLC";
         }
 };
 

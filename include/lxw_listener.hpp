@@ -1,7 +1,7 @@
 /*
  * C++ wrapper for lxlistener.h
  *
- *	Copyright (c) 2008-2012 Luxology LLC
+ *	Copyright (c) 2008-2013 Luxology LLC
  *	
  *	Permission is hereby granted, free of charge, to any person obtaining a
  *	copy of this software and associated documentation files (the "Software"),
@@ -30,6 +30,7 @@
 
 #include <lxlistener.h>
 #include <lx_wrap.hpp>
+#include <string>
 
 namespace lx {
     static const LXtGUID guid_ListenerPort = {0x4FBF5E77,0x152D,0x4C4F,0xBF,0xD4,0x3F,0x60,0x62,0xCC,0xF6,0xBA};
@@ -63,7 +64,7 @@ public:
   void _init() {m_loc=0;}
   CLxLoc_ListenerService() {_init();set();}
  ~CLxLoc_ListenerService() {}
-  void set() {m_loc=reinterpret_cast<ILxListenerServiceID>(lx::GetGlobal(&lx::guid_ListenerService));}
+  void set() {if(!m_loc)m_loc=reinterpret_cast<ILxListenerServiceID>(lx::GetGlobal(&lx::guid_ListenerService));}
     LxResult
   ScriptQuery (void **ppvObj)
   {

@@ -1,7 +1,7 @@
 /*
  * C++ wrapper for lxitem.h
  *
- *	Copyright (c) 2008-2012 Luxology LLC
+ *	Copyright (c) 2008-2013 Luxology LLC
  *	
  *	Permission is hereby granted, free of charge, to any person obtaining a
  *	copy of this software and associated documentation files (the "Software"),
@@ -30,6 +30,7 @@
 
 #include <lxitem.h>
 #include <lx_wrap.hpp>
+#include <string>
 
 namespace lx {
     static const LXtGUID guid_ChannelGraph = {0xF70C8AD7,0xC15F,0x42e7,0x98,0xF6,0x4C,0x4C,0x7F,0x6D,0x57,0x7E};
@@ -74,6 +75,13 @@ public:
   {
     return m_loc[0]->FwdByIndex (m_loc,(ILxUnknownID)item,channel,index,ppvObj,objChan);
   }
+    bool
+  FwdByIndex (ILxUnknownID item, int channel, unsigned index, CLxLocalizedObject &dest, int *objChan)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->FwdByIndex (m_loc,(ILxUnknownID)item,channel,index,&obj,objChan)) && dest.take(obj);
+  }
     LxResult
   RevCount (ILxUnknownID item, int channel, unsigned *count)
   {
@@ -83,6 +91,13 @@ public:
   RevByIndex (ILxUnknownID item, int channel, unsigned index, void **ppvObj, int *objChan)
   {
     return m_loc[0]->RevByIndex (m_loc,(ILxUnknownID)item,channel,index,ppvObj,objChan);
+  }
+    bool
+  RevByIndex (ILxUnknownID item, int channel, unsigned index, CLxLocalizedObject &dest, int *objChan)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->RevByIndex (m_loc,(ILxUnknownID)item,channel,index,&obj,objChan)) && dest.take(obj);
   }
 };
 
@@ -105,7 +120,7 @@ public:
     return m_loc[0]->TestType (m_loc,type);
   }
     LxResult
-  TestTypes (LXtItemType *types)
+  TestTypes (const LXtItemType *types)
   {
     return m_loc[0]->TestTypes (m_loc,types);
   }
@@ -149,6 +164,13 @@ public:
   {
     return m_loc[0]->Parent (m_loc,ppvObj);
   }
+    bool
+  Parent (CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Parent (m_loc,&obj)) && dest.take(obj);
+  }
     LxResult
   SetParent (ILxUnknownID parent)
   {
@@ -164,20 +186,48 @@ public:
   {
     return m_loc[0]->SubByIndex (m_loc,index,ppvObj);
   }
+    bool
+  SubByIndex (unsigned index, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->SubByIndex (m_loc,index,&obj)) && dest.take(obj);
+  }
     LxResult
   Root (void **ppvObj)
   {
     return m_loc[0]->Root (m_loc,ppvObj);
+  }
+    bool
+  Root (CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Root (m_loc,&obj)) && dest.take(obj);
   }
     LxResult
   Context (void **ppvObj)
   {
     return m_loc[0]->Context (m_loc,ppvObj);
   }
+    bool
+  Context (CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Context (m_loc,&obj)) && dest.take(obj);
+  }
     LxResult
   Reference (void **ppvObj)
   {
     return m_loc[0]->Reference (m_loc,ppvObj);
+  }
+    bool
+  Reference (CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Reference (m_loc,&obj)) && dest.take(obj);
   }
     LxResult
   IsReferenced (void)
@@ -188,6 +238,13 @@ public:
   Source (void **ppvObj)
   {
     return m_loc[0]->Source (m_loc,ppvObj);
+  }
+    bool
+  Source (CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Source (m_loc,&obj)) && dest.take(obj);
   }
     LxResult
   SetSource (ILxUnknownID source)
@@ -324,6 +381,13 @@ public:
   {
     return m_loc[0]->FwdByIndex (m_loc,(ILxUnknownID)item,index,ppvObj);
   }
+    bool
+  FwdByIndex (ILxUnknownID item, unsigned index, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->FwdByIndex (m_loc,(ILxUnknownID)item,index,&obj)) && dest.take(obj);
+  }
     LxResult
   RevCount (ILxUnknownID item, unsigned *count)
   {
@@ -333,6 +397,13 @@ public:
   RevByIndex (ILxUnknownID item, unsigned index, void **ppvObj)
   {
     return m_loc[0]->RevByIndex (m_loc,(ILxUnknownID)item,index,ppvObj);
+  }
+    bool
+  RevByIndex (ILxUnknownID item, unsigned index, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->RevByIndex (m_loc,(ILxUnknownID)item,index,&obj)) && dest.take(obj);
   }
 };
 
@@ -379,6 +450,13 @@ public:
   {
     return m_loc[0]->Parent (m_loc,ppvObj);
   }
+    bool
+  Parent (CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Parent (m_loc,&obj)) && dest.take(obj);
+  }
     LxResult
   SubSceneCount (LXtItemType type, unsigned int *count)
   {
@@ -388,6 +466,13 @@ public:
   SubSceneByIndex (LXtItemType type, unsigned int index, void **ppvObj)
   {
     return m_loc[0]->SubSceneByIndex (m_loc,type,index,ppvObj);
+  }
+    bool
+  SubSceneByIndex (LXtItemType type, unsigned int index, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->SubSceneByIndex (m_loc,type,index,&obj)) && dest.take(obj);
   }
     unsigned
   LoadFlags (void)
@@ -399,6 +484,13 @@ public:
   {
     return m_loc[0]->Channels (m_loc,name,time,ppvObj);
   }
+    bool
+  Channels (const char *name, double time, CLxLocalizedObject &dest) const
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Channels (m_loc,name,time,&obj)) && dest.take(obj);
+  }
     LxResult
   ItemCount (LXtItemType type, unsigned int *count) const
   {
@@ -409,50 +501,113 @@ public:
   {
     return m_loc[0]->ItemByIndex (m_loc,type,index,ppvObj);
   }
+    bool
+  ItemByIndex (LXtItemType type, unsigned int index, CLxLocalizedObject &dest) const
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->ItemByIndex (m_loc,type,index,&obj)) && dest.take(obj);
+  }
     LxResult
   ItemLookup (const char *id, void **ppvObj) const
   {
     return m_loc[0]->ItemLookup (m_loc,id,ppvObj);
   }
+    bool
+  ItemLookup (const char *id, CLxLocalizedObject &dest) const
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->ItemLookup (m_loc,id,&obj)) && dest.take(obj);
+  }
     LxResult
-  ItemCountByTypes (LXtItemType *types, unsigned *count) const
+  ItemCountByTypes (const LXtItemType *types, unsigned *count) const
   {
     return m_loc[0]->ItemCountByTypes (m_loc,types,count);
   }
     LxResult
-  ItemByIndexByTypes (LXtItemType *types, unsigned index, void **ppvObj) const
+  ItemByIndexByTypes (const LXtItemType *types, unsigned index, void **ppvObj) const
   {
     return m_loc[0]->ItemByIndexByTypes (m_loc,types,index,ppvObj);
+  }
+    bool
+  ItemByIndexByTypes (const LXtItemType *types, unsigned index, CLxLocalizedObject &dest) const
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->ItemByIndexByTypes (m_loc,types,index,&obj)) && dest.take(obj);
   }
     LxResult
   AnyItemOfType (LXtItemType type, void **ppvObj) const
   {
     return m_loc[0]->AnyItemOfType (m_loc,type,ppvObj);
   }
+    bool
+  AnyItemOfType (LXtItemType type, CLxLocalizedObject &dest) const
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->AnyItemOfType (m_loc,type,&obj)) && dest.take(obj);
+  }
     LxResult
   ItemLocalize (ILxUnknownID item, void **ppvObj)
   {
     return m_loc[0]->ItemLocalize (m_loc,(ILxUnknownID)item,ppvObj);
+  }
+    bool
+  ItemLocalize (ILxUnknownID item, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->ItemLocalize (m_loc,(ILxUnknownID)item,&obj)) && dest.take(obj);
   }
     LxResult
   ItemAdd (LXtItemType type, void **ppvObj)
   {
     return m_loc[0]->ItemAdd (m_loc,type,ppvObj);
   }
+    bool
+  ItemAdd (LXtItemType type, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->ItemAdd (m_loc,type,&obj)) && dest.take(obj);
+  }
     LxResult
   ItemDuplicate (ILxUnknownID item, void **ppvObj)
   {
     return m_loc[0]->ItemDuplicate (m_loc,(ILxUnknownID)item,ppvObj);
+  }
+    bool
+  ItemDuplicate (ILxUnknownID item, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->ItemDuplicate (m_loc,(ILxUnknownID)item,&obj)) && dest.take(obj);
   }
     LxResult
   ItemAddReference (ILxUnknownID item, void **ppvObj)
   {
     return m_loc[0]->ItemAddReference (m_loc,(ILxUnknownID)item,ppvObj);
   }
+    bool
+  ItemAddReference (ILxUnknownID item, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->ItemAddReference (m_loc,(ILxUnknownID)item,&obj)) && dest.take(obj);
+  }
     LxResult
   GraphLookup (const char *name, void **ppvObj) const
   {
     return m_loc[0]->GraphLookup (m_loc,name,ppvObj);
+  }
+    bool
+  GraphLookup (const char *name, CLxLocalizedObject &dest) const
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->GraphLookup (m_loc,name,&obj)) && dest.take(obj);
   }
     LxResult
   GraphCount (int *count) const
@@ -463,6 +618,13 @@ public:
   GraphByIndex (unsigned index, void **ppvObj) const
   {
     return m_loc[0]->GraphByIndex (m_loc,index,ppvObj);
+  }
+    bool
+  GraphByIndex (unsigned index, CLxLocalizedObject &dest) const
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->GraphByIndex (m_loc,index,&obj)) && dest.take(obj);
   }
     LxResult
   ItemRemove (ILxUnknownID item)
@@ -489,6 +651,13 @@ public:
   {
     return m_loc[0]->ItemReplace (m_loc,(ILxUnknownID)item,type,ppvObj);
   }
+    bool
+  ItemReplace (ILxUnknownID item, int type, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->ItemReplace (m_loc,(ILxUnknownID)item,type,&obj)) && dest.take(obj);
+  }
     LxResult
   SetupMode (void)
   {
@@ -499,15 +668,58 @@ public:
   {
     return m_loc[0]->SetupChannels (m_loc,ppvObj);
   }
+    bool
+  SetupChannels (CLxLocalizedObject &dest) const
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->SetupChannels (m_loc,&obj)) && dest.take(obj);
+  }
     LxResult
   ItemLookupIdent (const char *id, void **ppvObj)
   {
     return m_loc[0]->ItemLookupIdent (m_loc,id,ppvObj);
   }
+    bool
+  ItemLookupIdent (const char *id, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->ItemLookupIdent (m_loc,id,&obj)) && dest.take(obj);
+  }
     LxResult
   ItemLookupImported (const char *id, void **ppvObj)
   {
     return m_loc[0]->ItemLookupImported (m_loc,id,ppvObj);
+  }
+    bool
+  ItemLookupImported (const char *id, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->ItemLookupImported (m_loc,id,&obj)) && dest.take(obj);
+  }
+    LxResult
+  RenderCameraCount (int *count) const
+  {
+    return m_loc[0]->RenderCameraCount (m_loc,count);
+  }
+    LxResult
+  RenderCameraByIndex (int index, void **ppvObj) const
+  {
+    return m_loc[0]->RenderCameraByIndex (m_loc,index,ppvObj);
+  }
+    bool
+  RenderCameraByIndex (int index, CLxLocalizedObject &dest) const
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->RenderCameraByIndex (m_loc,index,&obj)) && dest.take(obj);
+  }
+    LxResult
+  RenderCameraIndex (ILxUnknownID eval, int *index) const
+  {
+    return m_loc[0]->RenderCameraIndex (m_loc,(ILxUnknownID)eval,index);
   }
 };
 
@@ -529,6 +741,13 @@ public:
   {
     return m_loc[0]->Context (m_loc,ppvObj);
   }
+    bool
+  Context (CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Context (m_loc,&obj)) && dest.take(obj);
+  }
     LxResult
   RootCount (int *count)
   {
@@ -539,15 +758,36 @@ public:
   {
     return m_loc[0]->RootByIndex (m_loc,index,ppvObj);
   }
+    bool
+  RootByIndex (int index, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->RootByIndex (m_loc,index,&obj)) && dest.take(obj);
+  }
     LxResult
   RootFirst (void **ppvObj)
   {
     return m_loc[0]->RootFirst (m_loc,ppvObj);
   }
+    bool
+  RootFirst (CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->RootFirst (m_loc,&obj)) && dest.take(obj);
+  }
     LxResult
   RootNext (void **ppvObj)
   {
     return m_loc[0]->RootNext (m_loc,ppvObj);
+  }
+    bool
+  RootNext (CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->RootNext (m_loc,&obj)) && dest.take(obj);
   }
     LxResult
   RootSetPos (ILxUnknownID item, int pos)
@@ -569,7 +809,7 @@ public:
   void _init() {m_loc=0;}
   CLxLoc_SceneService() {_init();set();}
  ~CLxLoc_SceneService() {}
-  void set() {m_loc=reinterpret_cast<ILxSceneServiceID>(lx::GetGlobal(&lx::guid_SceneService));}
+  void set() {if(!m_loc)m_loc=reinterpret_cast<ILxSceneServiceID>(lx::GetGlobal(&lx::guid_SceneService));}
     LxResult
   ScriptQuery (void **ppvObj)
   {
@@ -579,6 +819,13 @@ public:
   Root (void **ppvObj)
   {
     return m_loc[0]->Root (m_loc,ppvObj);
+  }
+    bool
+  Root (CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Root (m_loc,&obj)) && dest.take(obj);
   }
     unsigned
   ItemTypeCount (void)
@@ -640,6 +887,13 @@ public:
   {
     return m_loc[0]->CreateScene (m_loc,ppvObj);
   }
+    bool
+  CreateScene (CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->CreateScene (m_loc,&obj)) && dest.take(obj);
+  }
     LxResult
   DestroyScene (ILxUnknownID scene)
   {
@@ -655,10 +909,24 @@ public:
   {
     return m_loc[0]->SubSceneLoad (m_loc,(ILxUnknownID)scene,path,(ILxUnknownID)monitor,ppvObj);
   }
+    bool
+  SubSceneLoad (ILxUnknownID scene, const char *path, ILxUnknownID monitor, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->SubSceneLoad (m_loc,(ILxUnknownID)scene,path,(ILxUnknownID)monitor,&obj)) && dest.take(obj);
+  }
     LxResult
   GetMeshInstSourceItem (ILxUnknownID inst, void **ppvObj)
   {
     return m_loc[0]->GetMeshInstSourceItem (m_loc,(ILxUnknownID)inst,ppvObj);
+  }
+    bool
+  GetMeshInstSourceItem (ILxUnknownID inst, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->GetMeshInstSourceItem (m_loc,(ILxUnknownID)inst,&obj)) && dest.take(obj);
   }
     int
   MeshInstanceCount (ILxUnknownID mesh)
@@ -670,15 +938,41 @@ public:
   {
     return m_loc[0]->MeshInstanceByIndex (m_loc,(ILxUnknownID)mesh,index,ppvObj);
   }
+    bool
+  MeshInstanceByIndex (ILxUnknownID mesh, int index, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->MeshInstanceByIndex (m_loc,(ILxUnknownID)mesh,index,&obj)) && dest.take(obj);
+  }
     LxResult
   LoadImage (ILxUnknownID scene, const char *name, unsigned *flags, ILxUnknownID monitor, void **ppvObj)
   {
     return m_loc[0]->LoadImage (m_loc,(ILxUnknownID)scene,name,flags,(ILxUnknownID)monitor,ppvObj);
   }
+    bool
+  LoadImage (ILxUnknownID scene, const char *name, unsigned *flags, ILxUnknownID monitor, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->LoadImage (m_loc,(ILxUnknownID)scene,name,flags,(ILxUnknownID)monitor,&obj)) && dest.take(obj);
+  }
     LxResult
   GetReplicatorEnumerator (ILxUnknownID replicatorItem, void **ppvObj)
   {
     return m_loc[0]->GetReplicatorEnumerator (m_loc,(ILxUnknownID)replicatorItem,ppvObj);
+  }
+    bool
+  GetReplicatorEnumerator (ILxUnknownID replicatorItem, CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->GetReplicatorEnumerator (m_loc,(ILxUnknownID)replicatorItem,&obj)) && dest.take(obj);
+  }
+    LxResult
+  ItemTypeGetTag (LXtItemType type, const char *tag, unsigned super, const char **value)
+  {
+    return m_loc[0]->ItemTypeGetTag (m_loc,type,tag,super,value);
   }
 };
 

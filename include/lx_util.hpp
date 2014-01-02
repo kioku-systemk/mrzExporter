@@ -1,7 +1,7 @@
 /*
  * Plug-in SDK Header: C++ Wrapper Classes
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -35,15 +35,213 @@
 
 /*
  * ----------------------------------------------------------
+ * Allocation tracking is done by declaring trace contexts. These mark
+ * the current scope with a name so that allocations made (or in nested
+ * scopes) there can be traced back.
+ *
+ * This behavior is controlled by the compile-time TRACEALLOC define.
+ * Normally this is defined when RELEASE is defined, but that can be
+ * overridden by the NO_TRACE and YES_TRACE defines. The common lib must
+ * be compiled with the same state for the define.
+ *
+ *   {
+ *           CLxTrace _here ("Class::Method");
+ *
+ *           do_allocations ();
+ *   }
+ */
+#define LX_NO_TRACE
+
+#ifdef LX_NO_TRACE
+  #undef  LX_TRACEALLOC
+
+#elif LX_YES_TRACE
+  #define LX_TRACEALLOC
+
+#else
+  #ifndef RELEASE
+    #define LX_TRACEALLOC
+  #else
+    #undef  LX_TRACEALLOC
+  #endif
+#endif
+
+class CLxTrace
+{
+    public:
+    #ifdef LX_TRACEALLOC
+         CLxTrace (const char *);
+        ~CLxTrace ();
+    #else
+         CLxTrace (const char *)	{}
+        ~CLxTrace ()			{}
+    #endif
+};
+
+
+/*
+ * ----------------------------------------------------------
  * C++ treats all classes as unique datatypes, so you can't just have a
  * pointer to an object of unknown type. In cases where that's necessary
  * classes can derive from CLxObject, which is just something guaranteed
  * to have a virtual destructor to allow 'delete'.
+ *
+ * Inheriting from the basic object class is also useful for tracing
+ * allocation. Any allocated CLxObject is added to the trace.
  */
 class CLxObject
 {
     public:
+    #ifdef LX_TRACEALLOC
+                 CLxObject();
+        virtual ~CLxObject();
+    #else
         virtual ~CLxObject() {}
+    #endif
+};
+
+
+/*
+ * ----------------------------------------------------------
+ * One such class that requires a virtual delete is this superclass that
+ * allows sub-classes to be ref-counted. The constructor sets the ref-
+ * count to 1. acquire() increases the ref-count, and release() decrements
+ * the count. When the count hits zero the destrutor is called.
+ *
+ * When tracing is enabled, the trace_mode flag can be set to true and the
+ * trace_Change() method will be called for ref count changes.
+ */
+class CLxRefCounted :
+                public CLxObject
+{
+    public:
+        unsigned		 ref_count;
+
+                CLxRefCounted ();
+        void	acquire ();
+        void	release ();
+
+    #ifdef LX_TRACEALLOC
+        bool			 trace_mode;
+        virtual void		 trace_Change (int) {}
+    #endif
+};
+
+
+/*
+ * ----------------------------------------------------------
+ * This template class serves as a caddy to hold a CLxRefCounted subclass.
+ * set() / drop() and destructor manage the ref counts, and the meaty
+ * object inside can be accessed by casting or dereferencing.
+ */
+template <class T>
+class CLxHolder
+{
+    public:
+        T			*ref;
+
+        CLxHolder ()
+        {
+                ref = 0;
+        }
+
+        ~CLxHolder ()
+        {
+                drop ();
+        }
+
+                void
+        drop ()
+        {
+                if (ref)
+                {
+                        ref->release ();
+                        ref = 0;
+                }
+        }
+
+                void
+        alloc ()
+        {
+                CLxTrace here ("CLxHolder::alloc");
+                drop ();
+                ref = new T;
+        }
+
+                void
+        set (
+                T		*replace)
+        {
+                drop ();
+                ref = replace;
+                if (ref)
+                        ref->acquire ();
+        }
+
+        operator       T *  ()		{	return  ref;	}
+        operator const T *  ()		{	return  ref;	}
+
+              T& operator*  ()		{	return *ref;	}
+        const T& operator*  () const	{	return *ref;	}
+
+              T* operator-> ()		{	return  ref;	}
+        const T* operator-> () const	{	return  ref;	}
+};
+
+
+/*
+ * ----------------------------------------------------------
+ * This template class serves as a holder for one of anything. This is
+ * useful when you need a singleton of something that's shared by multiple
+ * clients. In this case the ref-counting is done locally.
+ */
+template <class T>
+class CLxSingleHolder
+{
+    public:
+        T			*ref;
+        unsigned		 count;
+
+        CLxSingleHolder ()
+        {
+                ref   = 0;
+                count = 0;
+        }
+
+        ~CLxSingleHolder ()
+        {
+                while (count)
+                        release ();
+        }
+
+                void
+        acquire ()
+        {
+                CLxTrace here ("CLxSingleHolder::acquire");
+                if (!count)
+                        ref = new T;
+
+                count++;
+        }
+
+                void
+        release ()
+        {
+                if (!--count)
+                {
+                        delete ref;
+                        ref = 0;
+                }
+        }
+
+        operator       T *  ()		{	return  ref;	}
+        operator const T *  ()		{	return  ref;	}
+
+              T& operator*  ()		{	return *ref;	}
+        const T& operator*  () const	{	return *ref;	}
+
+              T* operator-> ()		{	return  ref;	}
+        const T* operator-> () const	{	return  ref;	}
 };
 
 
@@ -107,14 +305,233 @@ class CLxList
                 else
                         last = elt->prev;
         }
-}; // END CLxList template
+};
+
+
+/*
+ * Add methods for create and destroy of elements when that's possible. Objects
+ * in the list are owned by the list and are freed on destruction.
+ */
+template <class T>
+class CLxObjectList :
+                public CLxList<T>
+{
+    public:
+        ~CLxObjectList ()
+        {
+                Clear ();
+        }
+
+                T *
+        AllocTail ()
+        {
+                T			*elt;
+
+                CLxTrace here ("CLxObjectList::Alloc");
+                elt = new T;
+                this->AddTail (elt);
+                return elt;
+        }
+
+                void
+        Clear ()
+        {
+                T			*elt;
+
+                for (elt = this->first; elt; elt = this->first) {
+                        this->Remove (elt);
+                        delete elt;
+                }
+        }
+};
+
+
+/*
+ * Array of elements. This is like an STL 'vector' but much simpler.
+ */
+template <class T>
+class CLxArray
+{
+    public:
+        T		*array;
+        int		 size;
+
+        CLxArray ()
+        {
+                array = 0;
+                size  = 0;
+        }
+
+        CLxArray (int n)
+        {
+                array = 0;
+                size  = 0;
+
+                Alloc (n);
+        }
+
+        ~CLxArray ()
+        {
+                Free ();
+        }
+
+                void
+        Alloc (const int n)
+        {
+                Free ();
+                CLxTrace here ("CLxArray::alloc");
+                array = new T [n];
+                size  = n;
+        }
+
+                void
+        Free ()
+        {
+                if (!array)
+                        return;
+
+                delete [] array;
+                array = 0;
+                size  = 0;
+        }
+
+                T &
+        operator[] (const int index) const
+        {
+                if (index < 0 || index > size)
+                        throw (LXe_OUTOFBOUNDS);
+
+                return array[index];
+        }
+};
+
+
+/*
+ * ----------------------------------------------------------
+ * Arm objects. These can be declared in a scope and will be destroyed on leaving
+ * the scope, performing their arm action. Typically these are disarmed before the
+ * natural end of the scope, so that the arm action is only fired on an unexpected
+ * end of scope -- like an exception.
+ */
+class CLxArm
+{
+    public:
+        bool		 armed;
+
+        CLxArm ()
+        {
+                arm ();
+        }
+
+                void
+        arm ()
+        {
+                armed = true;
+        }
+
+                void
+        disarm ()
+        {
+                armed = false;
+        }
+};
+
+/*
+ * Perform an assignment of a value to a variable holding the value. Unless disarmed
+ * the value will be set back at the end of the scope.
+ */
+template <class T>
+class CLxArmAssignment :
+                public CLxArm
+{
+    public:
+        T		*m_ptr;
+        T		 m_val;
+
+        CLxArmAssignment (T *ptr, T value)
+        {
+                m_ptr = ptr;
+                m_val = m_ptr[0];
+                m_ptr[0] = value;
+        }
+
+        ~CLxArmAssignment ()
+        {
+                if (armed)
+                        m_ptr[0] = m_val;
+        }
+};
+
+/*
+ * Allocate an object of a given type, or hold on to an allocated object. Unless
+ * disarmed the object will be freed at the end of scope.
+ */
+template <class T>
+class CLxArmAllocation :
+                public CLxArm
+{
+    public:
+        T		*m_object;
+        bool		 is_array;
+
+        CLxArmAllocation (T *init = 0)
+        {
+                CLxTrace here ("CLxArmAllocation");
+                is_array = false;
+                if (init)
+                        m_object = init;
+                else
+                        m_object = new T;
+        }
+
+        CLxArmAllocation (int n)
+        {
+                CLxTrace here ("CLxArmAllocation");
+                is_array = true;
+                m_object = new T [n];
+        }
+
+        ~CLxArmAllocation ()
+        {
+                if (armed && is_array)
+                        delete [] m_object;
+                else if (armed)
+                        delete m_object;
+        }
+};
+
+/*
+ * Hold on to a reference to an ILxUnknownID interface pointer. If 'take' is
+ * true (the default) the reference is stolen and will be released unless
+ * disarmed.
+ */
+class CLxArmUnknownRef :
+                public CLxArm
+{
+    public:
+        ILxUnknownID	 unk_ifc;
+
+        CLxArmUnknownRef (ILxUnknownID unk, bool take = true)
+        {
+                unk_ifc = unk;
+                if (!take)
+                        unk_ifc[0]->AddRef (unk_ifc);
+        }
+
+        ~CLxArmUnknownRef ()
+        {
+                if (armed)
+                        unk_ifc[0]->Release (unk_ifc);
+        }
+};
 
 
 /*
  * ----------------------------------------------------------
  * "lx" namespace for utility functions.
  */
-                namespace lx {
+                namespace lx
+                {
 
 /*
  * Functions for the basic IUnknown methods -- QueryInterface, AddRef and
@@ -203,6 +620,30 @@ extern void		 UnkRelease (ILxUnknownID);
 
 
 /*
+ * Methods to throw LxResult codes as exceptions. ThrowErr() ignores any that
+ * aren't error codes, and ThrowOpt() ignores any non-errors including NOTIMPL.
+ */
+extern void		 ThrowErr (LxResult);
+extern void		 ThrowOpt (LxResult);
+
+
+/*
+ * Where are we in the plugin or app lifecycle? BEFORE initialize, DURING normal
+ * operation, or AFTER cleanup.
+ */
+#define LXiLIFECYCLE_BEFORE	 0
+#define LXiLIFECYCLE_DURING	 1
+#define LXiLIFECYCLE_AFTER	 2
+
+extern unsigned		 Lifecycle ();
+
+/*
+ * Dump currently allocated CLxObjects either to stdout or the log.
+ */
+extern void		 TraceObjects (bool full = false, bool toLog = false);
+
+
+/*
  * Functions to lookup GUIDs and get globals. These are needed as basis
  * functions for much of anything else, and the implementation depends on
  * whether we are a plug-in or a client application.
@@ -220,8 +661,30 @@ extern void	GUIDSet (LXtGUID *, unsigned int, unsigned int, unsigned int,
                          unsigned int, unsigned int, unsigned int, unsigned int,
                          unsigned int, unsigned int, unsigned int, unsigned int);
 
-
                 };	// END lx namespace
+
+
+/*
+ * ----------------------------------------------------------
+ * "lx_err" namespace for result check functions.
+ *
+ * Some very common check functions that just throw LxResult errors if something
+ * fails. It's useful to have these be short names, so it's a different namespace
+ * to allow "using" without getting everything else from "lx".
+ */
+#ifdef check
+   #undef check
+#endif
+
+                namespace lx_err
+                {
+
+extern void	check (LxResult rc);			// throw rc if fail code
+extern void	check (bool, LxResult rc = LXe_FAILED);	// throw rc if false
+extern void	check (int,  LxResult rc = LXe_FAILED);	// throw rc if negative
+
+                };	// END lx_err namespace
+
 
 #endif
 

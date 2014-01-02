@@ -1,7 +1,7 @@
 /*
  * C++ wrapper for lxgroup.h
  *
- *	Copyright (c) 2008-2012 Luxology LLC
+ *	Copyright (c) 2008-2013 Luxology LLC
  *	
  *	Permission is hereby granted, free of charge, to any person obtaining a
  *	copy of this software and associated documentation files (the "Software"),
@@ -30,6 +30,7 @@
 
 #include <lxgroup.h>
 #include <lx_wrap.hpp>
+#include <string>
 
 namespace lx {
     static const LXtGUID guid_GroupEnumerator = {0xCA4E1FE0,0xB655,0x429F,0x96,0x74,0x3E,0x1D,0x7D,0xEA,0x5D,0x04};
@@ -59,10 +60,24 @@ public:
   {
     return m_loc[0]->Item (m_loc,ppvObj);
   }
+    bool
+  Item (CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Item (m_loc,&obj)) && dest.take(obj);
+  }
     LxResult
   Channel (void **ppvObj, unsigned *index)
   {
     return m_loc[0]->Channel (m_loc,ppvObj,index);
+  }
+    bool
+  Channel (CLxLocalizedObject &dest, unsigned *index)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Channel (m_loc,&obj,index)) && dest.take(obj);
   }
 };
 
@@ -78,6 +93,13 @@ public:
   Enumerator (void **ppvObj)
   {
     return m_loc[0]->Enumerator (m_loc,ppvObj);
+  }
+    bool
+  Enumerator (CLxLocalizedObject &dest)
+  {
+    LXtObjectID obj;
+    dest.clear();
+    return LXx_OK(m_loc[0]->Enumerator (m_loc,&obj)) && dest.take(obj);
   }
 };
 

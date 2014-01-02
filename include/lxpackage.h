@@ -1,7 +1,7 @@
 /*
  * LX package module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -33,6 +33,7 @@
 
 typedef struct vt_ILxSceneItemListener1 ** ILxSceneItemListener1ID;
 typedef struct vt_ILxSceneItemListener ** ILxSceneItemListenerID;
+typedef struct vt_ILxSceneLoaderTarget ** ILxSceneLoaderTargetID;
 typedef struct vt_ILxScene1 ** ILxScene1ID;
 typedef struct vt_ILxItem1 ** ILxItem1ID;
 typedef struct vt_ILxPackage ** ILxPackageID;
@@ -40,6 +41,7 @@ typedef struct vt_ILxAddChannel ** ILxAddChannelID;
 typedef struct vt_ILxPackageInstance ** ILxPackageInstanceID;
 #include <lxcom.h>
 #include <lxvalue.h>
+#include <lxvertex.h>
 
 
 typedef struct st_LXtSceneTarget {
@@ -279,6 +281,23 @@ typedef struct vt_ILxSceneItemListener {
                 LXtObjectID              itemTo,
                 unsigned                 chanTo);
 } ILxSceneItemListener;
+typedef struct vt_ILxSceneLoaderTarget {
+        ILxUnknown       iunk;
+                LXxMETHOD( LxResult,
+        SetRootType) (
+                LXtObjectID              self,
+                const char              *typeName);
+
+                LXxMETHOD( LxResult,
+        SetFlags) (
+                LXtObjectID              self,
+                unsigned                 flags);
+
+                LXxMETHOD( LxResult,
+        ClearFlags) (
+                LXtObjectID              self,
+                unsigned                 flags);
+} ILxSceneLoaderTarget;
 typedef struct vt_ILxScene1 {
         ILxUnknown       iunk;
                 LXxMETHOD( LxResult,
@@ -496,7 +515,7 @@ typedef struct vt_ILxAddChannel {
                 LXxMETHOD( LxResult,
         SetHint) (
                 LXtObjectID              self,
-                LXtTextValueHint        *hint);
+                const LXtTextValueHint  *hint);
                 LXxMETHOD( LxResult,
         SetDefaultObj) (
                 LXtObjectID              self,
@@ -553,6 +572,13 @@ typedef struct vt_ILxPackageInstance {
 #define LXu_SCENEITEMLISTENER1  "BCCD05F8-E560-11D7-B3B8-000393CE9680"
 #define LXu_SCENEITEMLISTENER   "C72C641E-CDCD-431B-ADD9-D75554D656E1"
 // [export] ILxSceneItemListener sil
+// [local]  ILxSceneItemListener
+#define LXu_SCENELOADERTARGET   "A914B4F9-947C-4334-9D89-64BB8DC26BF6"
+// [local]  ILxSceneLoaderTarget
+#define LXf_SCENETARG_SUBCINE           1
+#define LXf_SCENETARG_NODEFAULTS        2
+#define LXf_SCENETARG_CINECHANGED       4
+#define LXf_SCENETARG_GONATIVE          8
 #define LXf_LOADIMG_SEARCH_PATHS        1
 #define LXf_LOADIMG_USER_REPLACE        2
 #define LXu_SCENE1      "4340A8FC-F984-4E04-A4BB-83931A6335AF"
@@ -561,6 +587,8 @@ typedef struct vt_ILxPackageInstance {
 #define LXu_PACKAGE     "6383211E-2624-492e-8C4B-D06BB43886A7"
 #define LXa_PACKAGE     "package"
 // [export] ILxPackage pkg
+// [local]  ILxPackage
+// [python] ILxPackage:TestInterface    bool
 #define LXsPKG_SUPERTYPE        "super"
 #define LXsPKG_GRAPHS           "pkg.graphs"
 #define LXsPKG_CREATECMD        "pkg.createCmd"
@@ -572,17 +600,20 @@ typedef struct vt_ILxPackageInstance {
 #define LXsPKG_CREATE_INDIRECT  "createIndirect"
 #define LXu_ADDCHANNEL          "6E732ACC-AAA5-4695-B5DE-8059A2800554"
 // [local]  ILxAddChannel
+// [python] ILxAddChannel:SetDefaultObj         obj Unknown
 
 #define LXsCHANVEC_SCALAR       "V"
-#define LXsCHANVEC_XY           "XY"
-#define LXsCHANVEC_XYZ          "XYZ"
-#define LXsCHANVEC_RGB          "RGB"
-#define LXsCHANVEC_RGBA         "RGBA"
+#define LXsCHANVEC_XY            LXsVECTYPE_XY
+#define LXsCHANVEC_XYZ           LXsVECTYPE_XYZ
+#define LXsCHANVEC_RGB           LXsVECTYPE_RGB
+#define LXsCHANVEC_RGBA          LXsVECTYPE_RGBA
 #define LXu_PACKAGEINSTANCE     "09D603F7-CCF6-4A5C-B41C-021AC6C17A94"
 #define LXa_PACKAGEINSTANCE     "packageInstance"
 // [export]  ILxPackageInstance pins
+// [local]   ILxPackageInstance
 // [default] ILxPackageInstance:DupType    = 0
 // [default] ILxPackageInstance:TestParent = LXe_TRUE
+// [python]  ILxPackageInstance:TestParent      bool
 #define LXi_CIT_GROUP            1
 #define LXi_CIT_CLIP             2
 #define LXi_CIT_LOCATOR          3
@@ -595,10 +626,6 @@ typedef struct vt_ILxPackageInstance {
 #define LXi_CIT_ENVIRON          10
 #define LXi_CIT_BACKDROP         11
 #define LXi_CIT_TLAYER           12
-#define LXf_SCENETARG_SUBCINE           1
-#define LXf_SCENETARG_NODEFAULTS        2
-#define LXf_SCENETARG_CINECHANGED       4
-#define LXf_SCENETARG_GONATIVE          8
 
  #ifdef __cplusplus
   }

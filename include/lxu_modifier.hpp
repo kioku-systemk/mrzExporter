@@ -1,7 +1,7 @@
 /*
  * Plug-in SDK Header: Modifier Wrapper Classes
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -32,6 +32,8 @@
 #include <lx_action.hpp>
 #include <lx_value.hpp>
 #include <lx_item.hpp>
+#include <lxpackage.h>
+#include <vector>
 
 
 /*
@@ -47,11 +49,10 @@
  * The element is subclassed by the client, and there is one allocated for each
  * affected item.
  */
-class CLxItemModifierElement
+class CLxItemModifierElement :
+                public CLxObject
 {
     public:
-        virtual	~CLxItemModifierElement () {}
-
         /*
          * Test if the state of this element matches what would be generated
          * using the Alloc() method on this item. Default is true, which is
@@ -105,6 +106,8 @@ class CLxItemModifierNode :
         CLxUser_Evaluation	 m_eval;
         CLxUser_Attributes	 m_attr;
         bool			 has_cache;
+
+        ~CLxItemModifierNode ();
 
         LxResult	 mod_Evaluate ()					LXx_OVERRIDE;
         LxResult	 mod_Test (ILxUnknownID, unsigned)			LXx_OVERRIDE;
@@ -211,6 +214,8 @@ class CLxObjectRefModifierCore :
         virtual const char *	ItemType () = 0;
         virtual const char *	Channel () = 0;
 
+        virtual const char *	GraphNames () { return 0; }
+
         /*
          * Attach to the eval context. Just add channels for read.
          */
@@ -247,6 +252,14 @@ class CLxObjectRefModifier :
                 return tmp.ItemType ();
         }
 
+                const char *
+        GraphNames ()
+        {
+                T			 tmp;
+
+                return tmp.GraphNames ();
+        }
+
                 CLxItemModifierElement *
         Alloc (
                 CLxUser_Evaluation	&eval,
@@ -262,6 +275,31 @@ class CLxObjectRefModifier :
         }
 };
 
+/*
+ * The render camera utility class is used for getting the list of potential render cameras
+ * (and the current one) from the scene and eval. 
+ */
+class CLxRenderCamera
+{
+        public:
+                CLxRenderCamera (CLxUser_Scene &scene)
+                {
+                        scene.get ((void **) &(this->sceneObj));
+                }
+
+                void				Camera		(CLxUser_Evaluation &, CLxUser_Item &);
+
+                void				BuildList	(void);
+                bool				ListIsValid	(void);
+                unsigned			AttachIndexChan	(CLxUser_Evaluation &);
+                int				Camera		(CLxUser_Attributes &);
+                size_t				size		(void);
+                ILxUnknownID&			operator[]	(const int);		
+        private:
+                ILxUnknownID			sceneObj;
+                unsigned			chanIndex;
+                std::vector<ILxUnknownID>	cameraList;
+};
 
 #endif // LXU_MODIFIER_HPP
 

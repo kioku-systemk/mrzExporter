@@ -1,7 +1,7 @@
 /*
  * C++ wrapper for lxcolor.h
  *
- *	Copyright (c) 2008-2012 Luxology LLC
+ *	Copyright (c) 2008-2013 Luxology LLC
  *	
  *	Permission is hereby granted, free of charge, to any person obtaining a
  *	copy of this software and associated documentation files (the "Software"),
@@ -30,9 +30,11 @@
 
 #include <lxcolor.h>
 #include <lx_wrap.hpp>
+#include <string>
 
 namespace lx {
     static const LXtGUID guid_ColorModel = {0x67d3d952,0x4ab0,0x49e5,0x8f,0x9e,0x6c,0x88,0x9b,0x00,0xf2,0x53};
+    static const LXtGUID guid_Color = {0x7c084df3,0xadb6,0x48ee,0x92,0xd3,0x03,0x2d,0x90,0xef,0xea,0x05};
 };
 
 class CLxImpl_ColorModel {
@@ -72,6 +74,28 @@ class CLxImpl_ColorModel {
       colm_StripBaseVector (unsigned axis, int dynamic, float *vec)
         { return LXe_NOTIMPL; }
 };
+#define LXxD_ColorModel_NumComponents int colm_NumComponents (void)
+#define LXxO_ColorModel_NumComponents LXxD_ColorModel_NumComponents LXx_OVERRIDE
+#define LXxD_ColorModel_ComponentType LxResult colm_ComponentType (unsigned component, const char **type)
+#define LXxO_ColorModel_ComponentType LXxD_ColorModel_ComponentType LXx_OVERRIDE
+#define LXxD_ColorModel_ComponentRange LxResult colm_ComponentRange (unsigned component, float *min, float *max)
+#define LXxO_ColorModel_ComponentRange LXxD_ColorModel_ComponentRange LXx_OVERRIDE
+#define LXxD_ColorModel_ToRGB LxResult colm_ToRGB (const float *vector, float *rgb)
+#define LXxO_ColorModel_ToRGB LXxD_ColorModel_ToRGB LXx_OVERRIDE
+#define LXxD_ColorModel_FromRGB LxResult colm_FromRGB (const float *rgb, float *vector)
+#define LXxO_ColorModel_FromRGB LXxD_ColorModel_FromRGB LXx_OVERRIDE
+#define LXxD_ColorModel_DrawSlice LxResult colm_DrawSlice (ILxUnknownID image, unsigned xAxis, unsigned yAxis, const float *vec)
+#define LXxO_ColorModel_DrawSlice LXxD_ColorModel_DrawSlice LXx_OVERRIDE
+#define LXxD_ColorModel_DrawSliceMarker LxResult colm_DrawSliceMarker (ILxUnknownID image, unsigned xAxis, unsigned yAxis, const float *downVec, const float *vec)
+#define LXxO_ColorModel_DrawSliceMarker LXxD_ColorModel_DrawSliceMarker LXx_OVERRIDE
+#define LXxD_ColorModel_CanSliceBeReused LxResult colm_CanSliceBeReused (unsigned xAxis, unsigned yAxis, const float *oldVec, const float *newVec)
+#define LXxO_ColorModel_CanSliceBeReused LXxD_ColorModel_CanSliceBeReused LXx_OVERRIDE
+#define LXxD_ColorModel_ToSlicePos LxResult colm_ToSlicePos (unsigned xAxis, unsigned yAxis, unsigned imgW, unsigned imgH, const float *vec, unsigned *imgX, unsigned *imgY)
+#define LXxO_ColorModel_ToSlicePos LXxD_ColorModel_ToSlicePos LXx_OVERRIDE
+#define LXxD_ColorModel_FromSlicePos LxResult colm_FromSlicePos (unsigned xAxis, unsigned yAxis, unsigned imgW, unsigned imgH, unsigned imgX, unsigned imgY, float *downVec, float *vec)
+#define LXxO_ColorModel_FromSlicePos LXxD_ColorModel_FromSlicePos LXx_OVERRIDE
+#define LXxD_ColorModel_StripBaseVector LxResult colm_StripBaseVector (unsigned axis, int dynamic, float *vec)
+#define LXxO_ColorModel_StripBaseVector LXxD_ColorModel_StripBaseVector LXx_OVERRIDE
 template <class T>
 class CLxIfc_ColorModel : public CLxInterface
 {
@@ -242,6 +266,107 @@ public:
   StripBaseVector (unsigned axis, int dynamic, float *vec)
   {
     return m_loc[0]->StripBaseVector (m_loc,axis,dynamic,vec);
+  }
+};
+
+class CLxImpl_Color {
+  public:
+    virtual ~CLxImpl_Color() {}
+    virtual LxResult
+      color_Color (float *color)
+        { return LXe_NOTIMPL; }
+    virtual LxResult
+      color_Alpha (float *alpha)
+        { return LXe_NOTIMPL; }
+    virtual LxResult
+      color_ColorModel (const char **model)
+        { return LXe_NOTIMPL; }
+    virtual LxResult
+      color_ColorInModelSpace (float *vec)
+        { return LXe_NOTIMPL; }
+};
+#define LXxD_Color_Color LxResult color_Color (float *color)
+#define LXxO_Color_Color LXxD_Color_Color LXx_OVERRIDE
+#define LXxD_Color_Alpha LxResult color_Alpha (float *alpha)
+#define LXxO_Color_Alpha LXxD_Color_Alpha LXx_OVERRIDE
+#define LXxD_Color_ColorModel LxResult color_ColorModel (const char **model)
+#define LXxO_Color_ColorModel LXxD_Color_ColorModel LXx_OVERRIDE
+#define LXxD_Color_ColorInModelSpace LxResult color_ColorInModelSpace (float *vec)
+#define LXxO_Color_ColorInModelSpace LXxD_Color_ColorInModelSpace LXx_OVERRIDE
+template <class T>
+class CLxIfc_Color : public CLxInterface
+{
+    static LxResult
+  Color (LXtObjectID wcom, float *color)
+  {
+    LXCWxINST (CLxImpl_Color, loc);
+    try {
+      return loc->color_Color (color);
+    } catch (LxResult rc) { return rc; }
+  }
+    static LxResult
+  Alpha (LXtObjectID wcom, float *alpha)
+  {
+    LXCWxINST (CLxImpl_Color, loc);
+    try {
+      return loc->color_Alpha (alpha);
+    } catch (LxResult rc) { return rc; }
+  }
+    static LxResult
+  ColorModel (LXtObjectID wcom, const char **model)
+  {
+    LXCWxINST (CLxImpl_Color, loc);
+    try {
+      return loc->color_ColorModel (model);
+    } catch (LxResult rc) { return rc; }
+  }
+    static LxResult
+  ColorInModelSpace (LXtObjectID wcom, float *vec)
+  {
+    LXCWxINST (CLxImpl_Color, loc);
+    try {
+      return loc->color_ColorInModelSpace (vec);
+    } catch (LxResult rc) { return rc; }
+  }
+  ILxColor vt;
+public:
+  CLxIfc_Color ()
+  {
+    vt.Color = Color;
+    vt.Alpha = Alpha;
+    vt.ColorModel = ColorModel;
+    vt.ColorInModelSpace = ColorInModelSpace;
+    vTable = &vt.iunk;
+    iid = &lx::guid_Color;
+  }
+};
+class CLxLoc_Color : public CLxLocalize<ILxColorID>
+{
+public:
+  void _init() {m_loc=0;}
+  CLxLoc_Color() {_init();}
+  CLxLoc_Color(ILxUnknownID obj) {_init();set(obj);}
+  CLxLoc_Color(const CLxLoc_Color &other) {_init();set(other.m_loc);}
+  const LXtGUID * guid() const {return &lx::guid_Color;}
+    LxResult
+  Color (float *color)
+  {
+    return m_loc[0]->Color (m_loc,color);
+  }
+    LxResult
+  Alpha (float *alpha)
+  {
+    return m_loc[0]->Alpha (m_loc,alpha);
+  }
+    LxResult
+  ColorModel (const char **model)
+  {
+    return m_loc[0]->ColorModel (m_loc,model);
+  }
+    LxResult
+  ColorInModelSpace (float *vec)
+  {
+    return m_loc[0]->ColorInModelSpace (m_loc,vec);
   }
 };
 

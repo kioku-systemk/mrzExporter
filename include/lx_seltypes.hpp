@@ -1,7 +1,7 @@
 /*
  * Plug-in SDK Header: C++ User Classes
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -378,6 +378,48 @@ class CLxUser_VMapPacketTranslation : public CLxLoc_VMapPacketTranslation
                         return false;
 
                 return take (obj);
+        }
+};
+class CLxUser_PresetPathPacketTranslation : public CLxLoc_PresetPathPacketTranslation
+{
+    public:
+        CLxUser_PresetPathPacketTranslation () {}
+        CLxUser_PresetPathPacketTranslation (ILxUnknownID obj) : CLxLoc_PresetPathPacketTranslation (obj) {}
+
+                        bool
+                autoInit ()
+                {
+                        CLxLoc_SelectionService  svc;
+                        LXtObjectID              obj;
+
+                        if (LXx_FAIL (svc.Allocate (LXsSELTYP_PRESETPATH, &obj)))
+                                return false;
+
+                        return take (obj);
+                }
+
+                const char *
+        GetPath (
+                void                    *packet)
+        {
+                const char              *path;
+
+                if (LXx_FAIL (Path (packet, &path)))
+                        return NULL;
+
+                return path;
+        }
+
+                const char *
+        GetIdentifier (
+                void                    *packet)
+        {
+                const char              *identifier;
+
+                if (LXx_FAIL (Identifier (packet, &identifier)))
+                        return NULL;
+
+                return identifier;
         }
 };
 

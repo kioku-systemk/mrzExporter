@@ -1,7 +1,7 @@
 /*
  * LX previewsocket module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -78,6 +78,12 @@
 #define LXiPREVIEWMSG_REQ_SET_CAMERA                    (LXfPREVIEWMSG_REQ | 0x00002009)
 #define LXiPREVIEWMSG_ACK_CAMERA_SET                    (LXfPREVIEWMSG_ACK | 0x00002009)
 
+#define LXiPREVIEWMSG_REQ_SET_COMPRESS                  (LXfPREVIEWMSG_REQ | 0x0000200A)                // Protocol version 1 and above
+#define LXiPREVIEWMSG_ACK_COMPRESS_SET                  (LXfPREVIEWMSG_ACK | 0x0000200A)                // Protocol version 1 and above
+
+#define LXiPREVIEWMSG_COMPRESS_NONE                                          0x00000000
+#define LXiPREVIEWMSG_COMPRESS_PNG                                           0x00000001
+
 // Frame Requests
 #define LXiPREVIEWMSG_REQ_SEND_FULL_FRAME               (LXfPREVIEWMSG_REQ | 0x00003000)
 #define LXiPREVIEWMSG_ACK_SEND_FULL_FRAME               (LXfPREVIEWMSG_ACK | 0x00003000)
@@ -85,6 +91,7 @@
 #define LXiPREVIEWMSG_PREVIEW_UNAVAILABLE                                    0x00000001
 #define LXiPREVIEWMSG_PREVIEW_RGBAFP                                         0x00000002
 #define LXiPREVIEWMSG_PREVIEW_COMPLETE                                       0x00000100
+#define LXiPREVIEWMSG_PREVIEW_COMPRESSED                                     0x00000200
 
 #define LXiPREVIEWMSG_ACK_SEND_FULL_FRAME_RGB24         (LXiPREVIEWMSG_ACK_SEND_FULL_FRAME)
 #define LXiPREVIEWMSG_ACK_SEND_FULL_FRAME_RGBAFP        (LXiPREVIEWMSG_ACK_SEND_FULL_FRAME | LXiPREVIEWMSG_PREVIEW_RGBAFP)

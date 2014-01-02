@@ -1,7 +1,7 @@
 /*
  * Plug-in SDK Source: SIMD Utilities
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -64,6 +64,21 @@ FarrayABset (
 }
 
         void
+FarrayABp (
+        Farray			 a,
+        float			 b,
+        unsigned		 num)
+{
+        unsigned		 i;
+
+ #ifdef _CC_INTEL
+  #pragma ivdep
+ #endif
+        for (i = 0; i < num; i++)
+                a[i] = a[i] + b;
+}
+
+        void
 FarrayABx (
         Farray			 a,
         float			 b,
@@ -121,7 +136,7 @@ FarrayVsmooth (
   #pragma ivdep
  #endif
         for (i = 0; i < num; i++)
-                v[i] = (3.0 - 2.0 * v[i]) * v[i] * v[i];
+                v[i] = (3.0f - 2.0f * v[i]) * v[i] * v[i];
 }
 
         void
@@ -205,6 +220,45 @@ VarrayABxR (
 }
 
         void
+VarrayABCxp (
+        Varray			 a,
+        VarrayC			 b,
+        float			 c,
+        unsigned		 num)
+{
+        float			*ap;
+        const float		*bp;
+        unsigned		 i, k;
+
+        for (k = 0; k < 3; k++) {
+                ap = a[k];
+                bp = b[k];
+
+ #ifdef _CC_INTEL
+  #pragma ivdep
+ #endif
+                for (i = 0; i < num; i++)
+                        ap[i] += bp[i] * c;
+        }
+}
+
+        void
+VarrayAXYZvecp (
+        Varray			 a,
+        float			 x,
+        float			 y,
+        float			 z,
+        unsigned		 num)
+{
+        float			 xyz[3];
+        unsigned		 k;
+
+        LXx_VSET3 (xyz, x, y, z);
+        for (k = 0; k < 3; k++)
+                FarrayABp (a[k], xyz[k], num);
+}
+
+        void
 VarrayAXYZvecx (
         Varray			 a,
         float			 x,
@@ -231,10 +285,10 @@ VarrayMatrix4Multiply (
 
         for (j = 0; j < 3; j++)
                 FarrayABxABxpABxpBpR (r[j],
-                                        v[0], m[0][j],
-                                        v[1], m[1][j],
-                                        v[2], m[2][j],
-                                              m[3][j], num);
+                                        v[0], static_cast<float>(m[0][j]),
+                                        v[1], static_cast<float>(m[1][j]),
+                                        v[2], static_cast<float>(m[2][j]),
+                                              static_cast<float>(m[3][j]), num);
 }
 
                 }; // END namespace

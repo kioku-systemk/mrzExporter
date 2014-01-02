@@ -1,7 +1,7 @@
 /*
  * LX handles module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -619,14 +619,14 @@ typedef struct vt_ILxGeoConstraintPacket {
                 int                      mask);
 } ILxGeoConstraintPacket;
 
-#define LXi_VDRAWf_MASK          (0xFF<<24)
-#define LXi_VDRAWf_FILL          (1<<31)
-#define LXi_VDRAWf_DASH          (1<<30)
-#define LXi_VDRAWf_CUSTOM0       (1<<24)
-#define LXi_VDRAWf_CUSTOM1       (1<<25)
-#define LXi_VDRAWf_CUSTOM2       (1<<26)
-#define LXi_VDRAWf_CUSTOM3       (1<<23)
-#define LXi_VDRAWf_AXARROW       LXiVDRAWf_CUSTOM0
+#define LXfVDRAW_MASK            (0xFF<<24)
+#define LXfVDRAW_FILL            (1<<31)
+#define LXfVDRAW_DASH            (1<<30)
+#define LXfVDRAW_CUSTOM0         (1<<24)
+#define LXfVDRAW_CUSTOM1         (1<<25)
+#define LXfVDRAW_CUSTOM2         (1<<26)
+#define LXfVDRAW_CUSTOM3         (1<<23)
+#define LXfVDRAW_AXARROW         LXfVDRAW_CUSTOM0
 #define LXu_SHAPEDRAW           "DC46A7E2-2849-46CE-9075-2394E04EB3AE"
 // [local]  ILxShapeDraw
 #define LXi_THANDf_SMALL        (1<<16)
@@ -635,6 +635,7 @@ typedef struct vt_ILxGeoConstraintPacket {
 #define LXi_THANDf_CONST        (1<<19)
 #define LXi_THANDf_GHOST        (1<<20)
 #define LXi_THANDf_FLIP         (1<<21)
+#define LXi_THANDf_DISABLE      (1<<22)
 
 #define LXi_THANDf_AXES         (3<<24)
 #define LXi_THANDf_AXIS_X       (1<<24)

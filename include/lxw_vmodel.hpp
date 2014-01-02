@@ -1,7 +1,7 @@
 /*
  * C++ wrapper for lxvmodel.h
  *
- *	Copyright (c) 2008-2012 Luxology LLC
+ *	Copyright (c) 2008-2013 Luxology LLC
  *	
  *	Permission is hereby granted, free of charge, to any person obtaining a
  *	copy of this software and associated documentation files (the "Software"),
@@ -30,6 +30,7 @@
 
 #include <lxvmodel.h>
 #include <lx_wrap.hpp>
+#include <string>
 
 namespace lx {
     static const LXtGUID guid_ViewItem3D = {0x9BCE73B5,0x3264,0x48BB,0xB1,0x29,0x15,0xFF,0x53,0xFD,0x16,0x61};
@@ -53,18 +54,34 @@ class CLxImpl_ViewItem3D {
       vitm_HandleCount (int *count)
         { return LXe_NOTIMPL; }
     virtual LxResult
-      vitm_HandleMotion (int handleIndex, int *motionType, double *min, double *max, LXtVector plane, LXtVector offset)
+      vitm_HandleMotion (int handleIndex, int *handleFlags, double *min, double *max, LXtVector plane, LXtVector offset)
         { return LXe_NOTIMPL; }
     virtual LxResult
       vitm_HandleChannel (int handleIndex, int *chanIndex)
         { return LXe_NOTIMPL; }
     virtual LxResult
-      vitm_HandleValueToPosition (int handleIndex, double chanValue, LXtVector position)
+      vitm_HandleValueToPosition (int handleIndex, double *chanValue, LXtVector position)
         { return LXe_NOTIMPL; }
     virtual LxResult
       vitm_HandlePositionToValue (int handleIndex, LXtVector position, double *chanValue)
         { return LXe_NOTIMPL; }
 };
+#define LXxD_ViewItem3D_Draw LxResult vitm_Draw (ILxUnknownID chanRead, ILxUnknownID strokeDraw, int selectionFlags, LXtVector itemColor)
+#define LXxO_ViewItem3D_Draw LXxD_ViewItem3D_Draw LXx_OVERRIDE
+#define LXxD_ViewItem3D_DrawBackground LxResult vitm_DrawBackground (ILxUnknownID chanRead, ILxUnknownID strokeDraw, LXtVector itemColor)
+#define LXxO_ViewItem3D_DrawBackground LXxD_ViewItem3D_DrawBackground LXx_OVERRIDE
+#define LXxD_ViewItem3D_WorldSpace LxResult vitm_WorldSpace (void)
+#define LXxO_ViewItem3D_WorldSpace LXxD_ViewItem3D_WorldSpace LXx_OVERRIDE
+#define LXxD_ViewItem3D_HandleCount LxResult vitm_HandleCount (int *count)
+#define LXxO_ViewItem3D_HandleCount LXxD_ViewItem3D_HandleCount LXx_OVERRIDE
+#define LXxD_ViewItem3D_HandleMotion LxResult vitm_HandleMotion (int handleIndex, int *handleFlags, double *min, double *max, LXtVector plane, LXtVector offset)
+#define LXxO_ViewItem3D_HandleMotion LXxD_ViewItem3D_HandleMotion LXx_OVERRIDE
+#define LXxD_ViewItem3D_HandleChannel LxResult vitm_HandleChannel (int handleIndex, int *chanIndex)
+#define LXxO_ViewItem3D_HandleChannel LXxD_ViewItem3D_HandleChannel LXx_OVERRIDE
+#define LXxD_ViewItem3D_HandleValueToPosition LxResult vitm_HandleValueToPosition (int handleIndex, double *chanValue, LXtVector position)
+#define LXxO_ViewItem3D_HandleValueToPosition LXxD_ViewItem3D_HandleValueToPosition LXx_OVERRIDE
+#define LXxD_ViewItem3D_HandlePositionToValue LxResult vitm_HandlePositionToValue (int handleIndex, LXtVector position, double *chanValue)
+#define LXxO_ViewItem3D_HandlePositionToValue LXxD_ViewItem3D_HandlePositionToValue LXx_OVERRIDE
 template <class T>
 class CLxIfc_ViewItem3D : public CLxInterface
 {
@@ -101,11 +118,11 @@ class CLxIfc_ViewItem3D : public CLxInterface
     } catch (LxResult rc) { return rc; }
   }
     static LxResult
-  HandleMotion (LXtObjectID wcom, int handleIndex, int *motionType, double *min, double *max, LXtVector plane, LXtVector offset)
+  HandleMotion (LXtObjectID wcom, int handleIndex, int *handleFlags, double *min, double *max, LXtVector plane, LXtVector offset)
   {
     LXCWxINST (CLxImpl_ViewItem3D, loc);
     try {
-      return loc->vitm_HandleMotion (handleIndex,motionType,min,max,plane,offset);
+      return loc->vitm_HandleMotion (handleIndex,handleFlags,min,max,plane,offset);
     } catch (LxResult rc) { return rc; }
   }
     static LxResult
@@ -117,7 +134,7 @@ class CLxIfc_ViewItem3D : public CLxInterface
     } catch (LxResult rc) { return rc; }
   }
     static LxResult
-  HandleValueToPosition (LXtObjectID wcom, int handleIndex, double chanValue, LXtVector position)
+  HandleValueToPosition (LXtObjectID wcom, int handleIndex, double *chanValue, LXtVector position)
   {
     LXCWxINST (CLxImpl_ViewItem3D, loc);
     try {
@@ -177,9 +194,9 @@ public:
     return m_loc[0]->HandleCount (m_loc,count);
   }
     LxResult
-  HandleMotion (int handleIndex, int *motionType, double *min, double *max, LXtVector plane, LXtVector offset)
+  HandleMotion (int handleIndex, int *handleFlags, double *min, double *max, LXtVector plane, LXtVector offset)
   {
-    return m_loc[0]->HandleMotion (m_loc,handleIndex,motionType,min,max,plane,offset);
+    return m_loc[0]->HandleMotion (m_loc,handleIndex,handleFlags,min,max,plane,offset);
   }
     LxResult
   HandleChannel (int handleIndex, int *chanIndex)
@@ -187,7 +204,7 @@ public:
     return m_loc[0]->HandleChannel (m_loc,handleIndex,chanIndex);
   }
     LxResult
-  HandleValueToPosition (int handleIndex, double chanValue, LXtVector position)
+  HandleValueToPosition (int handleIndex, double *chanValue, LXtVector position)
   {
     return m_loc[0]->HandleValueToPosition (m_loc,handleIndex,chanValue,position);
   }
@@ -282,7 +299,46 @@ class CLxImpl_ToolModel {
     virtual LxResult
       tmod_Drop (void)
         { return LXe_NOTIMPL; }
+    virtual LxResult
+      tmod_Track (ILxUnknownID vts, unsigned int eventType)
+        { return LXe_NOTIMPL; }
+    virtual LxResult
+      tmod_TrackFlags (unsigned int *flags)
+        { return LXe_NOTIMPL; }
+    virtual LxResult
+      tmod_Post (ILxUnknownID vts)
+        { return LXe_NOTIMPL; }
 };
+#define LXxD_ToolModel_Flags unsigned tmod_Flags (void)
+#define LXxO_ToolModel_Flags LXxD_ToolModel_Flags LXx_OVERRIDE
+#define LXxD_ToolModel_Draw void tmod_Draw (ILxUnknownID vts, ILxUnknownID stroke, int flags)
+#define LXxO_ToolModel_Draw LXxD_ToolModel_Draw LXx_OVERRIDE
+#define LXxD_ToolModel_Test void tmod_Test (ILxUnknownID vts, ILxUnknownID stroke, int flags)
+#define LXxO_ToolModel_Test LXxD_ToolModel_Test LXx_OVERRIDE
+#define LXxD_ToolModel_Filter void tmod_Filter (ILxUnknownID vts)
+#define LXxO_ToolModel_Filter LXxD_ToolModel_Filter LXx_OVERRIDE
+#define LXxD_ToolModel_Initialize void tmod_Initialize (ILxUnknownID vts, ILxUnknownID adjust, unsigned int flags)
+#define LXxO_ToolModel_Initialize LXxD_ToolModel_Initialize LXx_OVERRIDE
+#define LXxD_ToolModel_Down LxResult tmod_Down (ILxUnknownID vts, ILxUnknownID adjust)
+#define LXxO_ToolModel_Down LXxD_ToolModel_Down LXx_OVERRIDE
+#define LXxD_ToolModel_Move void tmod_Move (ILxUnknownID vts, ILxUnknownID adjust)
+#define LXxO_ToolModel_Move LXxD_ToolModel_Move LXx_OVERRIDE
+#define LXxD_ToolModel_Up void tmod_Up (ILxUnknownID vts, ILxUnknownID adjust)
+#define LXxO_ToolModel_Up LXxD_ToolModel_Up LXx_OVERRIDE
+#define LXxD_ToolModel_Haul const char * tmod_Haul (unsigned int index)
+#define LXxO_ToolModel_Haul LXxD_ToolModel_Haul LXx_OVERRIDE
+#define LXxD_ToolModel_Help const char * tmod_Help (ILxUnknownID vts)
+#define LXxO_ToolModel_Help LXxD_ToolModel_Help LXx_OVERRIDE
+#define LXxD_ToolModel_Enable LxResult tmod_Enable (ILxUnknownID msg)
+#define LXxO_ToolModel_Enable LXxD_ToolModel_Enable LXx_OVERRIDE
+#define LXxD_ToolModel_Drop LxResult tmod_Drop (void)
+#define LXxO_ToolModel_Drop LXxD_ToolModel_Drop LXx_OVERRIDE
+#define LXxD_ToolModel_Track LxResult tmod_Track (ILxUnknownID vts, unsigned int eventType)
+#define LXxO_ToolModel_Track LXxD_ToolModel_Track LXx_OVERRIDE
+#define LXxD_ToolModel_TrackFlags LxResult tmod_TrackFlags (unsigned int *flags)
+#define LXxO_ToolModel_TrackFlags LXxD_ToolModel_TrackFlags LXx_OVERRIDE
+#define LXxD_ToolModel_Post LxResult tmod_Post (ILxUnknownID vts)
+#define LXxO_ToolModel_Post LXxD_ToolModel_Post LXx_OVERRIDE
 template <class T>
 class CLxIfc_ToolModel : public CLxInterface
 {
@@ -364,6 +420,30 @@ class CLxIfc_ToolModel : public CLxInterface
       return loc->tmod_Drop ();
     } catch (LxResult rc) { return rc; }
   }
+    static LxResult
+  Track (LXtObjectID wcom, LXtObjectID vts, unsigned int eventType)
+  {
+    LXCWxINST (CLxImpl_ToolModel, loc);
+    try {
+      return loc->tmod_Track ((ILxUnknownID)vts,eventType);
+    } catch (LxResult rc) { return rc; }
+  }
+    static LxResult
+  TrackFlags (LXtObjectID wcom, unsigned int *flags)
+  {
+    LXCWxINST (CLxImpl_ToolModel, loc);
+    try {
+      return loc->tmod_TrackFlags (flags);
+    } catch (LxResult rc) { return rc; }
+  }
+    static LxResult
+  Post (LXtObjectID wcom, LXtObjectID vts)
+  {
+    LXCWxINST (CLxImpl_ToolModel, loc);
+    try {
+      return loc->tmod_Post ((ILxUnknownID)vts);
+    } catch (LxResult rc) { return rc; }
+  }
   ILxToolModel vt;
 public:
   CLxIfc_ToolModel ()
@@ -380,6 +460,9 @@ public:
     vt.Help = Help;
     vt.Enable = Enable;
     vt.Drop = Drop;
+    vt.Track = Track;
+    vt.TrackFlags = TrackFlags;
+    vt.Post = Post;
     vTable = &vt.iunk;
     iid = &lx::guid_ToolModel;
   }
@@ -451,6 +534,21 @@ public:
   Drop (void)
   {
     return m_loc[0]->Drop (m_loc);
+  }
+    LxResult
+  Track (ILxUnknownID vts, unsigned int eventType)
+  {
+    return m_loc[0]->Track (m_loc,(ILxUnknownID)vts,eventType);
+  }
+    LxResult
+  TrackFlags (unsigned int *flags)
+  {
+    return m_loc[0]->TrackFlags (m_loc,flags);
+  }
+    LxResult
+  Post (ILxUnknownID vts)
+  {
+    return m_loc[0]->Post (m_loc,(ILxUnknownID)vts);
   }
 };
 

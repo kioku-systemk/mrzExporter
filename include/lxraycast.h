@@ -1,7 +1,7 @@
 /*
  * LX raycast module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -31,8 +31,11 @@
  #endif
 
 
+typedef struct vt_ILxRaycast1 ** ILxRaycast1ID;
 typedef struct vt_ILxRaycast ** ILxRaycastID;
+typedef struct vt_ILxLighting ** ILxLightingID;
 #include <lxtableau.h>
+#include <lxvector.h>
 
 
 typedef struct st_LXpPixelGeometry {
@@ -42,7 +45,15 @@ typedef struct st_LXpPixelGeometry {
         float                    dist;
         void                    *gsrf;
 } LXpPixelGeometry;
-typedef struct vt_ILxRaycast {
+typedef struct st_LXpPixelGeometrySeg {
+        LXtFVector               nrm;
+        LXtFVector               wpos;
+        LXtFVector               opos;
+        float                    dist;
+        void                    *gsrf;
+        void                    *gseg;
+} LXpPixelGeometrySeg;
+typedef struct vt_ILxRaycast1 {
         ILxUnknown       iunk;
                 LXxMETHOD(  ILxUnknownID,
         RayPush) (
@@ -215,17 +226,166 @@ typedef struct vt_ILxRaycast {
                 int                      lgtIndex,
                 LXtVector                pos,
                 LXtFVector              *dir);
-} ILxRaycast;
+} ILxRaycast1;
+typedef struct vt_ILxRaycast {
+        ILxUnknown       iunk;
+                LXxMETHOD(  ILxUnknownID,
+        RayPush) (
+                LXtObjectID              self,
+                LXtObjectID              vector);
 
+                LXxMETHOD(  LxResult,
+        RayPop) (
+                LXtObjectID              self,
+                LXtObjectID              vector);
+
+                LXxMETHOD(  float,
+        Raycast) (
+                LXtObjectID              self,
+                LXtObjectID              vector,
+                const LXtVector          pos,
+                const LXtFVector         dir);
+
+                LXxMETHOD(  float,
+        Raytrace) (
+                LXtObjectID              self,
+                LXtObjectID              vector,
+                const LXtVector          pos,
+                const LXtFVector         dir,
+                int                      flags);
+
+                LXxMETHOD( LxResult,
+        InternalShade) (
+                LXtObjectID              self,
+                LXtObjectID              vector);
+
+                LXxMETHOD(  LxResult,
+        GetSurfaceID) (
+                LXtObjectID              self,
+                LXtObjectID              vector,
+                void                     **id);
+
+                LXxMETHOD(  int,
+        GetSurfaceType) (
+                LXtObjectID              self,
+                LXtObjectID              vector);
+
+                LXxMETHOD(  LxResult,
+        PixelToRay) (
+                LXtObjectID              self,
+                LXtObjectID              vector,
+                int                      mode,
+                float                    x,
+                float                    y,
+                LXpSampleRay            *sRay);
+
+                LXxMETHOD(  LxResult,
+        PixelGeometry) (
+                LXtObjectID              self,
+                LXtObjectID              vector,
+                int                      mode,
+                float                    x,
+                float                    y,
+                LXpPixelGeometry        *pGeo);
+
+                LXxMETHOD(  LxResult,
+        PixelGeometrySeg) (
+                LXtObjectID              self,
+                LXtObjectID              vector,
+                int                      mode,
+                float                    x,
+                float                    y,
+                LXpPixelGeometrySeg     *pGeo);
+} ILxRaycast;
+typedef struct vt_ILxLighting {
+        ILxUnknown       iunk;
+                LXxMETHOD(  LxResult,
+        LightSourceCount) (
+                LXtObjectID              self,
+                LXtObjectID              vector,
+                int                     *num);
+
+                LXxMETHOD(  LxResult,
+        LightSourceByIndex) (
+                LXtObjectID              self,
+                LXtObjectID              vector,
+                int                      index,
+                LXpLightSource          *lSrc);
+
+                LXxMETHOD(  LxResult,
+        LightSourceEvaluate) (
+                LXtObjectID              self,
+                LXtObjectID              vector,
+                const LXpLightSource    *lSrc,
+                LXtFVector               lum);  
+
+                LXxMETHOD(  LxResult,
+        EnvironmentEvaluate) (
+                LXtObjectID              self,
+                LXtObjectID              vector,
+                int                      samples,
+                int                      flags,
+                LXtFVector               lum);
+
+                LXxMETHOD(  int,
+        GIRequired) (
+                LXtObjectID              self,
+                LXtObjectID              vector);       
+} ILxLighting;
+
+#define LXu_RAYCAST1            "7B13E5D2-D0D9-427A-A1D4-6DAEB192B8B0"
+#define LXa_RAYCAST1            "raycast"
+//[local]  ILxRaycast1
+//[const]  ILxRaycast1:LightCount
+//[const]  ILxRaycast1:LightSampleCountByLight
+//[const]  ILxRaycast1:LightShadowType
 #define LXi_PIXELRAY_RELATIVE   0
 #define LXi_PIXELRAY_ABSOLUTE   1
-#define LXu_RAYCAST             "7B13E5D2-D0D9-427A-A1D4-6DAEB192B8B0"
-#define LXa_RAYCAST             "raycast"
+/*
+ * Primary rays are for collecting samples for deferred shading, so
+ * only the normal needs to be evaluated at the hit point.
+ */
+#define LXmRAY_PRIMARY   LXfRAY_SCOPE_POLYGONS | LXfRAY_SCOPE_IMPLICITSURF | LXfRAY_EVAL_NORMAL | LXfRAY_TYPE_CAMERA
+
+/*
+ * Preview, reflection, refraction, and indirect rays need to evaluate
+ * full shading at the hit point.  For indirect rays, volumetrics are
+ * optional.
+ */
+#define LXmRAY_PREVIEW   LXfRAY_SCOPE_POLYGONS | LXfRAY_SCOPE_IMPLICITSURF | LXfRAY_SCOPE_VOLUMETRICS | LXfRAY_SCOPE_ENVIRONMENT | LXfRAY_EVAL_SHADING | LXfRAY_TYPE_CAMERA
+
+#define LXmRAY_REFLECT   LXfRAY_SCOPE_POLYGONS | LXfRAY_SCOPE_IMPLICITSURF | LXfRAY_SCOPE_VOLUMETRICS | LXfRAY_SCOPE_ENVIRONMENT |LXfRAY_EVAL_SHADING | LXfRAY_TYPE_REFLECT
+
+#define LXmRAY_REFRACT   LXfRAY_SCOPE_POLYGONS | LXfRAY_SCOPE_IMPLICITSURF | LXfRAY_SCOPE_VOLUMETRICS | LXfRAY_SCOPE_ENVIRONMENT | LXfRAY_SCOPE_BACKFACE | LXfRAY_EVAL_SHADING | LXfRAY_TYPE_REFRACT
+
+#define LXmRAY_INDIRECT  LXfRAY_SCOPE_POLYGONS | LXfRAY_SCOPE_IMPLICITSURF | LXfRAY_SCOPE_ENVIRONMENT | LXfRAY_EVAL_SHADING | LXfRAY_TYPE_INDIRECT
+
+/*
+ * Shadow and occlusion rays only need to know the opacity at the hit
+ * point.
+ */
+#define LXmRAY_SHADOW    LXfRAY_SCOPE_POLYGONS | LXfRAY_SCOPE_IMPLICITSURF  | LXfRAY_SCOPE_VOLUMETRICS | LXfRAY_SCOPE_BACKFACE | LXfRAY_EVAL_OPACITY | LXfRAY_TYPE_SHADOW
+
+#define LXmRAY_OCCLUSION         LXfRAY_SCOPE_POLYGONS | LXfRAY_SCOPE_IMPLICITSURF  | LXfRAY_SCOPE_VOLUMETRICS | LXfRAY_SCOPE_BACKFACE | LXfRAY_EVAL_OPACITY | LXfRAY_TYPE_OCCLUSION
+
+/*
+ * Caustic rays (photons) only need to know the material parameters at
+ * the hit point.
+ */
+#define LXmRAY_CAUSTIC   LXfRAY_SCOPE_POLYGONS | LXfRAY_SCOPE_IMPLICITSURF | LXfRAY_SCOPE_BACKFACE | LXfRAY_EVAL_MATERIAL | LXfRAY_EVAL_SHADING | LXfRAY_TYPE_CAUSTIC
+
+/*
+ * Subsurface rays only need to know the irradiance at the hit point.
+ */
+#define LXmRAY_SUBSURFACE        LXfRAY_SCOPE_POLYGONS | LXfRAY_SCOPE_IMPLICITSURF | LXfRAY_SCOPE_BACKFACE | LXfRAY_SCOPE_BACKONLY | LXfRAY_EVAL_IRRADIANCE | LXfRAY_TYPE_SUBSURFACE
+#define LXu_RAYCAST             "7E2C439F-3B4D-4C3A-9B4A-18307EF9FC36"
+#define LXa_RAYCAST             "raycast2"
 #define LXsP_RAYCAST            "raycast"
 //[local]  ILxRaycast
-//[const]  ILxRaycast:LightCount
-//[const]  ILxRaycast:LightSampleCountByLight
-//[const]  ILxRaycast:LightShadowType
+#define LXu_LIGHTING            "2F6C2A6C-68AF-4E58-B567-A92D5EB732F4"
+#define LXa_LIGHTING            "lighting"
+#define LXsP_LIGHTING           "lighting"
+//[local]  ILxLighting
 #define RAY_EPSILON      (1.0e-12)
 #define RAY_BIAS         (1.0e-5)
 

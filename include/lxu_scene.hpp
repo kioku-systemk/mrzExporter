@@ -1,7 +1,7 @@
 /*
  * Plug-in SDK Header: C++ Services
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -29,12 +29,12 @@
 #ifndef LX_SCENE_HPP
 #define LX_SCENE_HPP
 
-#include <lxpackage.h>	// for LXtSceneTarget -- very annoying!
 #include <lxvector.h>	// for FX channel values
 #include <lx_item.hpp>
 #include <lx_mesh.hpp>
 #include <lx_trisurf.hpp>
 #include <lx_envelope.hpp>
+#include <lx_package.hpp>
 #include <lx_io.hpp>
 #include <lxu_parser.hpp>
 #include <lxu_format.hpp>
@@ -85,6 +85,7 @@ class CLxSceneBuilder
         void			 SetChannel  (unsigned int, double);
         void			 SetChannel  (unsigned int, const char *);
         void			 SetChannelEncoded (unsigned int, const char *);
+        void			 SetEditTime (double frameTime);
         void			 AddEnvelope (const char *, CLxLoc_Envelope &);
         void			 AddEnvelope (unsigned int, CLxLoc_Envelope &);
 
@@ -155,9 +156,10 @@ class CLxSceneLoader : public CLxImpl_Loader
                                  CLxSceneLoader ();
         virtual			~CLxSceneLoader ();
 
-        LxResult		 load_Recognize  (LXtLoadAccess *)		 LXx_OVERRIDE;
-        LxResult		 load_LoadObject (LXtLoadAccess *, ILxUnknownID) LXx_OVERRIDE;
-        LxResult		 load_Cleanup    (LXtLoadAccess *)		 LXx_OVERRIDE;
+        LxResult		 load_Recognize  (const char *, ILxUnknownID)	 LXx_OVERRIDE;
+        LxResult		 load_LoadObject (ILxUnknownID, ILxUnknownID, ILxUnknownID)
+                                                                                 LXx_OVERRIDE;
+        void			 load_Cleanup    ()				 LXx_OVERRIDE;
         LxResult		 load_SpawnOptions (void **)			 LXx_OVERRIDE;
 
         virtual CLxFileParser	*sl_Parser     ()		= 0;
@@ -177,8 +179,10 @@ class CLxSceneLoader : public CLxImpl_Loader
                                         const char *fileName);
         bool			 MakeFileAbsolute (std::string &fileName);
 
+        CLxUser_SceneLoaderTarget
+                                 ld_target;
         CLxSceneBuilder		 scene_build;
-        LXtSceneTarget		 load_target;
+        const char		*cp_filename;
 };
 
 
@@ -223,6 +227,7 @@ class CLxSceneSaver : public CLxImpl_Saver
         bool			 NextItem     ();
         bool			 NextMesh     ();
         bool			 NextSelectedMesh ();
+        bool			 GetMesh      (CLxLoc_Mesh &);
         bool			 ScanMask     (const char *, const char * = 0);
         bool			 NextLayer    ();
 
@@ -312,6 +317,7 @@ class CLxSceneSaver : public CLxImpl_Saver
         const char *		 PolyTag      (LXtID4);
         bool			 PolyNormal   (LXtVector, LXtPointID = 0);
         bool			 PolyMapValue (float *, LXtPointID);
+        bool			 GetPolygon   (CLxLoc_Polygon &);
 
         LxResult		 LastErr      () const;
 

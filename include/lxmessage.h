@@ -1,7 +1,7 @@
 /*
  * LX imsg module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -66,6 +66,34 @@ typedef struct vt_ILxMessageService {
                 const char              *table,
                 const char              *msg,
                 const char             **text);
+                LXxMETHOD(  LxResult,
+        ArgTypeUserName) (
+                LXtObjectID              self,
+                const char              *argType,
+                char                    *buf,
+                unsigned                 len);
+
+                LXxMETHOD(  LxResult,
+        ArgTypeDesc) (
+                LXtObjectID              self,
+                const char              *argType,
+                char                    *buf,
+                unsigned                 len);
+                LXxMETHOD(  LxResult,
+        ArgTypeOptionUserName) (
+                LXtObjectID              self,
+                const char              *argType,
+                const char              *option,
+                char                    *buf,
+                unsigned                 len);
+
+                LXxMETHOD(  LxResult,
+        ArgTypeOptionDesc) (
+                LXtObjectID              self,
+                const char              *argType,
+                const char              *option,
+                char                    *buf,
+                unsigned                 len);
 } ILxMessageService;
 typedef struct vt_ILxAutoSaveListener {
         ILxUnknown       iunk;
@@ -133,8 +161,16 @@ typedef struct vt_ILxAutoSaveListener {
 #define LXiCM_ACT_LOADSEQ       213
 #define LXiCM_ACT_NEWSEQ        214
 #define LXiCM_ACT_DEFORM        216
+#define LXiCM_ACT_CHOOSECOLOR   217
+
+#define LXiCM_ACT_MOVE          700
+#define LXiCM_ACT_PERFORMDROP   701
+#define LXiCM_ACT_CREATEPRESET  702
+#define LXiCM_ACT_CANCELDROP    703
 #define LXu_MESSAGESERVICE      "86A69B5D-ACFA-11D9-B38C-000A956C2E10"
 #define LXa_MESSAGESERVICE      "messageservice"
+// [python] ILxMessageService:Allocate  obj Message
+// [python] ILxMessageService:Duplicate obj Message
 #define LXa_AUTOSAVELISTENER    "autosavelistener"
 #define LXu_AUTOSAVELISTENER    "04f41d4e-7267-430e-81f4-a89896bf746c"
 //[local]  ILxAutoSaveListener

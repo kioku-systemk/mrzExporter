@@ -1,7 +1,7 @@
 /*
  * Plug-in SDK Header: Item Type Defines
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -27,6 +27,23 @@
 #ifndef LX_IDEF_H
 #define LX_IDEF_H
 
+
+#define LXsITYPE_PLOAD			"realParticle"
+#define LXsICHAN_PLOAD_FILE		"file"
+#define LXsICHAN_PLOAD_OFFSET		"offset"
+#define LXsICHAN_PLOAD_SCALE		"scale"
+#define LXsICHAN_PLOAD_DRAW		"draw"
+#define LXsICHAN_PLOAD_TGROUP		"tgroup"
+
+#define	PLOADc_FILE		(ILOCc_TOTAL + 0)
+#define	PLOADc_OFFSET		(ILOCc_TOTAL + 1)
+#define	PLOADc_SCALE		(ILOCc_TOTAL + 2)
+#define	PLOADc_DRAW		(ILOCc_TOTAL + 3)
+#define	PLOADc_TGROUP		(ILOCc_TOTAL + 4)
+
+
+
+
 #define LXsGRAPH_BACKDROPCLIP                    "backdropClip"
 #define LXsGRAPH_CHANGROUPS                      "chanGroups"
 #define LXsGRAPH_CHANLINKS		         "chanLinks"
@@ -49,6 +66,8 @@
 #define LXsGRAPH_XFRMCORE                        "xfrmCore"
 #define LXsGRAPH_XFRMLOCAL                       "xfrmLocal"
 
+#define LXsITYPE_AUDIOCLIP                       "audioClip"
+#define LXsITYPE_AUDIOFILE                       "audioFile"
 #define LXsITYPE_ADVANCEDMATERIAL                "advancedMaterial"
 #define LXsITYPE_AREALIGHT                       "areaLight"
 #define LXsITYPE_BACKDROP                        "backdrop"
@@ -100,6 +119,7 @@
 #define LXsITYPE_MAPMIX                          "mapMix"
 #define LXsITYPE_MASK                            "mask"
 #define LXsITYPE_MDD                             "deformMDD"
+#define LXsITYPE_MDD2                            "deformMDD2"
 #define LXsITYPE_MEDIACLIP                       "mediaClip"
 #define LXsITYPE_MESH                            "mesh"
 #define LXsITYPE_MESHINST                        "meshInst"
@@ -107,9 +127,11 @@
 #define LXsITYPE_MORPHMIX                        "morphMix"
 #define LXsITYPE_NOISE                           "noise"
 #define LXsITYPE_PHOTOMETRYLIGHT                 "photometryLight"
+#define LXsITYPE_PARTICLEOP                      "particleOp"
 #define LXsITYPE_POINTLIGHT                      "pointLight"
 #define LXsITYPE_POLYRENDER                      "polyRender"
 #define LXsITYPE_PROCESS                         "process"
+#define LXsITYPE_PROXY                           "proxy"
 #define LXsITYPE_QUATERNION                      "quaternion"
 #define LXsITYPE_RENDER                          "render"
 #define LXsITYPE_RENDEROUTPUT                    "renderOutput"
@@ -189,18 +211,26 @@
 #define LXsICHAN_BACKDROP_TRANSP                 "transparency"
 #define LXsICHAN_BACKDROP_UNIFORM                "uniform"
 #define LXsICHAN_BACKDROP_PIXSIZE                "pixelSize"
+#define LXsICHAN_BACKDROP_RENDER                 "renderItem"
+#define LXsICHAN_BACKDROP_GAMMA                  "gamma"
+#define LXsICHAN_BACKDROP_BLUR                   "blur"
 
 #define LXsICHAN_CAMERA_APERTUREX                "apertureX"
 #define LXsICHAN_CAMERA_APERTUREY                "apertureY"
 #define LXsICHAN_CAMERA_BLURLEN                  "blurLen"
 #define LXsICHAN_CAMERA_BLUROFF                  "blurOff"
-#define	LXsICHAN_CAMERA_CONVDIST                 "convDist"
+#define LXsICHAN_CAMERA_CONVDIST                 "convDist"
 #define LXsICHAN_CAMERA_DISTORT                  "distort"
 #define LXsICHAN_CAMERA_FILMFIT                  "filmFit"
 #define LXsICHAN_CAMERA_FOCALLEN                 "focalLen"
+#define LXsICHAN_CAMERA_DOF                      "dof"
 #define LXsICHAN_CAMERA_FOCUSDIST                "focusDist"
 #define LXsICHAN_CAMERA_FSTOP                    "fStop"
-#define	LXsICHAN_CAMERA_IODIST                   "ioDist"
+#define LXsICHAN_CAMERA_MOTIONBLUR               "motionBlur"
+#define LXsICHAN_CAMERA_STEREO                   "stereo"
+#define LXsICHAN_CAMERA_STEREO_EYE               "stereoEye"
+#define LXsICHAN_CAMERA_STEREO_COMP              "stereoComp"
+#define LXsICHAN_CAMERA_IODIST                   "ioDist"
 #define LXsICHAN_CAMERA_IRISBLADES               "irisBlades"
 #define LXsICHAN_CAMERA_IRISROTATION             "irisRot"
 #define LXsICHAN_CAMERA_OFFSETX                  "offsetX"
@@ -424,6 +454,7 @@
 #define LXsICHAN_MASK_SUBMASK			 "submask"
 #define LXsICHAN_MASK_STYP			 "surfType"
 
+#define LXsICHAN_MDD_ABSOLUTE                    "absolute"
 #define LXsICHAN_MDD_BLEND                       "blend"
 #define LXsICHAN_MDD_CACHE_SIZE                  "cacheSize"
 #define LXsICHAN_MDD_ENABLE                      "enable"
@@ -437,6 +468,8 @@
 #define LXsICHAN_MDD_SPEED                       "speed"
 #define LXsICHAN_MDD_START_FRAME                 "startFrame"
 #define LXsICHAN_MDD_START_TIME                  "startTime"
+
+#define LXsICHAN_MDD2_DEFOBJ                     "deformer"
 
 #define LXsICHAN_MEDIACLIP_PLAYBACK              "playback"
 
@@ -472,6 +505,12 @@
 #define LXsICHAN_PHOTOMETRYLIGHT_VRAD            "vrad"
 #define	LXsICHAN_PHOTOMETRYLIGHT_WIDTH		 "width"
 
+#define LXsICHAN_PARTICLEOP_FILTER               "filterObj"
+#define LXsICHAN_PARTICLEOP_TYPE                 "type"
+#define LXsICHAN_PARTICLEOP_ENABLE               "enable"
+#define LXsICHAN_PARTICLEOP_KILL                 "kill"
+#define LXsICHAN_PARTICLEOP_TRIGGER              "trigger"
+
 #define LXsICHAN_POINTLIGHT_RADIUS               "radius"
 #define LXsICHAN_POINTLIGHT_VDISSOLVE            "vdissolve"
 #define LXsICHAN_POINTLIGHT_VOLUMETRICS          "volumetrics"
@@ -480,7 +519,7 @@
 
 #define LXsICHAN_POLYRENDER_AA                   "aa"
 #define LXsICHAN_POLYRENDER_AAFILTER             "aaFilter"
-#define	LXsICHAN_POLYRENDER_AREFINE		 "aRefine"
+#define	LXsICHAN_POLYRENDER_AREFINE              "aRefine"
 #define LXsICHAN_POLYRENDER_BKTORDER             "bktOrder"
 #define LXsICHAN_POLYRENDER_BKTREFINE            "bktRefine"
 #define LXsICHAN_POLYRENDER_BKTREVERSE           "bktReverse"
@@ -488,18 +527,16 @@
 #define LXsICHAN_POLYRENDER_BKTWRITE             "bktWrite"
 #define LXsICHAN_POLYRENDER_BUCKETX              "bucketX"
 #define LXsICHAN_POLYRENDER_BUCKETY              "bucketY"
-#define	LXsICHAN_POLYRENDER_COARSERATE		 "coarseRate"
-#define LXsICHAN_POLYRENDER_DOF                  "dof"
+#define	LXsICHAN_POLYRENDER_COARSERATE           "coarseRate"
 #define LXsICHAN_POLYRENDER_DPI                  "dpi"
-#define	LXsICHAN_POLYRENDER_FIELD		 "field"
+#define	LXsICHAN_POLYRENDER_FIELD                "field"
 #define LXsICHAN_POLYRENDER_FINERATE             "fineRate"
 #define LXsICHAN_POLYRENDER_FINETHRESH           "fineThresh"
 #define LXsICHAN_POLYRENDER_FIRST                "first"
-#define	LXsICHAN_POLYRENDER_FULLBUFF		 "fullBuff"
+#define	LXsICHAN_POLYRENDER_FULLBUFF             "fullBuff"
 #define LXsICHAN_POLYRENDER_LAST                 "last"
-#define LXsICHAN_POLYRENDER_MBLUR                "mBlur"
-#define	LXsICHAN_POLYRENDER_MERGERAD		 "mergeRad"
-#define	LXsICHAN_POLYRENDER_OUTPAT		 "outPat"
+#define	LXsICHAN_POLYRENDER_MERGERAD             "mergeRad"
+#define	LXsICHAN_POLYRENDER_OUTPAT               "outPat"
 #define LXsICHAN_POLYRENDER_PASPECT              "pAspect"
 #define LXsICHAN_POLYRENDER_REGION               "region"
 #define LXsICHAN_POLYRENDER_REGX0                "regX0"
@@ -511,9 +548,6 @@
 #define LXsICHAN_POLYRENDER_RESX                 "resX"
 #define LXsICHAN_POLYRENDER_RESY                 "resY"
 #define LXsICHAN_POLYRENDER_STEP                 "step"
-#define LXsICHAN_POLYRENDER_STEREO               "stereo"
-#define	LXsICHAN_POLYRENDER_STEREO_EYE		 "stereoEye"
-#define	LXsICHAN_POLYRENDER_STEREO_COMPOSITE	 "stereoComposite"
 
 #define	LXsICHAN_PROCEDURAL_VALUE1               "value1"
 #define	LXsICHAN_PROCEDURAL_COLOR1               "color1"
@@ -883,6 +917,11 @@
 #define LXsICVAL_NOISE_TYPE_SIMPLE               "simple"
 #define LXsICVAL_NOISE_TYPE_TURBULENCE           "turbulence"
 
+#define LXsICVAL_PARTICLEOP_TYPE_ASSIGN          "assign"
+#define LXsICVAL_PARTICLEOP_TYPE_INTEGRATE       "integrate"
+#define LXsICVAL_PARTICLEOP_TYPE_NEW             "new"
+#define LXsICVAL_PARTICLEOP_TYPE_TRIGGER         "trigger"
+
 #define LXsICVAL_RENDER_AAFILTER_BOX             "box"
 #define LXsICVAL_RENDER_AAFILTER_GAUSSIAN        "gaussian"
 #define LXsICVAL_RENDER_AAFILTER_TRIANGLE        "triangle"
@@ -974,6 +1013,10 @@
 #define LXsICVAL_VIDEOSEQUENCE_ENDBEHAVIOR_HOLD  "hold"
 #define LXsICVAL_VIDEOSEQUENCE_ENDBEHAVIOR_PINGPONG "pingpong"
 #define LXsICVAL_VIDEOSEQUENCE_ENDBEHAVIOR_REPEAT "repeat"
+
+#define LXsICVAL_PROXY_PREVREND_NONE		 "none"
+#define LXsICVAL_PROXY_PREVREND_PREVIEW		 "preview"
+#define LXsICVAL_PROXY_PREVREND_RENDER		 "render"
 
 #endif
 

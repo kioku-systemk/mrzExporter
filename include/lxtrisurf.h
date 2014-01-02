@@ -1,7 +1,7 @@
 /*
  * LX tsurf module
  *
- * Copyright (c) 2008-2012 Luxology LLC
+ * Copyright (c) 2008-2013 Luxology LLC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -109,6 +109,8 @@ typedef struct vt_ILxTriangleGroup {
 #define LXu_TRIANGLEGROUP       "6975B2A4-69E8-4ED2-9058-9C0948CBB43C"
 // [local]  ILxTriangleSurface
 // [local]  ILxTriangleGroup
+// [python] ILxTriangleGroup:AddSurface         obj TriangleSurface
+// [python] ILxTriangleGroup:GetSurface         obj TriangleSurface
 
  #ifdef __cplusplus
   }
