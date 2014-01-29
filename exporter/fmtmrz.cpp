@@ -228,14 +228,22 @@ public:
         }
         bool operator< (const VertexFormat& t) const
         {
-            return *reinterpret_cast<const int*>(&pos[0]) < *reinterpret_cast<const int*>(&t.pos[0])
-            ||     *reinterpret_cast<const int*>(&pos[1]) < *reinterpret_cast<const int*>(&t.pos[1])
-            ||     *reinterpret_cast<const int*>(&pos[2]) < *reinterpret_cast<const int*>(&t.pos[2])
-            ||     *reinterpret_cast<const int*>(&nor[0]) < *reinterpret_cast<const int*>(&t.nor[0])
-            ||     *reinterpret_cast<const int*>(&nor[1]) < *reinterpret_cast<const int*>(&t.nor[1])
-            ||     *reinterpret_cast<const int*>(&nor[2]) < *reinterpret_cast<const int*>(&t.nor[2])
-            ||     *reinterpret_cast<const int*>(&uv [0]) < *reinterpret_cast<const int*>(&t.uv [0])
-            ||     *reinterpret_cast<const int*>(&uv [1]) < *reinterpret_cast<const int*>(&t.uv [1]);
+			if (*reinterpret_cast<const int*>(&pos[0]) != *reinterpret_cast<const int*>(&t.pos[0]))
+				return *reinterpret_cast<const int*>(&pos[0]) < *reinterpret_cast<const int*>(&t.pos[0]);
+			if (*reinterpret_cast<const int*>(&pos[1]) != *reinterpret_cast<const int*>(&t.pos[1]))
+				return *reinterpret_cast<const int*>(&pos[1]) < *reinterpret_cast<const int*>(&t.pos[1]);
+			if (*reinterpret_cast<const int*>(&pos[2]) != *reinterpret_cast<const int*>(&t.pos[2]))
+				return *reinterpret_cast<const int*>(&pos[2]) < *reinterpret_cast<const int*>(&t.pos[2]);
+			if (*reinterpret_cast<const int*>(&nor[0]) != *reinterpret_cast<const int*>(&t.nor[0]))
+				return *reinterpret_cast<const int*>(&nor[0]) < *reinterpret_cast<const int*>(&t.nor[0]);
+			if (*reinterpret_cast<const int*>(&nor[1]) != *reinterpret_cast<const int*>(&t.nor[1]))
+				return *reinterpret_cast<const int*>(&nor[1]) < *reinterpret_cast<const int*>(&t.nor[1]);
+			if (*reinterpret_cast<const int*>(&nor[2]) != *reinterpret_cast<const int*>(&t.nor[2]))
+				return *reinterpret_cast<const int*>(&nor[2]) < *reinterpret_cast<const int*>(&t.nor[2]);
+			if (*reinterpret_cast<const int*>(&uv[0]) != *reinterpret_cast<const int*>(&t.uv[0]))
+				return *reinterpret_cast<const int*>(&uv[0]) < *reinterpret_cast<const int*>(&t.uv[0]);
+			if (*reinterpret_cast<const int*>(&uv[1]) != *reinterpret_cast<const int*>(&t.uv[1]))
+				return *reinterpret_cast<const int*>(&uv [1]) < *reinterpret_cast<const int*>(&t.uv [1]);
         }
         float pos[3];
         float nor[3];
