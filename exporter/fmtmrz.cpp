@@ -1219,7 +1219,11 @@ void MRZSaver::writeMaterials(unsigned char level)
         lf_Output(strnum);
         if (strnum){
             std::string texfname = it->second.tex;
-            size_t p = texfname.rfind("/");
+#ifdef _WIN32
+			size_t p = texfname.rfind("\\");
+#else
+			size_t p = texfname.rfind("/");
+#endif
             if (p != std::string::npos){
                 texfname.erase(texfname.begin(), texfname.begin()+p+1);
             }
