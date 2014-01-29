@@ -103,6 +103,11 @@ class CLxBinaryFormat : public CLxFileFormat
         virtual void		 lf_Output     (double value);
         virtual void		 lf_Output     (int value);
         virtual void		 lf_Output     (unsigned value);
+		virtual void		 lf_Output     (unsigned char value);
+		virtual void		 lf_Output     (unsigned short value);
+		virtual void		 lf_Output     (short value);
+		virtual void		 lf_Output     (char value);
+
 
     private:
         class pv_BinaryFormat	*pv;

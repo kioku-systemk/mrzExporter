@@ -157,6 +157,8 @@ public:
     bool m_getpoly;
     bool m_duplicateVertex;
     std::string m_targetMat;
+	
+	bool m_uintIndex;
     
     MRZAnimFormat m_animfile;
     
@@ -422,6 +424,10 @@ void MRZSaver::writeNode_mesh(int depth, const mzmatrix& mtx)
 	
         lf_Output(numv); // vertex num
         lf_Output(trinum * 3); // idx num
+		if (trinum*3 < 65536)
+			m_uintIndex = false;
+		else
+			m_uintIndex = true;
 	
         // mat id
         //lf_Output("mat_phong");
@@ -1316,18 +1322,28 @@ void MRZSaver::ss_Polygon ()
     if (it == m_mesh_polyvertex[meshname].end())
         return;
 
-    const unsigned int id0 = it->second[PolygonVertex(PolyID(), PolyVertex(0))];
-    for (unsigned int i = 2; i < n; i++)
-    {
-        const unsigned int id1 = it->second[PolygonVertex(PolyID(), PolyVertex(i-1))];
-        const unsigned int id2 = it->second[PolygonVertex(PolyID(), PolyVertex(i  ))];
-        //printf("Tri(%d,%d,%d)\n",id0, id1, id2);
-        lf_Output(static_cast<unsigned short>(id0));
-        lf_Output(static_cast<unsigned short>(id1));
-        lf_Output(static_cast<unsigned short>(id2));
-        //m_poly[PolyID()] = TriID(PolyVertex(0), PolyVertex(i - 1), PolyVertex(i));
+	if (!m_uintIndex) {
+		const unsigned int id0 = it->second[PolygonVertex(PolyID(), PolyVertex(0))];
+		for (unsigned int i = 2; i < n; i++)
+		{
+			const unsigned int id1 = it->second[PolygonVertex(PolyID(), PolyVertex(i-1))];
+			const unsigned int id2 = it->second[PolygonVertex(PolyID(), PolyVertex(i  ))];
+			lf_Output(static_cast<unsigned short>(id0));
+			lf_Output(static_cast<unsigned short>(id1));
+			lf_Output(static_cast<unsigned short>(id2));
+		}
+	} else {
+		const unsigned int id0 = it->second[PolygonVertex(PolyID(), PolyVertex(0))];
+		for (unsigned int i = 2; i < n; i++)
+		{
+			const unsigned int id1 = it->second[PolygonVertex(PolyID(), PolyVertex(i-1))];
+			const unsigned int id2 = it->second[PolygonVertex(PolyID(), PolyVertex(i  ))];
+			lf_Output(id0);
+			lf_Output(id1);
+			lf_Output(id2);
+			//m_poly[PolyID()] = TriID(PolyVertex(0), PolyVertex(i - 1), PolyVertex(i));
+		}
     }
-    
     
 }
 

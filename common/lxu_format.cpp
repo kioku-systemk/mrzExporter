@@ -343,3 +343,47 @@ CLxBinaryFormat::lf_Output (
         }
 }
 
+void
+CLxBinaryFormat::lf_Output (
+							unsigned char value)
+{
+	if (pv->do_output) {
+		pv->out_file->write (
+							 reinterpret_cast<char*>(&value),
+							 sizeof(unsigned char));
+	}
+}
+
+void
+CLxBinaryFormat::lf_Output (
+							char value)
+{
+	if (pv->do_output) {
+		pv->out_file->write (
+							 reinterpret_cast<char*>(&value),
+							 sizeof(char));
+	}
+}
+
+void
+CLxBinaryFormat::lf_Output (
+							unsigned short	 value)
+{
+	if (pv->do_output) {
+		pv->out_file->write (
+							 reinterpret_cast<char*>(&value),
+							 sizeof(unsigned short));
+	}
+}
+
+void
+CLxBinaryFormat::lf_Output (
+							short	 value)
+{
+	if (pv->do_output) {
+		pv->out_file->write (
+							 reinterpret_cast<char*>(&value),
+							 sizeof(short));
+	}
+}
+
