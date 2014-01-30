@@ -8,6 +8,7 @@
 #include <map>
 #include <vector>
 #include <set>
+#include <assert.h>
 
 /*
  * Bring in LXsICHAN_VIDEOSTILL_FILENAME constant.
@@ -242,8 +243,7 @@ public:
 				return *reinterpret_cast<const int*>(&nor[2]) < *reinterpret_cast<const int*>(&t.nor[2]);
 			if (*reinterpret_cast<const int*>(&uv[0]) != *reinterpret_cast<const int*>(&t.uv[0]))
 				return *reinterpret_cast<const int*>(&uv[0]) < *reinterpret_cast<const int*>(&t.uv[0]);
-			if (*reinterpret_cast<const int*>(&uv[1]) != *reinterpret_cast<const int*>(&t.uv[1]))
-				return *reinterpret_cast<const int*>(&uv [1]) < *reinterpret_cast<const int*>(&t.uv [1]);
+			return *reinterpret_cast<const int*>(&uv [1]) < *reinterpret_cast<const int*>(&t.uv [1]);
         }
         float pos[3];
         float nor[3];
@@ -1334,8 +1334,21 @@ void MRZSaver::ss_Polygon ()
     if (it == m_mesh_polyvertex[meshname].end())
         return;
 
+	auto fit0 = it->second.find(PolygonVertex(PolyID(), PolyVertex(0)));
+	auto fit1 = it->second.find(PolygonVertex(PolyID(), PolyVertex(2)));
+	auto fit2 = it->second.find(PolygonVertex(PolyID(), PolyVertex(1)));
+	if (fit0 == it->second.end()
+	||  fit1 == it->second.end()
+	||	fit2 == it->second.end())
+	{
+		assert(0);
+		//fit0 = it->second.begin();
+		//fit1 = it->second.begin();
+		//fit2 = it->second.begin();
+	}
 	if (!m_uintIndex) {
-		const unsigned int id0 = it->second[PolygonVertex(PolyID(), PolyVertex(0))];
+		//const unsigned int id0 = it->second[PolygonVertex(PolyID(), PolyVertex(0))];
+		const unsigned int id0 = fit0->second;
 		for (unsigned int i = 2; i < n; i++)
 		{
 			const unsigned int id1 = it->second[PolygonVertex(PolyID(), PolyVertex(i-1))];
@@ -1345,7 +1358,7 @@ void MRZSaver::ss_Polygon ()
 			lf_Output(static_cast<unsigned short>(id2));
 		}
 	} else {
-		const unsigned int id0 = it->second[PolygonVertex(PolyID(), PolyVertex(0))];
+		const unsigned int id0 = fit0->second;// it->second[PolygonVertex(PolyID(), PolyVertex(0))];
 		for (unsigned int i = 2; i < n; i++)
 		{
 			const unsigned int id1 = it->second[PolygonVertex(PolyID(), PolyVertex(i-1))];
@@ -1353,6 +1366,7 @@ void MRZSaver::ss_Polygon ()
 			lf_Output(id0);
 			lf_Output(id1);
 			lf_Output(id2);
+			//printf("Tri(%d,%d,%d)\n",id0, id1, id2);
 			//m_poly[PolyID()] = TriID(PolyVertex(0), PolyVertex(i - 1), PolyVertex(i));
 		}
     }
